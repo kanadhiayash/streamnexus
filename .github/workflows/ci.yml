@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "chore/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Syntax and integration tests
+        run: npm test
+
+      - name: Compile EJS templates
+        run: npm run test:ejs
+
+      - name: Bounded load test
+        run: npm run test:load
+
+      - name: Dependency audit
+        run: npm audit --audit-level=moderate
+
+      - name: Secret pattern scan
+        run: npm run scan:secrets
