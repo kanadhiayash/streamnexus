@@ -1,0 +1,63 @@
+.DS_Store
+
+# Dependencies and generated output
+node_modules/
+dist/
+build/
+coverage/
+.cache/
+.npm/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+serviceAccountKey.json
+GoogleService-Info.plist
+*.pem
+*.key
+*.p12
+
+# Local/private workspace files
+_private/
+.codex/
+.impeccable/
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.vscode/
+.idea/
+
+# Local AI context and project-memory files
+/AGENTS.md
+/PRIVACY.md
+/REDACT.md
+/SHARING_POLICY.md
+/memory/
+/team/
+/docs/handoff/
+/config/PROJECT.md
+/config/PERMISSIONS.md
+/*-SKILL.md
+
+# Deployment and platform state
+.firebase/
+.vercel/
+.netlify/
+
+# Generated runtime data
+uploads/
+tmp/
+temp/
+*.dump
+*.sql
+*.sqlite
+*.sqlite3
+*.bson
+
+# Nested repository artifact from local release prep.
+# Keep ignored unless this folder is intentionally promoted into the app.
+streamnexus-fullstack-streaming-platform/

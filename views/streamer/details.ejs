@@ -1,0 +1,60 @@
+<section>
+  <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false }; %>
+  <div class='details-card'>
+    <img class='content-poster' src='<%= content.image %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
+    <div class='details-info'>
+      <h1><%= content.title %></h1>
+      <p class='meta-line'><%= content.type.toUpperCase() %> / <%= content.genre || 'General' %> / <%= content.duration || 'Runtime TBD' %></p>
+      <p><%= content.description %></p>
+      <div class='price'>$<%= content.price.toFixed(2) %></div>
+      <div class='capacity-meter' aria-label='Rental capacity for <%= content.title %>'>
+        <span style='width:<%= Math.min(100, Math.round((capacity.activeRentals / capacity.rentalLimit) * 100)) %>%'></span>
+      </div>
+      <p class='capacity-copy'><%= capacity.remaining %> of <%= capacity.rentalLimit %> rental slots open. Rentals last 45 days.</p>
+      <span class='status <%= content.available && !capacity.isFull ? "available" : "unavailable" %>'>
+        <%= content.available && !capacity.isFull ? 'Available' : 'Full or unavailable' %>
+      </span>
+      <div class='details-actions'>
+        <form method='post' action='/streamer/content/<%= content._id %>/<%= isShortlisted ? "shortlist/remove" : "shortlist" %>' style='display:inline;'>
+          <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+          <% if (isShortlisted) { %>
+            <input type='hidden' name='returnTo' value='/streamer/content/<%= content._id %>' />
+          <% } %>
+          <button type='submit' class='btn btn-secondary'>
+            <%= isShortlisted ? 'Remove from Shortlist' : 'Add to Shortlist' %>
+          </button>
+        </form>
+        <form method='post' action='/streamer/content/<%= content._id %>/rent' style='display:inline;'>
+          <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+          <button type='submit' class='btn btn-success' aria-label='Rent <%= content.title %>' <%= !content.available || capacity.isFull ? 'disabled' : '' %>>
+            Rent Now
+          </button>
+        </form>
+        <a href='/streamer/browse' class='btn btn-secondary'>Back to Browse</a>
+      </div>
+    </div>
+  </div>
+
+  <% if (similar && similar.length > 0) { %>
+    <section style='margin-top:2rem;' aria-labelledby='similar-heading'>
+      <h2 id='similar-heading'>Similar <%= content.type === 'tv' ? 'TV Series' : 'Movies' %></h2>
+      <div class='grid'>
+        <% similar.forEach(item => { %>
+          <div class='card'>
+            <% const itemCapacity = item.capacity || { rentalLimit: item.rentalLimit || 5, activeRentals: 0, remaining: item.rentalLimit || 5, isFull: false }; %>
+            <img class='content-poster' src='<%= item.image %>' alt='<%= item.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
+            <div class='card-content'>
+              <h3><%= item.title %></h3>
+              <p><%= item.description %></p>
+              <div class='price'>$<%= item.price.toFixed(2) %></div>
+              <p class='capacity-copy'><%= itemCapacity.remaining %>/<%= itemCapacity.rentalLimit %> slots open</p>
+            </div>
+            <div class='card-footer'>
+              <a href='/streamer/content/<%= item._id %>' class='btn btn-primary btn-sm' aria-label='View details for <%= item.title %>'>Details</a>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </section>
+  <% } %>
+</section>

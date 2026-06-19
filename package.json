@@ -1,0 +1,46 @@
+{
+  "name": "streamnexus",
+  "version": "1.0.0",
+  "description": "Role-based streaming content rental prototype built with Express, EJS, and MongoDB.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "test": "npm run test:syntax && npm run test:integration",
+    "test:syntax": "node --check app.js && node --check controllers/authController.js && node --check controllers/adminController.js && node --check controllers/streamerController.js && node --check controllers/contentController.js && node --check services/contentService.js && node --check services/rentalService.js && node --check services/userService.js && node --check middleware/csrf.js && node --check middleware/rateLimit.js && node --check utils/validators.js && node --check scripts/compile-ejs.js && node --check scripts/load-test.js && node --check scripts/scan-secrets.js",
+    "test:integration": "node --test --test-concurrency=1 test/*.test.js",
+    "test:ejs": "node scripts/compile-ejs.js",
+    "test:load": "node scripts/load-test.js",
+    "scan:secrets": "node scripts/scan-secrets.js"
+  },
+  "keywords": [
+    "express",
+    "mongodb",
+    "mongoose",
+    "ejs",
+    "streaming-platform",
+    "portfolio-project"
+  ],
+  "author": "Yash Kanadhia",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "connect-mongo": "^6.0.0",
+    "dotenv": "^17.4.0",
+    "ejs": "^5.0.1",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1",
+    "express-rate-limit": "^8.5.1",
+    "express-session": "^1.19.0",
+    "helmet": "^8.1.0",
+    "method-override": "^3.0.0",
+    "mongoose": "^9.3.3",
+    "npm": "^11.17.0",
+    "start": "^5.1.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.1.0",
+    "supertest": "^7.2.2"
+  }
+}
