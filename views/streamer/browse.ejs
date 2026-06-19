@@ -1,0 +1,156 @@
+<%
+  const safeContents = contents || [];
+  const modalPayload = safeContents.map(content => ({
+    id: content._id.toString(),
+    title: content.title,
+    type: content.type,
+    description: content.description || '',
+    price: Number(content.price || 0).toFixed(2),
+    image: content.image || '/images/default.svg',
+    genre: content.genre || 'General',
+    duration: content.duration || '',
+    cast: content.cast || '',
+    rating: Number(content.rating || 0).toFixed(1),
+    available: !!content.available,
+    isShortlisted: !!content.isShortlisted,
+    capacity: content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false },
+    detailUrl: `/streamer/content/${content._id}`,
+    rentUrl: `/streamer/content/${content._id}/rent`,
+    shortlistUrl: `/streamer/content/${content._id}/${content.isShortlisted ? 'shortlist/remove' : 'shortlist'}`,
+  }));
+  const modalJson = JSON.stringify(modalPayload).replace(/</g, '\\u003c');
+%>
+
+<section class='browse-shell'>
+  <div class='browse-hero carousel' data-carousel>
+    <% if (heroItems && heroItems.length > 0) { %>
+      <div class='carousel-track'>
+        <% heroItems.forEach((item, index) => { %>
+          <article class='carousel-slide <%= index === 0 ? "active" : "" %>' data-carousel-slide>
+            <img src='<%= item.image %>' alt='' data-fallback-src='/images/default.svg' />
+            <div class='hero-copy'>
+              <p class='eyebrow'>Now renting</p>
+              <h1><%= item.title %></h1>
+              <p><%= item.description %></p>
+              <div class='hero-actions'>
+                <button type='button' class='btn btn-primary' data-modal-content-id='<%= item._id %>'>View Details</button>
+                <form method='post' action='/streamer/content/<%= item._id %>/rent' class='inline-form'>
+                  <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+                  <button type='submit' class='btn btn-success' <%= !item.available || (item.capacity && item.capacity.isFull) ? 'disabled' : '' %>>Rent Now</button>
+                </form>
+              </div>
+              <div class='capacity-strip'>
+                <span><%= item.type.toUpperCase() %></span>
+                <span><%= item.genre || 'General' %></span>
+                <span><%= item.capacity ? item.capacity.remaining : 5 %>/<%= item.capacity ? item.capacity.rentalLimit : 5 %> slots open</span>
+              </div>
+            </div>
+          </article>
+        <% }); %>
+      </div>
+      <div class='carousel-controls' aria-label='Featured browse controls'>
+        <button type='button' class='icon-btn' data-carousel-prev aria-label='Previous featured title'>Prev</button>
+        <button type='button' class='icon-btn' data-carousel-next aria-label='Next featured title'>Next</button>
+      </div>
+    <% } %>
+  </div>
+
+  <div class='page-toolbar browse-toolbar'>
+    <div>
+      <p class='eyebrow'>Library</p>
+      <h1>Browse Content</h1>
+    </div>
+    <div class='view-toggle' role='group' aria-label='Choose browse view'>
+      <button type='button' data-view='grid' data-view-toggle class='active' aria-pressed='true'>Grid</button>
+      <button type='button' data-view='list' data-view-toggle aria-pressed='false'>List</button>
+    </div>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class='alert alert-error' role='alert'><%= error %></div>
+  <% } %>
+
+  <form class='filter-bar' method='get' action='/streamer/browse' aria-label='Search and filter content'>
+    <div class='form-group'>
+      <label for='search'>Search</label>
+      <input type='text' id='search' name='search' value='<%= search || "" %>' placeholder='Search title, genre, or description' />
+    </div>
+    <div class='form-group'>
+      <label for='type'>Type</label>
+      <select id='type' name='type'>
+        <option value='' <%= !type ? 'selected' : '' %>>All</option>
+        <option value='movie' <%= type === 'movie' ? 'selected' : '' %>>Movies</option>
+        <option value='tv' <%= type === 'tv' ? 'selected' : '' %>>TV Series</option>
+      </select>
+    </div>
+    <div class='filter-actions'>
+      <button type='submit' class='btn btn-primary'>Apply</button>
+      <a href='/streamer/browse' class='btn btn-secondary'>Reset</a>
+    </div>
+  </form>
+
+  <% if (safeContents.length === 0) { %>
+    <div class='empty-state' role='status'>
+      <% if (search || type) { %>
+        <p>No matching content found. Try a different search or filter.</p>
+      <% } else { %>
+        <p>No content available at the moment. Check back soon.</p>
+      <% } %>
+    </div>
+  <% } else { %>
+    <div class='grid poster-grid'>
+      <% safeContents.forEach(content => { %>
+        <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false }; %>
+        <article class='card poster-card' tabindex='0' role='button' data-content-card data-modal-content-id='<%= content._id %>' aria-label='Open details for <%= content.title %>'>
+          <img class='content-poster' src='<%= content.image %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
+          <div class='poster-overlay'>
+            <span class='status <%= content.available && !capacity.isFull ? "available" : "unavailable" %>'>
+              <%= content.available && !capacity.isFull ? 'Available' : 'Full or unavailable' %>
+            </span>
+          </div>
+          <div class='card-content'>
+            <p class='meta-line'><%= content.type.toUpperCase() %> / <%= content.genre || 'General' %></p>
+            <h3><%= content.title %></h3>
+            <p><%= content.description %></p>
+            <div class='card-meta-row'>
+              <span class='price'>$<%= Number(content.price || 0).toFixed(2) %></span>
+              <span><%= capacity.remaining %>/<%= capacity.rentalLimit %> slots</span>
+            </div>
+          </div>
+        </article>
+      <% }); %>
+    </div>
+  <% } %>
+
+  <script type='application/json' id='content-modal-data'><%- modalJson %></script>
+  <div class='content-modal' data-content-modal hidden>
+    <div class='content-modal-panel' role='dialog' aria-modal='true' aria-labelledby='content-modal-title' tabindex='-1'>
+      <button type='button' class='modal-close' data-modal-close aria-label='Close details'>Close</button>
+      <img class='modal-poster' data-modal-image src='/images/default.svg' alt='' data-fallback-src='/images/default.svg' />
+      <div class='modal-body'>
+        <p class='eyebrow' data-modal-meta>Movie</p>
+        <h2 id='content-modal-title' data-modal-title>Title</h2>
+        <p data-modal-description></p>
+        <dl class='details-list'>
+          <div><dt>Price</dt><dd data-modal-price></dd></div>
+          <div><dt>Rating</dt><dd data-modal-rating></dd></div>
+          <div><dt>Runtime</dt><dd data-modal-duration></dd></div>
+          <div><dt>Capacity</dt><dd data-modal-capacity></dd></div>
+        </dl>
+        <p class='cast-line' data-modal-cast></p>
+        <div class='modal-actions'>
+          <form method='post' data-modal-shortlist-form>
+            <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+            <input type='hidden' name='returnTo' value='/streamer/browse' data-modal-return-to />
+            <button type='submit' class='btn btn-secondary' data-modal-shortlist-button>Shortlist</button>
+          </form>
+          <form method='post' data-modal-rent-form>
+            <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+            <button type='submit' class='btn btn-success' data-modal-rent-button>Rent Now</button>
+          </form>
+          <a class='btn btn-primary' href='#' data-modal-details-link>Details Page</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

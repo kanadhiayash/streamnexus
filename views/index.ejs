@@ -1,0 +1,67 @@
+<% const heroItems = featured && featured.length ? featured.slice(0, 5) : []; %>
+<section class='landing-shell'>
+  <div class='landing-hero carousel' data-carousel>
+    <% if (heroItems.length > 0) { %>
+      <div class='carousel-track'>
+        <% heroItems.forEach((item, index) => { %>
+          <article class='carousel-slide <%= index === 0 ? "active" : "" %>' data-carousel-slide>
+            <img src='<%= item.image %>' alt='' data-fallback-src='/images/default.svg' />
+            <div class='hero-copy'>
+              <p class='eyebrow'>Portfolio streaming rental prototype</p>
+              <h1>StreamNexus</h1>
+              <p>Browse a curated demo catalog, rent a title, and review active rental capacity through role-based admin and streamer views.</p>
+              <div class='hero-actions'>
+                <a href='/signup' class='btn btn-primary'>Create Streamer Account</a>
+                <a href='/login' class='btn btn-secondary'>Sign In</a>
+              </div>
+              <dl class='hero-metrics'>
+                <div>
+                  <dt><%= item.title %></dt>
+                  <dd><%= item.genre || 'Featured' %> / $<%= Number(item.price || 0).toFixed(2) %></dd>
+                </div>
+                <div>
+                  <dt><%= item.capacity ? item.capacity.remaining : 5 %> slots open</dt>
+                  <dd>5 active rentals per title by default</dd>
+                </div>
+              </dl>
+            </div>
+          </article>
+        <% }); %>
+      </div>
+      <div class='carousel-controls' aria-label='Featured title controls'>
+        <button type='button' class='icon-btn' data-carousel-prev aria-label='Previous featured title'>Prev</button>
+        <button type='button' class='icon-btn' data-carousel-next aria-label='Next featured title'>Next</button>
+      </div>
+    <% } else { %>
+      <div class='hero-copy hero-copy-static'>
+        <p class='eyebrow'>Portfolio streaming rental prototype</p>
+        <h1>StreamNexus</h1>
+        <p>Sign in or create a streamer account to test catalog browsing, rental capacity, and simulated checkout flows.</p>
+        <div class='hero-actions'>
+          <a href='/signup' class='btn btn-primary'>Create Streamer Account</a>
+          <a href='/login' class='btn btn-secondary'>Sign In</a>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <% if (featured && featured.length > 0) { %>
+    <section class='content-rail' aria-labelledby='featured-heading'>
+      <div class='section-heading'>
+        <h2 id='featured-heading'>Featured Demo Titles</h2>
+        <p>Local poster assets, simulated rental pricing, and capacity-aware catalog cards.</p>
+      </div>
+      <div class='rail-grid'>
+        <% featured.slice(0, 6).forEach(item => { %>
+          <article class='mini-poster'>
+            <img src='<%= item.image %>' alt='<%= item.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
+            <div>
+              <h3><%= item.title %></h3>
+              <p><%= item.type.toUpperCase() %> / <%= item.genre || 'General' %></p>
+            </div>
+          </article>
+        <% }); %>
+      </div>
+    </section>
+  <% } %>
+</section>

@@ -1,0 +1,108 @@
+<section>
+  <div class='page-toolbar'>
+    <h1>Admin Dashboard</h1>
+    <a href='/admin/content/new' class='btn btn-primary'>+ Add New Content</a>
+  </div>
+
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class='alert alert-error' role='alert'><%= error %></div>
+  <% } %>
+
+  <div class='stats-grid' aria-label='Rental summary'>
+    <div class='stat-card'>
+      <span>Total rentals</span>
+      <strong><%= stats.totalRentals || 0 %></strong>
+    </div>
+    <div class='stat-card'>
+      <span>Active rentals</span>
+      <strong><%= stats.activeRentals || 0 %></strong>
+    </div>
+    <div class='stat-card'>
+      <span>Completed rentals</span>
+      <strong><%= stats.completedRentals || 0 %></strong>
+    </div>
+    <div class='stat-card'>
+      <span>Open rental slots</span>
+      <strong><%= stats.remainingSlots || 0 %></strong>
+    </div>
+  </div>
+
+  <h2 style='margin-top:2rem;margin-bottom:1rem;'>Inventory Management</h2>
+  <div class='page-toolbar'>
+    <p style='color:var(--text-secondary);'>Total items: <strong><%= contents.length %></strong></p>
+    <div class='view-toggle' role='group' aria-label='Choose inventory view'>
+      <button type='button' data-view='grid' data-view-toggle class='active' aria-pressed='true'>Grid</button>
+      <button type='button' data-view='list' data-view-toggle aria-pressed='false'>List</button>
+    </div>
+  </div>
+
+  <% if (contents.length === 0) { %>
+    <div class='empty-state' role='status'>
+      <p>No content yet. Add your first title!</p>
+    </div>
+  <% } else { %>
+    <div class='grid'>
+      <% contents.forEach(content => { %>
+        <div class='card'>
+          <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false }; %>
+          <img class='content-poster' src='<%= content.image %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
+          <div class='card-content'>
+            <h3><%= content.title %></h3>
+            <p class='meta-line'><%= content.type.toUpperCase() %> / <%= content.genre || 'General' %></p>
+            <p><%= content.description %></p>
+            <div class='price'>$<%= content.price.toFixed(2) %></div>
+            <div class='capacity-meter' aria-label='Rental capacity for <%= content.title %>'>
+              <span style='width:<%= Math.min(100, Math.round((capacity.activeRentals / capacity.rentalLimit) * 100)) %>%'></span>
+            </div>
+            <p class='capacity-copy'><%= capacity.activeRentals %> active / <%= capacity.rentalLimit %> max rentals. <%= capacity.remaining %> slots open.</p>
+            <span class='status <%= content.available && !capacity.isFull ? "available" : "unavailable" %>'>
+              <%= content.available && !capacity.isFull ? 'Available' : 'Full or unavailable' %>
+            </span>
+          </div>
+          <div class='card-footer'>
+            <div class='actions'>
+              <a href='/admin/content/<%= content._id %>/edit' class='btn btn-primary btn-sm' aria-label='Edit <%= content.title %>'>Edit</a>
+              <button type='button' class='btn btn-danger btn-sm' data-delete-id='<%= content._id %>' aria-label='Delete <%= content.title %>'>Delete</button>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+
+  <h2 style='margin-top:3rem;margin-bottom:1rem;'>Recent Rentals</h2>
+  <% if (rentals.length === 0) { %>
+    <div class='empty-state' role='status'>
+      <p>No rental activity yet.</p>
+    </div>
+  <% } else { %>
+    <div style='overflow-x:auto;'>
+      <table>
+        <thead>
+          <tr>
+            <th>User Email</th>
+            <th>Content</th>
+            <th>Status</th>
+            <th>Rental Date</th>
+            <th>Expires</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% rentals.forEach(r => { %>
+            <tr>
+              <td><%= r.userId ? r.userId.email : 'Unknown' %></td>
+              <td><%= r.contentId ? r.contentId.title : 'Deleted Content' %></td>
+              <td>
+                <span class='status <%= r.status === "active" ? "available" : "unavailable" %>'>
+                  <%= r.status === 'active' ? '● Active' : '✓ Completed' %>
+                </span>
+              </td>
+              <td><%= new Date(r.rentedAt || r.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
+              <td><%= new Date(r.expiresAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

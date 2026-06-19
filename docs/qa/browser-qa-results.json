@@ -1,0 +1,49 @@
+{
+  "run_date": "2026-06-17",
+  "target": "http://127.0.0.1:3123",
+  "status": "pass",
+  "checks": [
+    {
+      "name": "guest landing renders",
+      "passed": true
+    },
+    {
+      "name": "streamer signup reaches browse carousel",
+      "passed": true
+    },
+    {
+      "name": "content modal opens from card",
+      "passed": true
+    },
+    {
+      "name": "rental expiry visible",
+      "passed": true
+    },
+    {
+      "name": "mobile browse has no horizontal scroll",
+      "passed": true
+    },
+    {
+      "name": "admin dashboard shows capacity",
+      "passed": true
+    },
+    {
+      "name": "admin can create content in browser",
+      "passed": true
+    },
+    {
+      "name": "visible images loaded on streamer browse mobile",
+      "passed": true
+    }
+  ],
+  "console_errors": [],
+  "network_failures": [],
+  "screenshots": [
+    "docs/qa/screenshots/home-desktop.png",
+    "docs/qa/screenshots/streamer-browse-desktop.png",
+    "docs/qa/screenshots/streamer-content-modal-desktop.png",
+    "docs/qa/screenshots/streamer-rentals-desktop.png",
+    "docs/qa/screenshots/streamer-browse-mobile.png",
+    "docs/qa/screenshots/admin-dashboard-desktop.png"
+  ]
+}

@@ -1,0 +1,47 @@
+<section>
+  <div class='page-toolbar'>
+    <h1>Content Management</h1>
+    <a href='/admin/content/new' class='btn btn-primary'>+ Add New</a>
+  </div>
+
+  <% if (contents.length === 0) { %>
+    <div class='empty-state' role='status'>
+      <p>No content yet. Add your first title to get started!</p>
+      <a href='/admin/content/new' class='btn btn-primary' style='margin-top:1rem;'>+ Add Content</a>
+    </div>
+  <% } else { %>
+    <div style='overflow-x:auto;'>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% contents.forEach(content => { %>
+            <tr>
+              <td><strong><%= content.title %></strong></td>
+              <td><%= content.type.toUpperCase() %></td>
+              <td>$<%= content.price.toFixed(2) %></td>
+              <td>
+                <span class='status <%= content.available ? "available" : "unavailable" %>'>
+                  <%= content.available ? '✓ Available' : '✕ Out' %>
+                </span>
+              </td>
+              <td>
+                <div class='actions' style='gap:0.25rem;'>
+                  <a href='/admin/content/<%= content._id %>/edit' class='btn btn-primary btn-sm' aria-label='Edit <%= content.title %>'>Edit</a>
+                  <button type='button' class='btn btn-danger btn-sm' data-delete-id='<%= content._id %>' aria-label='Delete <%= content.title %>'>Delete</button>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

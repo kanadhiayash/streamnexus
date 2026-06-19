@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="title desc">
+  <title id="title">StreamNexus fallback poster</title>
+  <desc id="desc">Dark placeholder image for content without poster art.</desc>
+  <rect width="900" height="600" fill="#161b26"/>
+  <rect x="48" y="48" width="804" height="504" rx="24" fill="#222938" stroke="#30394a" stroke-width="4"/>
+  <circle cx="450" cy="254" r="76" fill="#2563eb" opacity="0.18"/>
+  <path d="M416 214l96 56-96 56z" fill="#e5e7eb"/>
+  <text x="450" y="404" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="34" font-weight="700">StreamNexus</text>
+  <text x="450" y="448" text-anchor="middle" fill="#6b7280" font-family="Arial, sans-serif" font-size="22">Poster unavailable</text>
+</svg>

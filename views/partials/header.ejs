@@ -1,0 +1,25 @@
+<header class="nav" role="banner">
+  <a class="brand" href="/" aria-label="StreamNexus - Home">
+    <span class="brand-mark" aria-hidden="true">SN</span>
+    <span>StreamNexus</span>
+  </a>
+  <nav role="navigation" aria-label="Main navigation">
+    <% if (user) { %>
+      <% if (user.role === 'admin') { %>
+        <a href="/admin/dashboard" aria-label="Admin Dashboard">Admin Dashboard</a>
+        <a href="/admin/content" aria-label="Manage Content">Content</a>
+      <% } else { %>
+        <a href="/streamer/browse" aria-label="Browse available content">Browse</a>
+        <a href="/streamer/shortlist" aria-label="Your shortlist">Shortlist</a>
+        <a href="/streamer/rentals" aria-label="Your rentals">Rentals</a>
+      <% } %>
+      <form class="logout-form" method="post" action="/logout" role="form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <button type="submit" aria-label="Sign out">Logout</button>
+      </form>
+    <% } else { %>
+      <a href="/signup" aria-label="Create a streamer account">Sign Up</a>
+      <a href="/login" aria-label="Sign in to your account">Login</a>
+    <% } %>
+  </nav>
+</header>

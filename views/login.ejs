@@ -1,0 +1,24 @@
+<section class='login-box'>
+  <h1>StreamNexus</h1>
+  <p class='auth-subtitle'>Sign in to manage the catalog or rent demo titles.</p>
+  <% if (typeof error !== 'undefined' && error) { %><div class='alert alert-error' role='alert'><%= error %></div><% } %>
+  <% if (typeof message !== 'undefined' && message) { %><div class='alert alert-info' role='status'><%= message %></div><% } %>
+  <form method='post' action='/login' id='loginForm' data-validate-form>
+    <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+    <div class='form-group'>
+      <label for='email'>Email</label>
+      <input type='email' id='email' name='email' placeholder='admin@gmail.com' autocomplete='username' required />
+    </div>
+    <div class='form-group'>
+      <label for='password'>Password</label>
+      <input type='password' id='password' name='password' placeholder='••••••••' autocomplete='current-password' required />
+    </div>
+    <button type='submit' class='btn btn-primary' style='width:100%;'>Sign In</button>
+  </form>
+  <p class='auth-switch'>New here? <a href='/signup'>Create a streamer account</a>.</p>
+  <div class='demo-credentials'>
+    <p>Demo Credentials:</p>
+    <p><strong>Admin:</strong> admin@gmail.com / admin</p>
+    <p><strong>Streamer:</strong> streamer@gmail.com / streamer</p>
+  </div>
+</section>

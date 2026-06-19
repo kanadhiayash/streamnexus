@@ -1,0 +1,23 @@
+<section class='login-box'>
+  <h1>Create Streamer Account</h1>
+  <p class='auth-subtitle'>Join the demo catalog as a streamer. Admin access is not available through signup.</p>
+  <% if (typeof error !== 'undefined' && error) { %><div class='alert alert-error' role='alert'><%= error %></div><% } %>
+  <% if (typeof message !== 'undefined' && message) { %><div class='alert alert-info' role='status'><%= message %></div><% } %>
+  <form method='post' action='/signup' id='signupForm' data-validate-form>
+    <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+    <div class='form-group'>
+      <label for='email'>Email</label>
+      <input type='email' id='email' name='email' value='<%= form && form.email ? form.email : "" %>' placeholder='you@example.com' autocomplete='username' required />
+    </div>
+    <div class='form-group'>
+      <label for='password'>Password</label>
+      <input type='password' id='password' name='password' placeholder='Minimum 3 characters for local demo' autocomplete='new-password' required />
+    </div>
+    <div class='form-group'>
+      <label for='confirmPassword'>Confirm Password</label>
+      <input type='password' id='confirmPassword' name='confirmPassword' placeholder='Repeat password' autocomplete='new-password' required />
+    </div>
+    <button type='submit' class='btn btn-primary' style='width:100%;'>Create Account</button>
+  </form>
+  <p class='auth-switch'>Already have an account? <a href='/login'>Sign in</a>.</p>
+</section>

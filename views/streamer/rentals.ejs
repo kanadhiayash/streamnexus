@@ -1,0 +1,48 @@
+<section>
+  <div class='page-toolbar'>
+    <h1>My Rentals</h1>
+    <div class='view-toggle' role='group' aria-label='Choose rentals view'>
+      <button type='button' data-view='grid' data-view-toggle class='active' aria-pressed='true'>Grid</button>
+      <button type='button' data-view='list' data-view-toggle aria-pressed='false'>List</button>
+    </div>
+  </div>
+  <% if (typeof error !== 'undefined' && error) { %>
+    <div class='alert alert-error' role='alert'><%= error %></div>
+  <% } %>
+  <% if (rentals.length === 0) { %>
+    <div class='empty-state' role='status'>
+      <p>No rentals yet. Browse and rent your first content!</p>
+      <a href='/streamer/browse' class='btn btn-primary' style='margin-top:1rem;'>Browse Content</a>
+    </div>
+  <% } else { %>
+    <div class='grid'>
+      <% rentals.forEach(r => { %>
+        <div class='card'>
+          <img class='content-poster' src='<%= r.contentId && r.contentId.image ? r.contentId.image : "/images/default.svg" %>' alt='<%= r.contentId ? r.contentId.title : "Content" %>' loading='lazy' data-fallback-src='/images/default.svg' />
+          <div class='card-content'>
+            <h3><%= r.contentId ? r.contentId.title : 'Content Deleted' %></h3>
+            <p style='font-size:0.9rem;'>
+              <strong>Status:</strong>
+              <span class='status <%= r.status === "active" ? "available" : "unavailable" %>'>
+                <%= r.status === 'active' ? '● Active' : '✓ Completed' %>
+              </span>
+            </p>
+            <p style='color:var(--text-tertiary);font-size:0.85rem;'>
+              Rented: <%= new Date(r.rentedAt || r.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
+            </p>
+            <p class='rental-window'>
+              Access until: <%= new Date(r.expiresAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
+            </p>
+          </div>
+          <div class='card-footer'>
+            <% if (r.status === 'active') { %>
+              <button type='button' class='btn btn-success' data-checkout-id='<%= r._id %>' aria-label='Complete rental for <%= r.contentId ? r.contentId.title : "this rental" %>'>Complete Rental</button>
+            <% } else { %>
+              <button type='button' class='btn btn-secondary' disabled>Rental Complete</button>
+            <% } %>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+</section>

@@ -1,0 +1,39 @@
+<section>
+  <div class='page-toolbar'>
+    <h1>My Shortlist</h1>
+    <div class='view-toggle' role='group' aria-label='Choose shortlist view'>
+      <button type='button' data-view='grid' data-view-toggle class='active' aria-pressed='true'>Grid</button>
+      <button type='button' data-view='list' data-view-toggle aria-pressed='false'>List</button>
+    </div>
+  </div>
+  <% if (contents.length === 0) { %>
+    <div class='empty-state' role='status'>
+      <p>Your shortlist is empty. Browse and add your favorite content!</p>
+      <a href='/streamer/browse' class='btn btn-primary' style='margin-top:1rem;'>Browse Content</a>
+    </div>
+  <% } else { %>
+    <div class='grid'>
+      <% contents.forEach(content => { %>
+        <div class='card'>
+          <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false }; %>
+          <img class='content-poster' src='<%= content.image %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
+          <div class='card-content'>
+            <h3><%= content.title %></h3>
+            <p class='meta-line'><%= content.type.toUpperCase() %> / <%= content.genre || 'General' %></p>
+            <div class='price'>$<%= content.price.toFixed(2) %></div>
+            <p class='capacity-copy'><%= capacity.remaining %>/<%= capacity.rentalLimit %> slots open</p>
+          </div>
+          <div class='card-footer'>
+            <div class='actions'>
+              <a href='/streamer/content/<%= content._id %>' class='btn btn-primary btn-sm' aria-label='View details for <%= content.title %>'>View</a>
+              <form method='post' action='/streamer/content/<%= content._id %>/shortlist/remove' style='display:inline;'>
+                <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+                <button type='submit' class='btn btn-danger btn-sm' aria-label='Remove <%= content.title %> from shortlist'>Remove</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+</section>
