@@ -15,7 +15,8 @@
     "test:integration": "node --test --test-concurrency=1 test/*.test.js",
     "test:ejs": "node scripts/compile-ejs.js",
     "test:load": "node scripts/load-test.js",
-    "scan:secrets": "node scripts/scan-secrets.js"
+    "scan:secrets": "node scripts/scan-secrets.js",
+    "release:verify": "node scripts/release-verify.js"
   },
   "keywords": [
     "express",
