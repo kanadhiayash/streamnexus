@@ -97,6 +97,15 @@ test('guest landing page renders sign in and signup entry points', async () => {
   assert.match(response.text, /Sign In/);
 });
 
+test('public pages send defensive browser security headers', async () => {
+  const agent = request.agent(createApp());
+  const response = await agent.get('/').expect(200);
+
+  assert.match(response.headers['content-security-policy'], /frame-ancestors 'none'/);
+  assert.equal(response.headers['x-content-type-options'], 'nosniff');
+  assert.equal(response.headers['x-powered-by'], undefined);
+});
+
 test('signup creates a member account and cannot create admin role', async () => {
   const agent = request.agent(createApp());
   const signupPage = await agent.get('/signup').expect(200);
@@ -208,6 +217,38 @@ test('admin archives, restores, and publishes content without hard deleting it',
 
   const publishedBrowse = await memberAgent.get('/streamer/browse?search=Admin%20Lifecycle%20Probe').expect(200);
   assert.match(publishedBrowse.text, /Lifecycle operations test title/);
+});
+
+test('admin lifecycle mutations reject GET and missing CSRF requests', async () => {
+  const content = await Content.create({
+    title: 'Security Lifecycle Probe',
+    type: 'movie',
+    price: 3.99,
+    available: true,
+    lifecycle: 'published',
+    description: 'Security mutation test title',
+    genre: 'Test',
+  });
+
+  const adminAgent = await loginAs('admin');
+
+  await adminAgent
+    .get(`/admin/content/${content._id}/lifecycle/archive`)
+    .expect(404);
+
+  let updated = await Content.findById(content._id).lean();
+  assert.equal(updated.lifecycle, 'published');
+  assert.equal(updated.available, true);
+
+  await adminAgent
+    .post(`/admin/content/${content._id}/lifecycle/archive`)
+    .type('form')
+    .send({ returnTo: '/admin/content' })
+    .expect(403);
+
+  updated = await Content.findById(content._id).lean();
+  assert.equal(updated.lifecycle, 'published');
+  assert.equal(updated.available, true);
 });
 
 test('streamer can shortlist and rent available content', async () => {
