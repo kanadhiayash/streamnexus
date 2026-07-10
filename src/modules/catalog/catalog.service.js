@@ -3,6 +3,7 @@ const { sanitizeSearchQuery } = require('../../../utils/validators');
 const { NotFoundError, ValidationError, toServiceResult } = require('../../shared/errors/domainErrors');
 const { assertObjectId } = require('../../shared/validation/objectId');
 const { createAuditService } = require('../audit/audit.service');
+const { stableSlug, toMinorUnits } = require('../data/compatibility');
 const { createCatalogRepository } = require('./catalog.repository');
 
 const normalizeContentInput = (contentData) => {
@@ -27,17 +28,29 @@ const normalizeContentInput = (contentData) => {
   }
 
   return {
+    schemaVersion: 2,
+    slug: contentData.slug?.trim() || stableSlug(title),
     title: title.trim(),
     type,
+    shortDescription: description?.trim() || '',
+    synopsis: description?.trim() || '',
     description: description?.trim() || '',
     price: numPrice,
+    rentalPriceMinor: toMinorUnits(numPrice),
+    currencyCode: contentData.currencyCode?.trim() || 'CAD',
     image: image?.trim() || '/images/default.svg',
+    posterReference: image?.trim() || '/images/default.svg',
+    posterAlt: `${title.trim()} poster`,
     available: available === true || available === 'on',
+    lifecycle: available === false ? 'unpublished' : 'published',
     rating: rating ? Math.min(10, Math.max(0, Number(rating))) : 7.5,
     genre: genre?.trim() || 'General',
+    genres: [genre?.trim() || 'General'],
     duration: duration?.trim() || '2h',
     cast: cast?.trim() || '',
+    castMembers: cast ? cast.split(',').map(item => item.trim()).filter(Boolean) : [],
     rentalLimit: Math.floor(numRentalLimit),
+    licenceLimit: Math.floor(numRentalLimit),
   };
 };
 

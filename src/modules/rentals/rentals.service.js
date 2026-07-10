@@ -1,7 +1,9 @@
 const logger = require('../../../utils/logger');
 const { ConflictError, ForbiddenError, NotFoundError, toServiceResult } = require('../../shared/errors/domainErrors');
 const { assertObjectId } = require('../../shared/validation/objectId');
+const { RENTAL_POLICY } = require('../../config/rentalPolicy');
 const { createAuditService } = require('../audit/audit.service');
+const { mapTitleToV2, publicRentalReference } = require('../data/compatibility');
 const { createRentalsRepository } = require('./rentals.repository');
 
 const DEFAULT_RENTAL_LIMIT = 5;
@@ -78,14 +80,33 @@ const createRentalsService = ({
       }
 
       const rentalWindow = buildRentalWindow();
+      const titleSnapshot = mapTitleToV2(content, activeCount);
       const rental = await repository.createRental({
+        schemaVersion: 2,
         userId,
         contentId,
+        titleId: contentId,
         status: 'active',
+        titleSnapshot: {
+          title: titleSnapshot.title,
+          slug: titleSnapshot.slug,
+          posterReference: titleSnapshot.posterReference,
+        },
+        priceSnapshot: {
+          amountMinor: titleSnapshot.rentalPriceMinor,
+          currencyCode: titleSnapshot.currencyCode,
+        },
+        policySnapshot: {
+          version: RENTAL_POLICY.version,
+          durationDays: RENTAL_POLICY.durationDays,
+        },
         date: rentalWindow.rentedAt,
         rentedAt: rentalWindow.rentedAt,
+        startedAt: rentalWindow.rentedAt,
         expiresAt: rentalWindow.expiresAt,
       });
+      rental.publicReference = publicRentalReference(rental._id);
+      await rental.save();
 
       const user = await repository.findUserById(userId);
       if (user && !user.rented.some(id => id.equals(contentId))) {
