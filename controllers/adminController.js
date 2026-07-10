@@ -16,7 +16,10 @@ const dashboard = catchAsync(async (req, res) => {
     });
   }
 
-  res.render('admin/dashboard', result.data);
+  res.render('admin/dashboard', {
+    ...result.data,
+    archived: req.query.archived === 'true',
+  });
 });
 
 const contentList = catchAsync(async (req, res) => {
@@ -29,7 +32,7 @@ const contentList = catchAsync(async (req, res) => {
     });
   }
 
-  res.render('admin/content-list', { contents: result.data || [] });
+  res.render('admin/content-list', { contents: result.data || [], lifecycle: req.query.lifecycle || '' });
 });
 
 const showNewContent = (req, res) => {
@@ -102,11 +105,25 @@ const deleteContent = catchAsync(async (req, res) => {
   const result = await contentService.deleteContent(req.params.id);
   if (!result.success) {
     const statusCode = result.statusCode || 400;
-    throw new AppError(result.error || 'Failed to delete content', statusCode);
+    throw new AppError(result.error || 'Failed to archive content', statusCode);
   }
 
-  logger.info(`Content deleted by admin: ${req.params.id}`);
-  res.redirect('/admin/dashboard?deleted=true');
+  logger.info(`Content archived by admin: ${req.params.id}`);
+  res.redirect('/admin/dashboard?archived=true');
+});
+
+const updateLifecycle = catchAsync(async (req, res) => {
+  const result = await contentService.updateLifecycle(req.params.id, req.params.action);
+  if (!result.success) {
+    const statusCode = result.statusCode || 400;
+    throw new AppError(result.error || 'Failed to update content lifecycle', statusCode);
+  }
+
+  logger.info(`Content lifecycle ${req.params.action} by admin: ${req.params.id}`);
+  const returnTo = typeof req.body.returnTo === 'string' && req.body.returnTo.startsWith('/admin/')
+    ? req.body.returnTo
+    : '/admin/content';
+  res.redirect(`${returnTo}?lifecycle=${encodeURIComponent(req.params.action)}`);
 });
 
 module.exports = {
@@ -117,4 +134,5 @@ module.exports = {
   showEditContent,
   updateContent,
   deleteContent,
+  updateLifecycle,
 };

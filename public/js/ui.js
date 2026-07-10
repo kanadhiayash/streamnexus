@@ -341,7 +341,8 @@ function setupToasts() {
   if (params.has('checkout')) ToastNotification.success('Access returned.');
   if (params.has('created')) ToastNotification.success('Content created.');
   if (params.has('updated')) ToastNotification.success('Content updated.');
-  if (params.has('deleted')) ToastNotification.success('Content deleted.');
+  if (params.has('deleted')) ToastNotification.success('Content archived.');
+  if (params.has('archived')) ToastNotification.success('Title archived.');
 }
 
 function setupFocusMode() {
@@ -373,8 +374,8 @@ window.confirmCheckout = function (rentalId) {
 
 window.confirmDelete = function (contentId) {
   ConfirmDialog.show(
-    'Delete Content?',
-    'This removes the title from the demo catalog.',
+    'Archive title?',
+    'This removes the title from the member catalog without deleting the record.',
     () => {
       const form = document.createElement('form');
       form.method = 'POST';

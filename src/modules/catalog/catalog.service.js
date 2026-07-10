@@ -54,10 +54,27 @@ const normalizeContentInput = (contentData) => {
   };
 };
 
+const lifecyclePatch = (action, now = new Date()) => {
+  if (action === 'publish') {
+    return { available: true, lifecycle: 'published', publishedAt: now, archivedAt: null };
+  }
+  if (action === 'unpublish') {
+    return { available: false, lifecycle: 'unpublished' };
+  }
+  if (action === 'archive') {
+    return { available: false, lifecycle: 'archived', archivedAt: now };
+  }
+  if (action === 'restore') {
+    return { available: false, lifecycle: 'unpublished', archivedAt: null };
+  }
+  throw new ValidationError('Invalid lifecycle action');
+};
+
 const createCatalogService = ({
   repository = createCatalogRepository(),
   auditService = createAuditService(),
   logger: injectedLogger = logger,
+  clock = () => new Date(),
 } = {}) => {
   const service = {
     getAllContent(filters = {}) {
@@ -98,14 +115,18 @@ const createCatalogService = ({
   },
 
     deleteContent(contentId) {
+    return service.updateLifecycle(contentId, 'archive');
+  },
+
+    updateLifecycle(contentId, action) {
     return toServiceResult(async () => {
       assertObjectId(contentId, 'content ID');
-      const content = await repository.delete(contentId);
+      const content = await repository.updateLifecycle(contentId, lifecyclePatch(action, clock()));
       if (!content) {
         throw new NotFoundError('Content not found');
       }
-      injectedLogger.info(`Content deleted: ${contentId}`);
-      await auditService.record({ action: 'catalog.deleted', targetType: 'content', targetId: content._id });
+      injectedLogger.info(`Content lifecycle ${action}: ${contentId}`);
+      await auditService.record({ action: `catalog.${action}`, targetType: 'content', targetId: content._id });
       return content;
     });
   },
@@ -162,4 +183,4 @@ const createCatalogService = ({
   return service;
 };
 
-module.exports = { createCatalogService, normalizeContentInput };
+module.exports = { createCatalogService, lifecyclePatch, normalizeContentInput };
