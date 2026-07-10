@@ -10,7 +10,7 @@
       <div class='capacity-meter' aria-label='Rental capacity for <%= content.title %>'>
         <span style='width:<%= Math.min(100, Math.round((capacity.activeRentals / capacity.rentalLimit) * 100)) %>%'></span>
       </div>
-      <p class='capacity-copy'><%= capacity.remaining %> of <%= capacity.rentalLimit %> rental slots open. Rentals last 45 days.</p>
+      <p class='capacity-copy'><%= capacity.remaining %> of <%= capacity.rentalLimit %> rental licences available. Rentals last 45 days.</p>
       <span class='status <%= content.available && !capacity.isFull ? "available" : "unavailable" %>'>
         <%= content.available && !capacity.isFull ? 'Available' : 'Full or unavailable' %>
       </span>
@@ -21,16 +21,16 @@
             <input type='hidden' name='returnTo' value='/streamer/content/<%= content._id %>' />
           <% } %>
           <button type='submit' class='btn btn-secondary'>
-            <%= isShortlisted ? 'Remove from Shortlist' : 'Add to Shortlist' %>
+            <%= isShortlisted ? 'Remove from My List' : 'Add to My List' %>
           </button>
         </form>
         <form method='post' action='/streamer/content/<%= content._id %>/rent' style='display:inline;'>
           <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
           <button type='submit' class='btn btn-success' aria-label='Rent <%= content.title %>' <%= !content.available || capacity.isFull ? 'disabled' : '' %>>
-            Rent Now
+            Activate Rental
           </button>
         </form>
-        <a href='/streamer/browse' class='btn btn-secondary'>Back to Browse</a>
+        <a href='/streamer/browse' class='btn btn-secondary'>Back to Catalog</a>
       </div>
     </div>
   </div>
@@ -47,7 +47,7 @@
               <h3><%= item.title %></h3>
               <p><%= item.description %></p>
               <div class='price'>$<%= item.price.toFixed(2) %></div>
-              <p class='capacity-copy'><%= itemCapacity.remaining %>/<%= itemCapacity.rentalLimit %> slots open</p>
+              <p class='capacity-copy'><%= itemCapacity.remaining %>/<%= itemCapacity.rentalLimit %> licences open</p>
             </div>
             <div class='card-footer'>
               <a href='/streamer/content/<%= item._id %>' class='btn btn-primary btn-sm' aria-label='View details for <%= item.title %>'>Details</a>

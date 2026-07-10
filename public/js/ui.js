@@ -235,13 +235,13 @@ function setupContentModal() {
     fields.price.textContent = `$${item.price}`;
     fields.rating.textContent = item.rating && item.rating !== '0.0' ? `${item.rating}/10` : 'Not rated';
     fields.duration.textContent = item.duration || 'Runtime TBD';
-    fields.capacity.textContent = `${item.capacity.remaining} of ${item.capacity.rentalLimit} slots open`;
+    fields.capacity.textContent = `${item.capacity.remaining} of ${item.capacity.rentalLimit} licences open`;
     fields.cast.textContent = item.cast ? `Cast: ${item.cast}` : '';
     fields.shortlistForm.action = item.shortlistUrl;
-    fields.shortlistButton.textContent = item.isShortlisted ? 'Remove Shortlist' : 'Shortlist';
+    fields.shortlistButton.textContent = item.isShortlisted ? 'Remove from My List' : 'Add to My List';
     fields.rentForm.action = item.rentUrl;
     fields.rentButton.disabled = !item.available || item.capacity.isFull;
-    fields.rentButton.textContent = item.capacity.isFull ? 'Rental Full' : 'Rent Now';
+    fields.rentButton.textContent = item.capacity.isFull ? 'Rental Full' : 'Activate Rental';
     fields.detailsLink.href = item.detailUrl;
 
     modal.removeAttribute('hidden');

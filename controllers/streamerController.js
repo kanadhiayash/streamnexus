@@ -14,8 +14,10 @@ const attachShortlistState = async (userId, contents) => {
 };
 
 const browse = catchAsync(async (req, res) => {
-  const { type, search } = req.query;
+  const { type, search, sort = 'title', page = '1' } = req.query;
   const filters = {};
+  const pageSize = 12;
+  const currentPage = Math.max(1, Number.parseInt(page, 10) || 1);
 
   if (type && ['movie', 'tv'].includes(type)) {
     filters.type = type;
@@ -36,15 +38,33 @@ const browse = catchAsync(async (req, res) => {
       search: search || '',
     });
   }
-  const capacityResult = await rentalService.attachCapacityToContents(result.data || []);
+  const sortedData = [...(result.data || [])].sort((a, b) => {
+    if (sort === 'price_asc') return Number(a.price || 0) - Number(b.price || 0);
+    if (sort === 'price_desc') return Number(b.price || 0) - Number(a.price || 0);
+    if (sort === 'newest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    return String(a.title || '').localeCompare(String(b.title || ''));
+  });
+  const totalPages = Math.max(1, Math.ceil(sortedData.length / pageSize));
+  const pageContents = sortedData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const capacityResult = await rentalService.attachCapacityToContents(pageContents);
   const contentsWithCapacity = capacityResult.success ? capacityResult.data : result.data || [];
   const contents = await attachShortlistState(req.session.user.id, contentsWithCapacity);
 
   res.render('streamer/browse', {
     contents,
-    heroItems: contents.slice(0, 5),
+    heroItems: sortedData.slice(0, 5),
     type: type || '',
     search: search || '',
+    sort,
+    pagination: {
+      currentPage,
+      totalPages,
+      totalItems: sortedData.length,
+      hasPrevious: currentPage > 1,
+      hasNext: currentPage < totalPages,
+      previousPage: Math.max(1, currentPage - 1),
+      nextPage: Math.min(totalPages, currentPage + 1),
+    },
   });
 });
 

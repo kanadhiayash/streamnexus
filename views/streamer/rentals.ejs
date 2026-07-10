@@ -11,8 +11,8 @@
   <% } %>
   <% if (rentals.length === 0) { %>
     <div class='empty-state' role='status'>
-      <p>No rentals yet. Browse and rent your first content!</p>
-      <a href='/streamer/browse' class='btn btn-primary' style='margin-top:1rem;'>Browse Content</a>
+      <p>No rentals yet. Browse and activate rental access for your first title.</p>
+      <a href='/streamer/browse' class='btn btn-primary' style='margin-top:1rem;'>Browse Titles</a>
     </div>
   <% } else { %>
     <div class='grid'>
@@ -24,7 +24,7 @@
             <p style='font-size:0.9rem;'>
               <strong>Status:</strong>
               <span class='status <%= r.status === "active" ? "available" : "unavailable" %>'>
-                <%= r.status === 'active' ? '● Active' : '✓ Completed' %>
+                <%= r.status === 'active' ? 'Active rental' : 'Returned' %>
               </span>
             </p>
             <p style='color:var(--text-tertiary);font-size:0.85rem;'>
@@ -36,9 +36,9 @@
           </div>
           <div class='card-footer'>
             <% if (r.status === 'active') { %>
-              <button type='button' class='btn btn-success' data-checkout-id='<%= r._id %>' aria-label='Complete rental for <%= r.contentId ? r.contentId.title : "this rental" %>'>Complete Rental</button>
+              <button type='button' class='btn btn-success' data-checkout-id='<%= r._id %>' aria-label='Return access for <%= r.contentId ? r.contentId.title : "this rental" %>'>Return Access</button>
             <% } else { %>
-              <button type='button' class='btn btn-secondary' disabled>Rental Complete</button>
+              <button type='button' class='btn btn-secondary' disabled>Access Returned</button>
             <% } %>
           </div>
         </div>

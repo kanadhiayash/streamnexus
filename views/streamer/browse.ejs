@@ -29,20 +29,20 @@
           <article class='carousel-slide <%= index === 0 ? "active" : "" %>' data-carousel-slide>
             <img src='<%= item.image %>' alt='' data-fallback-src='/images/default.svg' />
             <div class='hero-copy'>
-              <p class='eyebrow'>Now renting</p>
+              <p class='eyebrow'>Featured title</p>
               <h1><%= item.title %></h1>
               <p><%= item.description %></p>
               <div class='hero-actions'>
                 <button type='button' class='btn btn-primary' data-modal-content-id='<%= item._id %>'>View Details</button>
                 <form method='post' action='/streamer/content/<%= item._id %>/rent' class='inline-form'>
                   <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
-                  <button type='submit' class='btn btn-success' <%= !item.available || (item.capacity && item.capacity.isFull) ? 'disabled' : '' %>>Rent Now</button>
+                  <button type='submit' class='btn btn-success' <%= !item.available || (item.capacity && item.capacity.isFull) ? 'disabled' : '' %>>Activate Rental</button>
                 </form>
               </div>
               <div class='capacity-strip'>
                 <span><%= item.type.toUpperCase() %></span>
                 <span><%= item.genre || 'General' %></span>
-                <span><%= item.capacity ? item.capacity.remaining : 5 %>/<%= item.capacity ? item.capacity.rentalLimit : 5 %> slots open</span>
+                <span><%= item.capacity ? item.capacity.remaining : 5 %>/<%= item.capacity ? item.capacity.rentalLimit : 5 %> licences open</span>
               </div>
             </div>
           </article>
@@ -57,8 +57,8 @@
 
   <div class='page-toolbar browse-toolbar'>
     <div>
-      <p class='eyebrow'>Library</p>
-      <h1>Browse Content</h1>
+      <p class='eyebrow'>Member catalog</p>
+      <h1>Browse Titles</h1>
     </div>
     <div class='view-toggle' role='group' aria-label='Choose browse view'>
       <button type='button' data-view='grid' data-view-toggle class='active' aria-pressed='true'>Grid</button>
@@ -70,7 +70,7 @@
     <div class='alert alert-error' role='alert'><%= error %></div>
   <% } %>
 
-  <form class='filter-bar' method='get' action='/streamer/browse' aria-label='Search and filter content'>
+  <form class='filter-bar' method='get' action='/streamer/browse' aria-label='Search, sort, and filter titles'>
     <div class='form-group'>
       <label for='search'>Search</label>
       <input type='text' id='search' name='search' value='<%= search || "" %>' placeholder='Search title, genre, or description' />
@@ -83,6 +83,15 @@
         <option value='tv' <%= type === 'tv' ? 'selected' : '' %>>TV Series</option>
       </select>
     </div>
+    <div class='form-group'>
+      <label for='sort'>Sort</label>
+      <select id='sort' name='sort'>
+        <option value='title' <%= sort === 'title' ? 'selected' : '' %>>Title</option>
+        <option value='newest' <%= sort === 'newest' ? 'selected' : '' %>>Newest</option>
+        <option value='price_asc' <%= sort === 'price_asc' ? 'selected' : '' %>>Price: low to high</option>
+        <option value='price_desc' <%= sort === 'price_desc' ? 'selected' : '' %>>Price: high to low</option>
+      </select>
+    </div>
     <div class='filter-actions'>
       <button type='submit' class='btn btn-primary'>Apply</button>
       <a href='/streamer/browse' class='btn btn-secondary'>Reset</a>
@@ -92,9 +101,9 @@
   <% if (safeContents.length === 0) { %>
     <div class='empty-state' role='status'>
       <% if (search || type) { %>
-        <p>No matching content found. Try a different search or filter.</p>
+        <p>No matching titles found. Try a different search or filter.</p>
       <% } else { %>
-        <p>No content available at the moment. Check back soon.</p>
+        <p>No titles available at the moment. Check back soon.</p>
       <% } %>
     </div>
   <% } else { %>
@@ -114,12 +123,19 @@
             <p><%= content.description %></p>
             <div class='card-meta-row'>
               <span class='price'>$<%= Number(content.price || 0).toFixed(2) %></span>
-              <span><%= capacity.remaining %>/<%= capacity.rentalLimit %> slots</span>
+              <span><%= capacity.remaining %>/<%= capacity.rentalLimit %> licences</span>
             </div>
           </div>
         </article>
       <% }); %>
     </div>
+    <% if (pagination && pagination.totalPages > 1) { %>
+      <nav class='pagination' aria-label='Catalog pagination'>
+        <a class='btn btn-secondary <%= pagination.hasPrevious ? "" : "disabled" %>' href='/streamer/browse?search=<%= encodeURIComponent(search || "") %>&type=<%= encodeURIComponent(type || "") %>&sort=<%= encodeURIComponent(sort || "title") %>&page=<%= pagination.previousPage %>'>Previous</a>
+        <span>Page <%= pagination.currentPage %> of <%= pagination.totalPages %> / <%= pagination.totalItems %> titles</span>
+        <a class='btn btn-secondary <%= pagination.hasNext ? "" : "disabled" %>' href='/streamer/browse?search=<%= encodeURIComponent(search || "") %>&type=<%= encodeURIComponent(type || "") %>&sort=<%= encodeURIComponent(sort || "title") %>&page=<%= pagination.nextPage %>'>Next</a>
+      </nav>
+    <% } %>
   <% } %>
 
   <script type='application/json' id='content-modal-data'><%- modalJson %></script>
@@ -135,18 +151,18 @@
           <div><dt>Price</dt><dd data-modal-price></dd></div>
           <div><dt>Rating</dt><dd data-modal-rating></dd></div>
           <div><dt>Runtime</dt><dd data-modal-duration></dd></div>
-          <div><dt>Capacity</dt><dd data-modal-capacity></dd></div>
+          <div><dt>Licence availability</dt><dd data-modal-capacity></dd></div>
         </dl>
         <p class='cast-line' data-modal-cast></p>
         <div class='modal-actions'>
           <form method='post' data-modal-shortlist-form>
             <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
             <input type='hidden' name='returnTo' value='/streamer/browse' data-modal-return-to />
-            <button type='submit' class='btn btn-secondary' data-modal-shortlist-button>Shortlist</button>
+            <button type='submit' class='btn btn-secondary' data-modal-shortlist-button>My List</button>
           </form>
           <form method='post' data-modal-rent-form>
             <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
-            <button type='submit' class='btn btn-success' data-modal-rent-button>Rent Now</button>
+            <button type='submit' class='btn btn-success' data-modal-rent-button>Activate Rental</button>
           </form>
           <a class='btn btn-primary' href='#' data-modal-details-link>Details Page</a>
         </div>
