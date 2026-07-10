@@ -13,10 +13,34 @@ const createAuthRepository = ({ UserModel = User } = {}) => ({
     return UserModel.create({
       email,
       password: passwordHash,
-      role: 'streamer',
+      passwordHash,
+      role: 'member',
+      status: 'active',
+      sessionVersion: 1,
       shortlist: [],
       rented: [],
     });
+  },
+
+  recordLogin(userId, loggedInAt = new Date()) {
+    return UserModel.updateOne({ _id: userId }, { $set: { lastLoginAt: loggedInAt } });
+  },
+
+  changePassword({ userId, passwordHash, changedAt = new Date() }) {
+    return UserModel.updateOne(
+      { _id: userId },
+      {
+        $set: { password: passwordHash, passwordHash, passwordChangedAt: changedAt },
+        $inc: { sessionVersion: 1 },
+      }
+    );
+  },
+
+  markDeleted(userId, deletedAt = new Date()) {
+    return UserModel.updateOne(
+      { _id: userId },
+      { $set: { status: 'deleted', deletedAt }, $inc: { sessionVersion: 1 } }
+    );
   },
 });
 

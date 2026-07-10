@@ -1,5 +1,6 @@
 const { catchAsync } = require('../middleware/errorHandler');
 const logger = require('../utils/logger');
+const { rotateCsrfToken } = require('../middleware/csrf');
 const { seedDatabase } = require('../src/demo/demoSeed');
 const { createAuthService } = require('../src/modules/auth/auth.service');
 
@@ -16,6 +17,16 @@ const renderLoginError = (res, error) => res.status(error.statusCode === 404 ? 4
   error: error.statusCode === 404 ? 'Invalid email or password' : error.message,
 });
 
+const regenerateSession = (req) => new Promise((resolve, reject) => {
+  req.session.regenerate((error) => (error ? reject(error) : resolve()));
+});
+
+const establishSession = async (req, sessionUser) => {
+  await regenerateSession(req);
+  req.session.user = sessionUser;
+  rotateCsrfToken(req);
+};
+
 const showLogin = (req, res) => {
   res.render('login', { message: null, error: null });
 };
@@ -29,7 +40,7 @@ const signup = catchAsync(async (req, res) => {
 
   try {
     const result = await authService.registerMember(req.body);
-    req.session.user = result.sessionUser;
+    await establishSession(req, result.sessionUser);
     return res.redirect(result.redirectTo);
   } catch (error) {
     return renderSignupError(res, error, form);
@@ -39,7 +50,7 @@ const signup = catchAsync(async (req, res) => {
 const login = catchAsync(async (req, res) => {
   try {
     const result = await authService.authenticate(req.body);
-    req.session.user = result.sessionUser;
+    await establishSession(req, result.sessionUser);
     return res.redirect(result.redirectTo);
   } catch (error) {
     return renderLoginError(res, error);
@@ -47,13 +58,14 @@ const login = catchAsync(async (req, res) => {
 });
 
 const logout = catchAsync(async (req, res) => {
-  const userEmail = req.session.user?.email;
+  const hadUser = Boolean(req.session.user);
   req.session.destroy((err) => {
     if (err) {
       logger.error('Error destroying session:', err);
       return res.status(500).render('error', { message: 'Failed to logout' });
     }
-    logger.info(`User logged out: ${userEmail}`);
+    res.clearCookie('streamnexus.sid');
+    logger.info(`User logged out: ${hadUser}`);
     res.redirect('/login');
   });
 });
