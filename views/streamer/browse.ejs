@@ -15,7 +15,7 @@
     isShortlisted: !!content.isShortlisted,
     capacity: content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false },
     detailUrl: `/streamer/content/${content._id}`,
-    rentUrl: `/streamer/content/${content._id}/rent`,
+    rentUrl: `/streamer/content/${content._id}/review`,
     shortlistUrl: `/streamer/content/${content._id}/${content.isShortlisted ? 'shortlist/remove' : 'shortlist'}`,
   }));
   const modalJson = JSON.stringify(modalPayload).replace(/</g, '\\u003c');
@@ -34,8 +34,7 @@
               <p><%= item.description %></p>
               <div class='hero-actions'>
                 <button type='button' class='btn btn-primary' data-modal-content-id='<%= item._id %>'>View Details</button>
-                <form method='post' action='/streamer/content/<%= item._id %>/rent' class='inline-form'>
-                  <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+                <form method='get' action='/streamer/content/<%= item._id %>/review' class='inline-form'>
                   <button type='submit' class='btn btn-success' <%= !item.available || (item.capacity && item.capacity.isFull) ? 'disabled' : '' %>>Activate Rental</button>
                 </form>
               </div>
@@ -160,8 +159,7 @@
             <input type='hidden' name='returnTo' value='/streamer/browse' data-modal-return-to />
             <button type='submit' class='btn btn-secondary' data-modal-shortlist-button>My List</button>
           </form>
-          <form method='post' data-modal-rent-form>
-            <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+          <form method='get' data-modal-rent-form>
             <button type='submit' class='btn btn-success' data-modal-rent-button>Activate Rental</button>
           </form>
           <a class='btn btn-primary' href='#' data-modal-details-link>Details Page</a>

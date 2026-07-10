@@ -24,8 +24,7 @@
             <%= isShortlisted ? 'Remove from My List' : 'Add to My List' %>
           </button>
         </form>
-        <form method='post' action='/streamer/content/<%= content._id %>/rent' style='display:inline;'>
-          <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+        <form method='get' action='/streamer/content/<%= content._id %>/review' style='display:inline;'>
           <button type='submit' class='btn btn-success' aria-label='Rent <%= content.title %>' <%= !content.available || capacity.isFull ? 'disabled' : '' %>>
             Activate Rental
           </button>
