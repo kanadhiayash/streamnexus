@@ -74,6 +74,10 @@ const createRentalsRepository = ({ ContentModel = Content, RentalModel = Rental,
     return RentalModel.findById(rentalId).populate('contentId', 'title image price').populate('userId', 'email').lean();
   },
 
+  findRentalByPublicReference(publicReference) {
+    return RentalModel.findOne({ publicReference }).populate('contentId', 'title image price type').lean();
+  },
+
   findAllRentals(filters = {}) {
     return RentalModel.find({ ...filters })
       .populate('userId', 'email')

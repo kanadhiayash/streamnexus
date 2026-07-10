@@ -86,6 +86,25 @@ const details = catchAsync(async (req, res) => {
   });
 });
 
+const reviewRental = catchAsync(async (req, res) => {
+  const contentResult = await contentService.getContentById(req.params.id);
+  if (!contentResult.success) {
+    throw new AppError(contentResult.error || 'Content not found', 404);
+  }
+
+  const capacityResult = await rentalService.attachCapacityToContent(contentResult.data);
+  const content = capacityResult.success ? capacityResult.data : contentResult.data;
+  res.render('streamer/rental-review', {
+    content,
+    capacity: content.capacity || {
+      rentalLimit: content.rentalLimit || 5,
+      activeRentals: 0,
+      remaining: content.rentalLimit || 5,
+      isFull: false,
+    },
+  });
+});
+
 const addToShortlist = catchAsync(async (req, res) => {
   const result = await userService.addToShortlist(req.session.user.id, req.params.id);
   if (!result.success) {
@@ -123,7 +142,7 @@ const rentContent = catchAsync(async (req, res) => {
     return res.status(400).render('error', { message: result.error || 'Failed to rent content' });
   }
 
-  res.redirect('/streamer/rentals?rented=true');
+  res.redirect(`/streamer/rentals?rented=true&ref=${encodeURIComponent(result.data.publicReference || '')}`);
 });
 
 const rentals = catchAsync(async (req, res) => {
@@ -143,7 +162,21 @@ const rentals = catchAsync(async (req, res) => {
     active,
     completed,
     rented: req.query.rented === 'true',
+    reference: req.query.ref || '',
   });
+});
+
+const rentalDetail = catchAsync(async (req, res) => {
+  const result = await rentalService.getRentalByPublicReference(
+    req.params.publicReference,
+    req.session.user.id
+  );
+  if (!result.success) {
+    const statusCode = result.statusCode || 404;
+    throw new AppError(result.error || 'Rental not found', statusCode);
+  }
+
+  res.render('streamer/rental-detail', { rental: result.data });
 });
 
 const checkout = catchAsync(async (req, res) => {
@@ -160,10 +193,12 @@ const checkout = catchAsync(async (req, res) => {
 module.exports = {
   browse,
   details,
+  reviewRental,
   addToShortlist,
   removeFromShortlist,
   shortlist,
   rentContent,
   rentals,
+  rentalDetail,
   checkout,
 };

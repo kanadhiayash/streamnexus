@@ -183,6 +183,75 @@ test('streamer can shortlist and rent available content', async () => {
   assert.equal(rentalDays, 45);
 });
 
+test('member reviews, confirms, opens, and returns a rental by public reference', async () => {
+  const streamerAgent = await loginAs('streamer');
+  const content = await Content.findOne({ available: true }).lean();
+  assert.ok(content);
+
+  const reviewPage = await streamerAgent.get(`/streamer/content/${content._id}/review`).expect(200);
+  assert.match(reviewPage.text, /Confirm Rental/);
+  assert.match(reviewPage.text, /Simulated payment for demo review only/);
+  assert.match(reviewPage.text, /does not process payments or enable playback/);
+  const csrfToken = extractCsrfToken(reviewPage.text);
+
+  const firstConfirm = await streamerAgent
+    .post(`/streamer/content/${content._id}/rent`)
+    .type('form')
+    .send({ _csrf: csrfToken })
+    .expect(302);
+
+  assert.match(firstConfirm.headers.location, /^\/streamer\/rentals\?rented=true&ref=SNX-/);
+
+  const user = await User.findOne({ email: 'streamer@gmail.com' }).lean();
+  const rental = await Rental.findOne({ userId: user._id, contentId: content._id }).lean();
+  assert.ok(rental);
+  assert.ok(rental.publicReference);
+
+  await streamerAgent
+    .post(`/streamer/content/${content._id}/rent`)
+    .type('form')
+    .send({ _csrf: csrfToken })
+    .expect(302);
+
+  const activeCount = await Rental.countDocuments({ userId: user._id, contentId: content._id, status: 'active' });
+  assert.equal(activeCount, 1);
+
+  const detailPage = await streamerAgent.get(`/streamer/rentals/ref/${rental.publicReference}`).expect(200);
+  assert.match(detailPage.text, /Rental confirmation/);
+  assert.match(detailPage.text, new RegExp(rental.publicReference));
+  assert.match(detailPage.text, /Return Access/);
+
+  const secondStreamer = request.agent(createApp());
+  const signupPage = await secondStreamer.get('/signup').expect(200);
+  const signupCsrf = extractCsrfToken(signupPage.text);
+  await secondStreamer
+    .post('/signup')
+    .type('form')
+    .send({
+      email: 'reference-owner-check@example.com',
+      password: 'streamerpass',
+      confirmPassword: 'streamerpass',
+      _csrf: signupCsrf,
+    })
+    .expect(302);
+
+  await secondStreamer
+    .get(`/streamer/rentals/ref/${rental.publicReference}`)
+    .expect(403);
+
+  const returnCsrf = extractCsrfToken(detailPage.text);
+  await streamerAgent
+    .post(`/streamer/rentals/${rental._id}/checkout`)
+    .type('form')
+    .send({ _csrf: returnCsrf })
+    .expect(302)
+    .expect('Location', '/streamer/rentals?checkout=success');
+
+  const returned = await Rental.findById(rental._id).lean();
+  assert.equal(returned.status, 'returned');
+  assert.equal(returned.endReason, 'member_returned');
+});
+
 test('rental capacity blocks the sixth style over-limit rental and admin sees slots', async () => {
   const content = await Content.findOne({ available: true }).lean();
   assert.ok(content);

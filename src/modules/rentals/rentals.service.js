@@ -192,6 +192,19 @@ const createRentalsService = ({
     });
   },
 
+  getRentalByPublicReference(publicReference, userId) {
+    return toServiceResult(async () => {
+      const rental = await repository.findRentalByPublicReference(publicReference);
+      if (!rental) {
+        throw new NotFoundError('Rental not found');
+      }
+      if (rental.userId.toString() !== userId) {
+        throw new ForbiddenError('Unauthorized');
+      }
+      return normalizeRentalDates(rental);
+    });
+  },
+
   getAllRentals(filters = {}) {
     return toServiceResult(async () => {
       const rentals = await repository.findAllRentals(filters);

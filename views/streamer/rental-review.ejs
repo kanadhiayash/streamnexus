@@ -1,0 +1,32 @@
+<section>
+  <div class='page-toolbar'>
+    <div>
+      <p class='eyebrow'>Rental review</p>
+      <h1>Confirm Rental</h1>
+    </div>
+    <a href='/streamer/content/<%= content._id %>' class='btn btn-secondary'>Back to Details</a>
+  </div>
+
+  <div class='details-card'>
+    <img class='content-poster' src='<%= content.image || "/images/default.svg" %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
+    <div class='details-info'>
+      <h2><%= content.title %></h2>
+      <p class='meta-line'><%= content.type.toUpperCase() %> / <%= content.genre || 'General' %> / <%= content.duration || 'Runtime TBD' %></p>
+      <p><%= content.description %></p>
+      <dl class='details-list'>
+        <div><dt>Rental price</dt><dd>$<%= Number(content.price || 0).toFixed(2) %> CAD</dd></div>
+        <div><dt>Access window</dt><dd>45 days from confirmation</dd></div>
+        <div><dt>Licence availability</dt><dd><%= capacity.remaining %> of <%= capacity.rentalLimit %> open</dd></div>
+        <div><dt>Payment mode</dt><dd>Simulated payment for demo review only</dd></div>
+      </dl>
+      <div class='alert alert-warning' role='note'>
+        This demo does not process payments or enable playback. Confirming creates a rental record, starts the 45-day access window, and reserves one title licence.
+      </div>
+      <form method='post' action='/streamer/content/<%= content._id %>/rent' class='details-actions'>
+        <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+        <button type='submit' class='btn btn-success' <%= !content.available || capacity.isFull ? 'disabled' : '' %>>Confirm Rental</button>
+        <a href='/streamer/browse' class='btn btn-secondary'>Cancel</a>
+      </form>
+    </div>
+  </div>
+</section>

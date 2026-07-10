@@ -240,6 +240,7 @@ function setupContentModal() {
     fields.shortlistForm.action = item.shortlistUrl;
     fields.shortlistButton.textContent = item.isShortlisted ? 'Remove from My List' : 'Add to My List';
     fields.rentForm.action = item.rentUrl;
+    fields.rentForm.method = 'GET';
     fields.rentButton.disabled = !item.available || item.capacity.isFull;
     fields.rentButton.textContent = item.capacity.isFull ? 'Rental Full' : 'Activate Rental';
     fields.detailsLink.href = item.detailUrl;
@@ -336,8 +337,8 @@ function setupActionButtons() {
 function setupToasts() {
   const params = new URLSearchParams(window.location.search);
   if (params.has('signedup')) ToastNotification.success('Account created. Welcome to StreamNexus.');
-  if (params.has('rented')) ToastNotification.success('Title rented. Your 45-day access window is active.');
-  if (params.has('checkout')) ToastNotification.success('Rental completed.');
+  if (params.has('rented')) ToastNotification.success('Rental confirmation is active. Your 45-day access window has started.');
+  if (params.has('checkout')) ToastNotification.success('Access returned.');
   if (params.has('created')) ToastNotification.success('Content created.');
   if (params.has('updated')) ToastNotification.success('Content updated.');
   if (params.has('deleted')) ToastNotification.success('Content deleted.');
@@ -357,8 +358,8 @@ function setupFocusMode() {
 
 window.confirmCheckout = function (rentalId) {
   ConfirmDialog.show(
-    'Complete Rental?',
-    'This marks the simulated rental as complete and frees one active slot for the title.',
+    'Return access?',
+    'This returns the simulated rental access and frees one licence for the title.',
     () => {
       const form = document.createElement('form');
       form.method = 'POST';
