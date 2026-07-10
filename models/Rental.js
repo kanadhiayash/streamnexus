@@ -32,6 +32,10 @@ const rentalSchema = new mongoose.Schema({
 
 rentalSchema.index({ contentId: 1, status: 1 });
 rentalSchema.index({ userId: 1, contentId: 1, status: 1 });
+rentalSchema.index(
+  { userId: 1, titleId: 1, status: 1 },
+  { unique: true, partialFilterExpression: { status: 'active' } }
+);
 rentalSchema.index({ publicReference: 1 }, { unique: true, sparse: true });
 rentalSchema.index({ userId: 1, status: 1, expiresAt: 1 });
 rentalSchema.index({ titleId: 1, status: 1, expiresAt: 1 });
