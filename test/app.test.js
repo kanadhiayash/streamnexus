@@ -91,6 +91,8 @@ test('guest landing page renders sign in and signup entry points', async () => {
   const response = await agent.get('/').expect(200);
 
   assert.match(response.text, /StreamNexus/);
+  assert.match(response.text, /class="skip-link" href="#main-content"/);
+  assert.match(response.text, /<main id="main-content" class="container" tabindex="-1">/);
   assert.match(response.text, /Create Member Account/);
   assert.match(response.text, /Sign In/);
 });

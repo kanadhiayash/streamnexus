@@ -8,8 +8,9 @@
   <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <%- include('partials/header') %>
-  <main class="container"><%- body %></main>
+  <main id="main-content" class="container" tabindex="-1"><%- body %></main>
   <%- include('partials/footer') %>
   <script src="/js/ui.js"></script>
 </body>
