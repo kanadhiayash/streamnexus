@@ -9,9 +9,9 @@
             <div class='hero-copy'>
               <p class='eyebrow'>Portfolio streaming rental prototype</p>
               <h1>StreamNexus</h1>
-              <p>Browse a curated demo catalog, rent a title, and review active rental capacity through role-based admin and streamer views.</p>
+              <p>Browse a curated demo catalog, save titles to My List, and activate simulated rental access with visible licence availability.</p>
               <div class='hero-actions'>
-                <a href='/signup' class='btn btn-primary'>Create Streamer Account</a>
+                <a href='/signup' class='btn btn-primary'>Create Member Account</a>
                 <a href='/login' class='btn btn-secondary'>Sign In</a>
               </div>
               <dl class='hero-metrics'>
@@ -20,7 +20,7 @@
                   <dd><%= item.genre || 'Featured' %> / $<%= Number(item.price || 0).toFixed(2) %></dd>
                 </div>
                 <div>
-                  <dt><%= item.capacity ? item.capacity.remaining : 5 %> slots open</dt>
+                  <dt><%= item.capacity ? item.capacity.remaining : 5 %> licences open</dt>
                   <dd>5 active rentals per title by default</dd>
                 </div>
               </dl>
@@ -36,9 +36,9 @@
       <div class='hero-copy hero-copy-static'>
         <p class='eyebrow'>Portfolio streaming rental prototype</p>
         <h1>StreamNexus</h1>
-        <p>Sign in or create a streamer account to test catalog browsing, rental capacity, and simulated checkout flows.</p>
+        <p>Sign in or create a member account to test catalog browsing, licence availability, and rental confirmation flows.</p>
         <div class='hero-actions'>
-          <a href='/signup' class='btn btn-primary'>Create Streamer Account</a>
+          <a href='/signup' class='btn btn-primary'>Create Member Account</a>
           <a href='/login' class='btn btn-secondary'>Sign In</a>
         </div>
       </div>
@@ -49,7 +49,7 @@
     <section class='content-rail' aria-labelledby='featured-heading'>
       <div class='section-heading'>
         <h2 id='featured-heading'>Featured Demo Titles</h2>
-        <p>Local poster assets, simulated rental pricing, and capacity-aware catalog cards.</p>
+        <p>Local poster assets, simulated rental pricing, and licence-aware catalog cards.</p>
       </div>
       <div class='rail-grid'>
         <% featured.slice(0, 6).forEach(item => { %>

@@ -91,7 +91,7 @@ test('guest landing page renders sign in and signup entry points', async () => {
   const response = await agent.get('/').expect(200);
 
   assert.match(response.text, /StreamNexus/);
-  assert.match(response.text, /Create Streamer Account/);
+  assert.match(response.text, /Create Member Account/);
   assert.match(response.text, /Sign In/);
 });
 
@@ -254,6 +254,23 @@ test('search treats regex metacharacters as literal input', async () => {
   const wildcardResult = await contentService.searchContent('.*');
   assert.equal(wildcardResult.success, true);
   assert.equal(wildcardResult.data.length, 0);
+});
+
+test('member catalog supports URL-backed sort and pagination state', async () => {
+  await Content.deleteMany({});
+  await Content.create([
+    { title: 'Alpha', type: 'movie', price: 1.99, available: true, description: 'First', genre: 'Drama' },
+    { title: 'Bravo', type: 'movie', price: 5.99, available: true, description: 'Second', genre: 'Drama' },
+  ]);
+
+  const streamerAgent = await loginAs('streamer');
+  const response = await streamerAgent
+    .get('/streamer/browse?sort=price_desc&page=1')
+    .expect(200);
+
+  assert.match(response.text, /Browse Titles/);
+  assert.match(response.text, /Price: high to low/);
+  assert.ok(response.text.indexOf('Bravo') < response.text.indexOf('Alpha'));
 });
 
 test('login regenerates the session id after authentication', async () => {
