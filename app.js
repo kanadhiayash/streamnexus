@@ -6,6 +6,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo').default;
 const methodOverride = require('method-override');
 const path = require('path');
+const crypto = require('crypto');
 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
@@ -20,16 +21,33 @@ const { csrfProtection } = require('./middleware/csrf');
 const logger = require('./utils/logger');
 
 const isProduction = process.env.NODE_ENV === 'production';
+const runtimeProfile = process.env.APP_RUNTIME || (process.env.NODE_ENV === 'test' ? 'test' : isProduction ? 'production' : 'development');
+const isSandbox = runtimeProfile === 'sandbox';
 const mongoUrl = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/streamnexus';
-const sessionSecret = process.env.SESSION_SECRET || (isProduction ? null : 'dev-session-secret-change-me');
+const sessionSecret = process.env.SESSION_SECRET || (isSandbox ? crypto.randomBytes(32).toString('hex') : isProduction ? null : 'dev-session-secret-change-me');
 const shouldSeedDemoData = process.env.SEED_DEMO_DATA === 'true' || (!isProduction && process.env.SEED_DEMO_DATA !== 'false');
 
 if (!sessionSecret) {
   throw new Error('SESSION_SECRET is required when NODE_ENV=production');
 }
 
+const assertSandboxDatabase = () => {
+  if (!isSandbox) return;
+
+  const isLoopbackMongo =
+    mongoUrl.startsWith('mongodb://127.0.0.1:') ||
+    mongoUrl.startsWith('mongodb://localhost:') ||
+    mongoUrl.includes('mongodb-memory-server');
+
+  if (!isLoopbackMongo) {
+    throw new Error('Sandbox runtime refuses remote MongoDB URIs');
+  }
+};
+
 const createApp = () => {
+  assertSandboxDatabase();
   const app = express();
+  app.disable('x-powered-by');
 
   app.use(
     helmet({
@@ -72,7 +90,7 @@ const createApp = () => {
     },
   };
 
-  if (process.env.NODE_ENV !== 'test') {
+  if (process.env.NODE_ENV !== 'test' && !isSandbox) {
     sessionConfig.store = MongoStore.create({
       mongoUrl,
       ttl: 14 * 24 * 60 * 60,
@@ -80,6 +98,14 @@ const createApp = () => {
   }
 
   app.use(session(sessionConfig));
+
+  app.get('/health', (req, res) => {
+    res.json({
+      status: 'ok',
+      runtime: runtimeProfile,
+      database: isSandbox || process.env.NODE_ENV === 'test' ? 'ephemeral' : 'configured',
+    });
+  });
 
   app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
@@ -121,7 +147,8 @@ const createApp = () => {
 };
 
 const startServer = async () => {
-  await connectDB();
+  assertSandboxDatabase();
+  await connectDB({ throwOnError: isSandbox });
 
   if (shouldSeedDemoData) {
     await seedDatabase({ isProduction });
@@ -130,10 +157,20 @@ const startServer = async () => {
   }
 
   const PORT = process.env.PORT || 3000;
+  const HOST = isSandbox ? '127.0.0.1' : process.env.HOST;
   const app = createApp();
-  app.listen(PORT, () => {
-    logger.info(`StreamNexus running on http://localhost:${PORT}`);
+  const server = app.listen(PORT, HOST, () => {
+    logger.info(`StreamNexus running on http://${HOST || 'localhost'}:${PORT}`);
   });
+
+  const shutdown = async () => {
+    await new Promise((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+    await require('mongoose').disconnect();
+  };
+
+  return { app, server, shutdown };
 };
 
 if (require.main === module) {

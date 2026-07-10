@@ -6,8 +6,10 @@
   "scripts": {
     "start": "node app.js",
     "dev": "node --watch app.js",
+    "sandbox": "node scripts/sandbox.js",
+    "sandbox:smoke": "node scripts/sandbox-smoke.js",
     "test": "npm run test:syntax && npm run test:integration",
-    "test:syntax": "node --check app.js && node --check controllers/authController.js && node --check controllers/adminController.js && node --check controllers/streamerController.js && node --check controllers/contentController.js && node --check services/contentService.js && node --check services/rentalService.js && node --check services/userService.js && node --check middleware/csrf.js && node --check middleware/rateLimit.js && node --check utils/validators.js && node --check scripts/compile-ejs.js && node --check scripts/load-test.js && node --check scripts/scan-secrets.js",
+    "test:syntax": "node --check app.js && node --check controllers/authController.js && node --check controllers/adminController.js && node --check controllers/streamerController.js && node --check controllers/contentController.js && node --check services/contentService.js && node --check services/rentalService.js && node --check services/userService.js && node --check middleware/csrf.js && node --check middleware/rateLimit.js && node --check utils/validators.js && node --check scripts/compile-ejs.js && node --check scripts/load-test.js && node --check scripts/sandbox.js && node --check scripts/sandbox-smoke.js && node --check scripts/scan-secrets.js",
     "test:integration": "node --test --test-concurrency=1 test/*.test.js",
     "test:ejs": "node scripts/compile-ejs.js",
     "test:load": "node scripts/load-test.js",
@@ -36,7 +38,6 @@
     "helmet": "^8.1.0",
     "method-override": "^3.0.0",
     "mongoose": "^9.3.3",
-    "npm": "^11.17.0",
     "start": "^5.1.0"
   },
   "devDependencies": {
