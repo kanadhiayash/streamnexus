@@ -116,7 +116,7 @@ const rentals = catchAsync(async (req, res) => {
   }
 
   const active = result.data.filter(r => r.status === 'active');
-  const completed = result.data.filter(r => r.status === 'completed');
+  const completed = result.data.filter(r => ['completed', 'returned', 'expired', 'cancelled'].includes(r.status));
 
   res.render('streamer/rentals', {
     rentals: result.data || [],

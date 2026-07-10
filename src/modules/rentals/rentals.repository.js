@@ -18,8 +18,44 @@ const createRentalsRepository = ({ ContentModel = Content, RentalModel = Rental,
     return RentalModel.countDocuments({ contentId, status: 'active' });
   },
 
+  async countActiveByContents(contentIds = []) {
+    const rows = await RentalModel.aggregate([
+      { $match: { contentId: { $in: contentIds }, status: 'active' } },
+      { $group: { _id: '$contentId', count: { $sum: 1 } } },
+    ]);
+    return new Map(rows.map(row => [row._id.toString(), row.count]));
+  },
+
+  countActiveByUser(userId) {
+    return RentalModel.countDocuments({ userId, status: 'active' });
+  },
+
   findActiveByUserAndContent({ userId, contentId }) {
     return RentalModel.findOne({ userId, contentId, status: 'active' }).lean();
+  },
+
+  findActiveRentalDocument({ userId, contentId }) {
+    return RentalModel.findOne({ userId, contentId, status: 'active' });
+  },
+
+  reserveLicence(contentId) {
+    return ContentModel.findOneAndUpdate(
+      {
+        _id: contentId,
+        available: true,
+        lifecycle: { $ne: 'archived' },
+        $expr: { $lt: ['$activeLicenceCount', '$rentalLimit'] },
+      },
+      { $inc: { activeLicenceCount: 1 } },
+      { returnDocument: 'after' }
+    ).lean();
+  },
+
+  releaseLicence(contentId) {
+    return ContentModel.updateOne(
+      { _id: contentId, activeLicenceCount: { $gt: 0 } },
+      { $inc: { activeLicenceCount: -1 } }
+    );
   },
 
   createRental(rentalData) {
@@ -48,6 +84,30 @@ const createRentalsRepository = ({ ContentModel = Content, RentalModel = Rental,
 
   countRentals(filters = {}) {
     return RentalModel.countDocuments(filters);
+  },
+
+  findExpiredActive(now) {
+    return RentalModel.find({ status: 'active', expiresAt: { $lte: now } });
+  },
+
+  async reconcileActiveLicenceCounts() {
+    const rows = await RentalModel.aggregate([
+      { $match: { status: 'active' } },
+      { $group: { _id: '$contentId', count: { $sum: 1 } } },
+    ]);
+    const activeCountMap = new Map(rows.map(row => [row._id.toString(), row.count]));
+    const contents = await ContentModel.find({}).select('_id activeLicenceCount').lean();
+
+    let updated = 0;
+    for (const content of contents) {
+      const activeCount = activeCountMap.get(content._id.toString()) || 0;
+      if (content.activeLicenceCount !== activeCount) {
+        await ContentModel.updateOne({ _id: content._id }, { $set: { activeLicenceCount: activeCount } });
+        updated += 1;
+      }
+    }
+
+    return { updated, scanned: contents.length };
   },
 });
 

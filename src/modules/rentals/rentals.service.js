@@ -46,19 +46,31 @@ const createRentalsService = ({
   repository = createRentalsRepository(),
   auditService = createAuditService(),
   logger: injectedLogger = logger,
+  clock = () => new Date(),
 } = {}) => ({
   getUserRentals(userId) {
     return toServiceResult(async () => {
       assertObjectId(userId, 'user ID');
+      await this.expireRentals(clock(), { userId });
       const rentals = await repository.findUserRentals(userId);
       return rentals.map(normalizeRentalDates);
     });
   },
 
-  createRental(userId, contentId) {
+  createRental(userId, contentId, options = {}) {
     return toServiceResult(async () => {
       assertObjectId(userId, 'user ID');
       assertObjectId(contentId, 'content ID');
+
+      const existingRental = await repository.findActiveByUserAndContent({ userId, contentId });
+      if (existingRental) {
+        return { ...existingRental, idempotent: true };
+      }
+
+      const activeForUser = await repository.countActiveByUser(userId);
+      if (activeForUser >= RENTAL_POLICY.maxActiveRentalsPerMember) {
+        throw new ConflictError(`Active rental limit reached. Return a title before renting another.`);
+      }
 
       const content = await repository.findContentById(contentId);
       if (!content) {
@@ -68,45 +80,55 @@ const createRentalsService = ({
         throw new ConflictError('Content is not available for rental');
       }
 
-      const activeCount = await repository.countActiveByContent(contentId);
-      const capacity = buildCapacity(content, activeCount);
-      if (capacity.isFull) {
+      const reservedContent = await repository.reserveLicence(contentId);
+      if (!reservedContent) {
+        const activeCount = await repository.countActiveByContent(contentId);
+        const capacity = buildCapacity(content, activeCount);
         throw new ConflictError(`Rental capacity reached for this title. ${capacity.rentalLimit} streamers already have active access.`);
       }
 
-      const existingRental = await repository.findActiveByUserAndContent({ userId, contentId });
-      if (existingRental) {
-        throw new ConflictError('You already have an active rental of this content');
+      let rental;
+      try {
+        const rentalWindow = buildRentalWindow(clock());
+        const titleSnapshot = mapTitleToV2(reservedContent, reservedContent.activeLicenceCount);
+        rental = await repository.createRental({
+          schemaVersion: 2,
+          publicReference: options.publicReference,
+          userId,
+          contentId,
+          titleId: contentId,
+          status: 'active',
+          titleSnapshot: {
+            title: titleSnapshot.title,
+            slug: titleSnapshot.slug,
+            posterReference: titleSnapshot.posterReference,
+          },
+          priceSnapshot: {
+            amountMinor: titleSnapshot.rentalPriceMinor,
+            currencyCode: titleSnapshot.currencyCode,
+          },
+          policySnapshot: {
+            version: RENTAL_POLICY.version,
+            durationDays: RENTAL_POLICY.durationDays,
+          },
+          idempotencyKeyHash: options.idempotencyKeyHash,
+          date: rentalWindow.rentedAt,
+          rentedAt: rentalWindow.rentedAt,
+          startedAt: rentalWindow.rentedAt,
+          expiresAt: rentalWindow.expiresAt,
+        });
+        rental.publicReference = rental.publicReference || publicRentalReference(rental._id);
+        await rental.save();
+      } catch (error) {
+        await repository.releaseLicence(contentId);
+        if (error.code === 11000) {
+          const duplicate = await repository.findActiveByUserAndContent({ userId, contentId });
+          if (duplicate) {
+            return { ...duplicate, idempotent: true };
+          }
+        }
+        throw error;
       }
-
-      const rentalWindow = buildRentalWindow();
-      const titleSnapshot = mapTitleToV2(content, activeCount);
-      const rental = await repository.createRental({
-        schemaVersion: 2,
-        userId,
-        contentId,
-        titleId: contentId,
-        status: 'active',
-        titleSnapshot: {
-          title: titleSnapshot.title,
-          slug: titleSnapshot.slug,
-          posterReference: titleSnapshot.posterReference,
-        },
-        priceSnapshot: {
-          amountMinor: titleSnapshot.rentalPriceMinor,
-          currencyCode: titleSnapshot.currencyCode,
-        },
-        policySnapshot: {
-          version: RENTAL_POLICY.version,
-          durationDays: RENTAL_POLICY.durationDays,
-        },
-        date: rentalWindow.rentedAt,
-        rentedAt: rentalWindow.rentedAt,
-        startedAt: rentalWindow.rentedAt,
-        expiresAt: rentalWindow.expiresAt,
-      });
-      rental.publicReference = publicRentalReference(rental._id);
-      await rental.save();
 
       const user = await repository.findUserById(userId);
       if (user && !user.rented.some(id => id.equals(contentId))) {
@@ -121,6 +143,10 @@ const createRentalsService = ({
   },
 
   completeRental(rentalId, userId) {
+    return this.returnRental(rentalId, userId);
+  },
+
+  returnRental(rentalId, userId) {
     return toServiceResult(async () => {
       assertObjectId(rentalId, 'rental ID');
       assertObjectId(userId, 'user ID');
@@ -132,6 +158,9 @@ const createRentalsService = ({
       if (rental.userId.toString() !== userId) {
         throw new ForbiddenError('Unauthorized');
       }
+      if (rental.status !== 'active') {
+        return rental;
+      }
 
       if (!rental.rentedAt) {
         rental.rentedAt = rental.date || rental.createdAt || new Date();
@@ -139,9 +168,12 @@ const createRentalsService = ({
       if (!rental.expiresAt) {
         rental.expiresAt = buildRentalWindow(rental.rentedAt).expiresAt;
       }
-      rental.status = 'completed';
-      rental.completedAt = new Date();
+      rental.status = 'returned';
+      rental.completedAt = clock();
+      rental.endedAt = rental.completedAt;
+      rental.endReason = 'member_returned';
       await rental.save();
+      await repository.releaseLicence(rental.contentId);
 
       injectedLogger.info(`Rental completed: ${rentalId}`);
       await auditService.record({ action: 'rentals.completed', actorId: userId, targetType: 'rental', targetId: rentalId });
@@ -171,7 +203,7 @@ const createRentalsService = ({
     return toServiceResult(async () => {
       const totalRentals = await repository.countRentals();
       const activeRentals = await repository.countRentals({ status: 'active' });
-      const completedRentals = await repository.countRentals({ status: 'completed' });
+      const completedRentals = await repository.countRentals({ status: { $in: ['completed', 'returned'] } });
       return { totalRentals, activeRentals, completedRentals };
     });
   },
@@ -179,11 +211,7 @@ const createRentalsService = ({
   attachCapacityToContents(contents = []) {
     return toServiceResult(async () => {
       const plainContents = contents.map(content => (content.toObject ? content.toObject() : content));
-      const capacityEntries = await Promise.all(plainContents.map(async (content) => {
-        const activeRentals = await repository.countActiveByContent(content._id);
-        return [content._id.toString(), activeRentals];
-      }));
-      const capacityMap = new Map(capacityEntries);
+      const capacityMap = await repository.countActiveByContents(plainContents.map(content => content._id));
 
       return plainContents.map(content => ({
         ...content,
@@ -198,6 +226,47 @@ const createRentalsService = ({
       return result;
     }
     return { success: true, data: result.data[0] };
+  },
+
+  expireRentals(now = clock()) {
+    return toServiceResult(async () => {
+      const expired = await repository.findExpiredActive(now);
+      let released = 0;
+      for (const rental of expired) {
+        if (rental.status !== 'active') continue;
+        rental.status = 'expired';
+        rental.endedAt = now;
+        rental.endReason = 'expired';
+        await rental.save();
+        await repository.releaseLicence(rental.contentId);
+        released += 1;
+      }
+      return { expired: expired.length, released };
+    });
+  },
+
+  cancelRentalAsAdmin(rentalId, actorId) {
+    return toServiceResult(async () => {
+      assertObjectId(rentalId, 'rental ID');
+      const rental = await repository.findRentalById(rentalId);
+      if (!rental) {
+        throw new NotFoundError('Rental not found');
+      }
+      if (rental.status !== 'active') {
+        return rental;
+      }
+      rental.status = 'cancelled';
+      rental.endedAt = clock();
+      rental.endReason = 'admin_cancelled';
+      await rental.save();
+      await repository.releaseLicence(rental.contentId);
+      await auditService.record({ action: 'rentals.completed', actorId, targetType: 'rental', targetId: rentalId });
+      return rental;
+    });
+  },
+
+  reconcileLicenceCounts() {
+    return toServiceResult(() => repository.reconcileActiveLicenceCounts());
   },
 });
 
