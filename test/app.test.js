@@ -95,7 +95,7 @@ test('guest landing page renders sign in and signup entry points', async () => {
   assert.match(response.text, /Sign In/);
 });
 
-test('signup creates a streamer account and cannot create admin role', async () => {
+test('signup creates a member account and cannot create admin role', async () => {
   const agent = request.agent(createApp());
   const signupPage = await agent.get('/signup').expect(200);
   const csrfToken = extractCsrfToken(signupPage.text);
@@ -115,7 +115,7 @@ test('signup creates a streamer account and cannot create admin role', async () 
 
   const user = await User.findOne({ email: 'new-streamer@example.com' }).lean();
   assert.ok(user);
-  assert.equal(user.role, 'streamer');
+  assert.equal(user.role, 'member');
 });
 
 test('enforces role-protected admin routes', async () => {
@@ -254,6 +254,51 @@ test('search treats regex metacharacters as literal input', async () => {
   const wildcardResult = await contentService.searchContent('.*');
   assert.equal(wildcardResult.success, true);
   assert.equal(wildcardResult.data.length, 0);
+});
+
+test('login regenerates the session id after authentication', async () => {
+  const agent = request.agent(createApp());
+  const loginPage = await agent.get('/login').expect(200);
+  const initialCookie = loginPage.headers['set-cookie']?.find(cookie => cookie.startsWith('streamnexus.sid='));
+  const csrfToken = extractCsrfToken(loginPage.text);
+
+  const loginResponse = await agent
+    .post('/login')
+    .type('form')
+    .send({ email: 'admin@gmail.com', password: 'admin', _csrf: csrfToken })
+    .expect(302);
+
+  const nextCookie = loginResponse.headers['set-cookie']?.find(cookie => cookie.startsWith('streamnexus.sid='));
+  assert.ok(initialCookie);
+  assert.ok(nextCookie);
+  assert.notEqual(initialCookie.split(';')[0], nextCookie.split(';')[0]);
+});
+
+test('stale sessionVersion forces reauthentication', async () => {
+  const streamerAgent = await loginAs('streamer');
+  const user = await User.findOne({ email: 'streamer@gmail.com' }).lean();
+  await User.updateOne({ _id: user._id }, { $inc: { sessionVersion: 1 } });
+
+  await streamerAgent
+    .get('/streamer/browse')
+    .expect(302)
+    .expect('Location', '/login');
+});
+
+test('suspended accounts fail with a generic authentication response', async () => {
+  await User.updateOne({ email: 'streamer@gmail.com' }, { $set: { status: 'suspended' } });
+  const agent = request.agent(createApp());
+  const loginPage = await agent.get('/login').expect(200);
+  const csrfToken = extractCsrfToken(loginPage.text);
+
+  const response = await agent
+    .post('/login')
+    .type('form')
+    .send({ email: 'streamer@gmail.com', password: 'streamer', _csrf: csrfToken })
+    .expect(401);
+
+  assert.match(response.text, /Invalid email or password/);
+  assert.doesNotMatch(response.text, /suspended/i);
 });
 
 test('rate limits repeated login attempts', async () => {

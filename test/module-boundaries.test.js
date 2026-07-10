@@ -18,7 +18,7 @@ test('auth module registers public accounts through repository boundary', async 
       findExistingAccount: async () => null,
       createMember: async (data) => {
         created.push(data);
-        return { _id: 'member-id', email: data.email, role: 'streamer' };
+        return { _id: 'member-id', email: data.email, role: 'member' };
       },
     },
     auditService: silentAudit,
@@ -35,8 +35,26 @@ test('auth module registers public accounts through repository boundary', async 
 
   assert.equal(created[0].email, 'new-member@example.com');
   assert.equal(created[0].passwordHash, 'hashed:demo123');
-  assert.deepEqual(result.sessionUser, { id: 'member-id', email: 'new-member@example.com', role: 'streamer' });
+  assert.deepEqual(result.sessionUser, { id: 'member-id', email: 'new-member@example.com', role: 'member', sessionVersion: 1 });
   assert.equal(result.redirectTo, '/streamer/browse?signedup=true');
+});
+
+test('auth module keeps routine emails out of failure logs', async () => {
+  const warnings = [];
+  const service = createAuthService({
+    repository: {
+      findByEmail: async () => null,
+    },
+    auditService: silentAudit,
+    logger: { ...silentLogger, warn: message => warnings.push(message) },
+  });
+
+  await assert.rejects(
+    () => service.authenticate({ email: 'private-person@example.com', password: 'wrong-password' }),
+    /Invalid email or password/
+  );
+
+  assert.equal(warnings.some(message => message.includes('private-person@example.com')), false);
 });
 
 test('catalog module validates admin title input before repository writes', async () => {

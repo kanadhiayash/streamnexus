@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 
 const logger = require('../../../utils/logger');
 const { validateEmail, validatePassword } = require('../../../utils/validators');
-const { ConflictError, ValidationError, NotFoundError } = require('../../shared/errors/domainErrors');
+const { ConflictError, ValidationError, NotFoundError, ForbiddenError } = require('../../shared/errors/domainErrors');
 const { createAuditService } = require('../audit/audit.service');
 const { createAuthRepository } = require('./auth.repository');
 
@@ -10,6 +10,7 @@ const buildSessionUser = (user) => ({
   id: user._id,
   email: user.email,
   role: user.role,
+  sessionVersion: user.sessionVersion || 1,
 });
 
 const createAuthService = ({
@@ -45,7 +46,7 @@ const createAuthService = ({
 
     const passwordHash = await hash(password, 10);
     const user = await repository.createMember({ email: normalizedEmail, passwordHash });
-    injectedLogger.info(`Streamer account created: ${normalizedEmail}`);
+    injectedLogger.info('Member account created');
     await auditService.record({ action: 'auth.registered', actorId: user._id, targetType: 'user', targetId: user._id });
 
     return {
@@ -68,17 +69,23 @@ const createAuthService = ({
 
     const user = await repository.findByEmail(normalizedEmail);
     if (!user) {
-      injectedLogger.warn(`Login attempt with non-existent email: ${normalizedEmail}`);
+      injectedLogger.warn('Failed login attempt');
+      throw new NotFoundError('Invalid email or password');
+    }
+
+    if (user.status && user.status !== 'active') {
+      injectedLogger.warn('Failed login attempt');
       throw new NotFoundError('Invalid email or password');
     }
 
     const matched = await compare(password, user.password);
     if (!matched) {
-      injectedLogger.warn(`Failed login attempt for: ${normalizedEmail}`);
+      injectedLogger.warn('Failed login attempt');
       throw new NotFoundError('Invalid email or password');
     }
 
-    injectedLogger.info(`User logged in: ${normalizedEmail} (${user.role})`);
+    await repository.recordLogin(user._id);
+    injectedLogger.info(`User logged in with role ${user.role}`);
     await auditService.record({ action: 'auth.login_succeeded', actorId: user._id, targetType: 'user', targetId: user._id });
 
     return {
@@ -86,6 +93,28 @@ const createAuthService = ({
       sessionUser: buildSessionUser(user),
       redirectTo: user.role === 'admin' ? '/admin/dashboard' : '/streamer/browse',
     };
+  },
+
+  async changePassword({ user, currentPassword, newPassword, confirmPassword }) {
+    if (!user?._id) {
+      throw new ForbiddenError('Authentication required');
+    }
+    if (!currentPassword?.trim() || !newPassword?.trim() || !confirmPassword?.trim()) {
+      throw new ValidationError('Current password, new password, and confirmation are required');
+    }
+    if (!validatePassword(newPassword)) {
+      throw new ValidationError('Password must be at least 3 characters for the local demo');
+    }
+    if (newPassword !== confirmPassword) {
+      throw new ValidationError('Passwords do not match');
+    }
+    const matched = await compare(currentPassword, user.password);
+    if (!matched) {
+      throw new ForbiddenError('Current password is incorrect');
+    }
+    const passwordHash = await hash(newPassword, 10);
+    await repository.changePassword({ userId: user._id, passwordHash });
+    return { changed: true };
   },
 });
 
