@@ -7,6 +7,9 @@
   <% if (typeof error !== 'undefined' && error) { %>
     <div class='alert alert-error' role='alert'><%= error %></div>
   <% } %>
+  <% if (typeof archived !== 'undefined' && archived) { %>
+    <div class='alert alert-success' role='status'>Title archived. It is no longer visible to members.</div>
+  <% } %>
 
   <div class='stats-grid' aria-label='Rental summary'>
     <div class='stat-card'>
@@ -45,6 +48,7 @@
       <% contents.forEach(content => { %>
         <div class='card'>
           <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false }; %>
+          <% const lifecycle = content.lifecycle || (content.available ? 'published' : 'unpublished'); %>
           <img class='content-poster' src='<%= content.image %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
           <div class='card-content'>
             <h3><%= content.title %></h3>
@@ -56,13 +60,21 @@
             </div>
             <p class='capacity-copy'><%= capacity.activeRentals %> active / <%= capacity.rentalLimit %> max rentals. <%= capacity.remaining %> slots open.</p>
             <span class='status <%= content.available && !capacity.isFull ? "available" : "unavailable" %>'>
-              <%= content.available && !capacity.isFull ? 'Available' : 'Full or unavailable' %>
+              <%= lifecycle === 'published' && !capacity.isFull ? 'Published' : lifecycle === 'archived' ? 'Archived' : 'Unpublished or full' %>
             </span>
           </div>
           <div class='card-footer'>
             <div class='actions'>
               <a href='/admin/content/<%= content._id %>/edit' class='btn btn-primary btn-sm' aria-label='Edit <%= content.title %>'>Edit</a>
-              <button type='button' class='btn btn-danger btn-sm' data-delete-id='<%= content._id %>' aria-label='Delete <%= content.title %>'>Delete</button>
+              <% if (lifecycle !== 'archived') { %>
+                <button type='button' class='btn btn-danger btn-sm' data-delete-id='<%= content._id %>' aria-label='Archive <%= content.title %>'>Archive</button>
+              <% } else { %>
+                <form method='post' action='/admin/content/<%= content._id %>/lifecycle/restore' class='inline-form'>
+                  <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+                  <input type='hidden' name='returnTo' value='/admin/dashboard' />
+                  <button type='submit' class='btn btn-secondary btn-sm'>Restore</button>
+                </form>
+              <% } %>
             </div>
           </div>
         </div>

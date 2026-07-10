@@ -151,6 +151,63 @@ test('admin can create content with a valid CSRF token', async () => {
   assert.equal(created.rentalLimit, 7);
 });
 
+test('admin archives, restores, and publishes content without hard deleting it', async () => {
+  const content = await Content.create({
+    title: 'Admin Lifecycle Probe',
+    type: 'movie',
+    price: 3.99,
+    available: true,
+    lifecycle: 'published',
+    description: 'Lifecycle operations test title',
+    genre: 'Test',
+    expiresAt: new Date(),
+  });
+
+  const adminAgent = await loginAs('admin');
+  const listPage = await adminAgent.get('/admin/content').expect(200);
+  const csrfToken = extractCsrfToken(listPage.text);
+
+  await adminAgent
+    .post(`/admin/content/${content._id}/lifecycle/archive`)
+    .type('form')
+    .send({ _csrf: csrfToken, returnTo: '/admin/content' })
+    .expect(302)
+    .expect('Location', '/admin/content?lifecycle=archive');
+
+  let updated = await Content.findById(content._id).lean();
+  assert.equal(updated.lifecycle, 'archived');
+  assert.equal(updated.available, false);
+  assert.ok(updated.archivedAt);
+
+  const memberAgent = await loginAs('streamer');
+  const archivedBrowse = await memberAgent.get('/streamer/browse?search=Admin%20Lifecycle%20Probe').expect(200);
+  assert.match(archivedBrowse.text, /No matching titles found/);
+  assert.doesNotMatch(archivedBrowse.text, /Lifecycle operations test title/);
+
+  await adminAgent
+    .post(`/admin/content/${content._id}/lifecycle/restore`)
+    .type('form')
+    .send({ _csrf: csrfToken, returnTo: '/admin/content' })
+    .expect(302);
+
+  updated = await Content.findById(content._id).lean();
+  assert.equal(updated.lifecycle, 'unpublished');
+  assert.equal(updated.available, false);
+
+  await adminAgent
+    .post(`/admin/content/${content._id}/lifecycle/publish`)
+    .type('form')
+    .send({ _csrf: csrfToken, returnTo: '/admin/content' })
+    .expect(302);
+
+  updated = await Content.findById(content._id).lean();
+  assert.equal(updated.lifecycle, 'published');
+  assert.equal(updated.available, true);
+
+  const publishedBrowse = await memberAgent.get('/streamer/browse?search=Admin%20Lifecycle%20Probe').expect(200);
+  assert.match(publishedBrowse.text, /Lifecycle operations test title/);
+});
+
 test('streamer can shortlist and rent available content', async () => {
   const streamerAgent = await loginAs('streamer');
   const content = await Content.findOne({ available: true }).lean();

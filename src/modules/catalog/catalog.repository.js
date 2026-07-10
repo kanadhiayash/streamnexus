@@ -14,7 +14,11 @@ const createCatalogRepository = ({ ContentModel = Content } = {}) => ({
   },
 
   update(contentId, contentData) {
-    return ContentModel.findByIdAndUpdate(contentId, contentData, { new: true, runValidators: true });
+    return ContentModel.findByIdAndUpdate(contentId, contentData, { returnDocument: 'after', runValidators: true });
+  },
+
+  updateLifecycle(contentId, lifecycleData) {
+    return ContentModel.findByIdAndUpdate(contentId, lifecycleData, { returnDocument: 'after', runValidators: true });
   },
 
   delete(contentId) {

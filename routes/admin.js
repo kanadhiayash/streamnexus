@@ -12,6 +12,7 @@ router.get('/content/new', adminCtrl.showNewContent);
 router.post('/content', adminCtrl.createContent);
 router.get('/content/:id/edit', adminCtrl.showEditContent);
 router.put('/content/:id', adminCtrl.updateContent);
+router.post('/content/:id/lifecycle/:action', adminCtrl.updateLifecycle);
 router.delete('/content/:id', adminCtrl.deleteContent);
 
 module.exports = router;

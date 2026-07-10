@@ -4,6 +4,10 @@
     <a href='/admin/content/new' class='btn btn-primary'>+ Add New</a>
   </div>
 
+  <% if (typeof lifecycle !== 'undefined' && lifecycle) { %>
+    <div class='alert alert-success' role='status'>Lifecycle updated: <%= lifecycle %>.</div>
+  <% } %>
+
   <% if (contents.length === 0) { %>
     <div class='empty-state' role='status'>
       <p>No content yet. Add your first title to get started!</p>
@@ -23,19 +27,41 @@
         </thead>
         <tbody>
           <% contents.forEach(content => { %>
+            <% const lifecycle = content.lifecycle || (content.available ? 'published' : 'unpublished'); %>
             <tr>
               <td><strong><%= content.title %></strong></td>
               <td><%= content.type.toUpperCase() %></td>
               <td>$<%= content.price.toFixed(2) %></td>
               <td>
-                <span class='status <%= content.available ? "available" : "unavailable" %>'>
-                  <%= content.available ? '✓ Available' : '✕ Out' %>
+                <span class='status <%= content.available && lifecycle !== "archived" ? "available" : "unavailable" %>'>
+                  <%= lifecycle === 'published' ? 'Published' : lifecycle === 'archived' ? 'Archived' : 'Unpublished' %>
                 </span>
               </td>
               <td>
                 <div class='actions' style='gap:0.25rem;'>
                   <a href='/admin/content/<%= content._id %>/edit' class='btn btn-primary btn-sm' aria-label='Edit <%= content.title %>'>Edit</a>
-                  <button type='button' class='btn btn-danger btn-sm' data-delete-id='<%= content._id %>' aria-label='Delete <%= content.title %>'>Delete</button>
+                  <% if (lifecycle === 'published') { %>
+                    <form method='post' action='/admin/content/<%= content._id %>/lifecycle/unpublish' class='inline-form'>
+                      <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+                      <input type='hidden' name='returnTo' value='/admin/content' />
+                      <button type='submit' class='btn btn-secondary btn-sm'>Unpublish</button>
+                    </form>
+                  <% } else if (lifecycle === 'archived') { %>
+                    <form method='post' action='/admin/content/<%= content._id %>/lifecycle/restore' class='inline-form'>
+                      <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+                      <input type='hidden' name='returnTo' value='/admin/content' />
+                      <button type='submit' class='btn btn-secondary btn-sm'>Restore</button>
+                    </form>
+                  <% } else { %>
+                    <form method='post' action='/admin/content/<%= content._id %>/lifecycle/publish' class='inline-form'>
+                      <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+                      <input type='hidden' name='returnTo' value='/admin/content' />
+                      <button type='submit' class='btn btn-success btn-sm'>Publish</button>
+                    </form>
+                  <% } %>
+                  <% if (lifecycle !== 'archived') { %>
+                    <button type='button' class='btn btn-danger btn-sm' data-delete-id='<%= content._id %>' aria-label='Archive <%= content.title %>'>Archive</button>
+                  <% } %>
                 </div>
               </td>
             </tr>
