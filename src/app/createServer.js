@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const connectDB = require('../../config/db');
-const { seedDatabase } = require('../../controllers/authController');
 const logger = require('../../utils/logger');
+const { seedDatabase } = require('../demo/demoSeed');
 const { buildConfig, assertSandboxDatabase } = require('../config/environment');
 const { createApp } = require('./createApp');
 

@@ -1,41 +1,26 @@
 const contentService = require('../services/contentService');
-const rentalService = require('../services/rentalService');
 const { catchAsync, AppError } = require('../middleware/errorHandler');
 const { validateContentData } = require('../utils/validators');
 const logger = require('../utils/logger');
+const { createAdminUseCases } = require('../src/modules/admin/admin.useCases');
+
+const adminUseCases = createAdminUseCases();
 
 const dashboard = catchAsync(async (req, res) => {
-  const contentResult = await contentService.getAllContent();
-  const rentalsResult = await rentalService.getAllRentals();
-  const statsResult = await rentalService.getRentalStats();
+  const result = await adminUseCases.loadDashboard();
 
-  if (!contentResult.success || !rentalsResult.success) {
+  if (!result.success) {
     return res.status(500).render('admin/dashboard', {
-      contents: [],
-      rentals: [],
-      stats: { totalRentals: 0, activeRentals: 0, completedRentals: 0 },
+      ...result.data,
       error: 'Failed to load dashboard',
     });
   }
-  const capacityResult = await rentalService.attachCapacityToContents(contentResult.data || []);
-  const contents = capacityResult.success ? capacityResult.data : contentResult.data || [];
-  const capacityStats = contents.reduce((totals, item) => {
-    const capacity = item.capacity || { rentalLimit: item.rentalLimit || 5, activeRentals: 0, remaining: item.rentalLimit || 5 };
-    totals.totalSlots += capacity.rentalLimit;
-    totals.activeSlots += capacity.activeRentals;
-    totals.remainingSlots += capacity.remaining;
-    return totals;
-  }, { totalSlots: 0, activeSlots: 0, remainingSlots: 0 });
 
-  res.render('admin/dashboard', {
-    contents,
-    rentals: rentalsResult.data || [],
-    stats: { ...(statsResult.data || {}), ...capacityStats },
-  });
+  res.render('admin/dashboard', result.data);
 });
 
 const contentList = catchAsync(async (req, res) => {
-  const result = await contentService.getAllContent();
+  const result = await adminUseCases.loadContentList();
 
   if (!result.success) {
     return res.status(500).render('admin/content-list', {
