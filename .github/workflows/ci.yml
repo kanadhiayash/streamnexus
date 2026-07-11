@@ -44,3 +44,6 @@ jobs:
 
       - name: SNX / Secret pattern scan
         run: npm run scan:secrets
+
+      - name: SNX / Full verification
+        run: npm run snx:verify
