@@ -52,6 +52,7 @@ test('[SNX-CI-001] validation registry contains unique IDs in approved areas', (
     const match = /^SNX-([A-Z]+)-(\d{3})$/.exec(entry.id);
     assert.ok(match, `invalid validation ID: ${entry.id}`);
     assert.ok(allowedAreas.has(match[1]), `unsupported SNX area: ${match[1]}`);
+    assert.equal(entry.area, match[1], `area mismatch: ${entry.id}`);
     assert.equal(typeof entry.title, 'string');
     assert.ok(entry.title.trim().length > 0, `validation title is required: ${entry.id}`);
   }
@@ -107,5 +108,5 @@ test('[SNX-SEC-001] diagnostic policy excludes sensitive payload fields', () => 
     assert.ok(prohibited.has(requiredField), `missing prohibited field: ${requiredField}`);
   }
 
-  assert.match(registry.diagnosticPolicy.auditEventPattern, '^SNX\\.');
-}
+  assert.match(registry.diagnosticPolicy.auditEventPattern, /^\^SNX\\\./);
+});
