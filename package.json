@@ -16,7 +16,10 @@
     "test:ejs": "node scripts/compile-ejs.js",
     "test:load": "node scripts/load-test.js",
     "scan:secrets": "node scripts/scan-secrets.js",
-    "release:verify": "node scripts/release-verify.js"
+    "release:verify": "node scripts/release-verify.js",
+    "snx:test": "npm test",
+    "snx:validate": "node scripts/validate-snx-registry.js",
+    "snx:verify": "npm run snx:validate && npm run release:verify"
   },
   "keywords": [
     "express",
