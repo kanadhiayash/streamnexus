@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "1.0.0",
+  "productId": "SNX",
+  "workstreamPattern": "^SNX-[0-9]{3}$",
+  "validationPattern": "^SNX-(AUTH|ACCESS|CAPACITY|FIXTURE|IA|UI|A11Y|SEC|CI|DATA|PARTNER|ADMIN|RELEASE|BRAND)-[0-9]{3}$",
+  "testTitlePattern": "^\\[SNX-(AUTH|ACCESS|CAPACITY|FIXTURE|IA|UI|A11Y|SEC|CI|DATA|PARTNER|ADMIN|RELEASE|BRAND)-[0-9]{3}\\] .+$",
+  "approvedAreas": [
+    "AUTH",
+    "ACCESS",
+    "CAPACITY",
+    "FIXTURE",
+    "IA",
+    "UI",
+    "A11Y",
+    "SEC",
+    "CI",
+    "DATA",
+    "PARTNER",
+    "ADMIN",
+    "RELEASE",
+    "BRAND"
+  ],
+  "ciCheckPrefix": "SNX / ",
+  "fixtureIds": {
+    "prefix": "SNX-TITLE",
+    "start": 1,
+    "end": 50,
+    "padding": 3
+  },
+  "diagnosticPolicy": {
+    "auditEventPattern": "^SNX\\.[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$",
+    "prohibitedFields": [
+      "email",
+      "password",
+      "token",
+      "cookie",
+      "sessionId",
+      "authorization"
+    ],
+    "publicMessageRule": "Validation IDs may appear in internal evidence and logs but must not replace clear user-facing messages."
+  },
+  "validations": [
+    {
+      "id": "SNX-CI-001",
+      "area": "CI",
+      "title": "validation registry contains unique IDs in approved areas",
+      "ownerIssue": 33,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-002",
+      "area": "CI",
+      "title": "npm SNX aliases resolve to canonical gates",
+      "ownerIssue": 33,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-003",
+      "area": "CI",
+      "title": "CI workflow uses SNX display identity and validates identifiers",
+      "ownerIssue": 33,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-001",
+      "area": "FIXTURE",
+      "title": "fixture range reserves exactly SNX-TITLE-001 through SNX-TITLE-050",
+      "ownerIssue": 33,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-001",
+      "area": "SEC",
+      "title": "diagnostic policy excludes sensitive payload fields",
+      "ownerIssue": 33,
+      "status": "implemented"
+    }
+  ]
+}

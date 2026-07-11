@@ -1,10 +1,10 @@
-name: CI
+name: SNX / CI
 
 on:
   push:
-    branches: [main, "chore/**"]
+    branches: [main, dev, "chore/**"]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
 
 permissions:
@@ -15,29 +15,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: SNX / Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: SNX / Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Install
+      - name: SNX / Install
         run: npm ci
 
-      - name: Syntax and integration tests
+      - name: SNX / Syntax and integration tests
         run: npm test
 
-      - name: Compile EJS templates
+      - name: SNX / Validate identifiers
+        run: npm run snx:validate
+
+      - name: SNX / Compile EJS templates
         run: npm run test:ejs
 
-      - name: Bounded load test
+      - name: SNX / Bounded load test
         run: npm run test:load
 
-      - name: Dependency audit
+      - name: SNX / Dependency audit
         run: npm audit --audit-level=moderate
 
-      - name: Secret pattern scan
+      - name: SNX / Secret pattern scan
         run: npm run scan:secrets
+
+      - name: SNX / Full verification
+        run: npm run snx:verify
