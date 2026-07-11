@@ -91,11 +91,22 @@ test('guest landing page renders sign in and signup entry points', async () => {
   const response = await agent.get('/').expect(200);
 
   assert.match(response.text, /StreamNexus/);
-  assert.match(response.text, /Create Streamer Account/);
+  assert.match(response.text, /class="skip-link" href="#main-content"/);
+  assert.match(response.text, /<main id="main-content" class="container" tabindex="-1">/);
+  assert.match(response.text, /Create Member Account/);
   assert.match(response.text, /Sign In/);
 });
 
-test('signup creates a streamer account and cannot create admin role', async () => {
+test('public pages send defensive browser security headers', async () => {
+  const agent = request.agent(createApp());
+  const response = await agent.get('/').expect(200);
+
+  assert.match(response.headers['content-security-policy'], /frame-ancestors 'none'/);
+  assert.equal(response.headers['x-content-type-options'], 'nosniff');
+  assert.equal(response.headers['x-powered-by'], undefined);
+});
+
+test('signup creates a member account and cannot create admin role', async () => {
   const agent = request.agent(createApp());
   const signupPage = await agent.get('/signup').expect(200);
   const csrfToken = extractCsrfToken(signupPage.text);
@@ -115,7 +126,7 @@ test('signup creates a streamer account and cannot create admin role', async () 
 
   const user = await User.findOne({ email: 'new-streamer@example.com' }).lean();
   assert.ok(user);
-  assert.equal(user.role, 'streamer');
+  assert.equal(user.role, 'member');
 });
 
 test('enforces role-protected admin routes', async () => {
@@ -151,6 +162,95 @@ test('admin can create content with a valid CSRF token', async () => {
   assert.equal(created.rentalLimit, 7);
 });
 
+test('admin archives, restores, and publishes content without hard deleting it', async () => {
+  const content = await Content.create({
+    title: 'Admin Lifecycle Probe',
+    type: 'movie',
+    price: 3.99,
+    available: true,
+    lifecycle: 'published',
+    description: 'Lifecycle operations test title',
+    genre: 'Test',
+    expiresAt: new Date(),
+  });
+
+  const adminAgent = await loginAs('admin');
+  const listPage = await adminAgent.get('/admin/content').expect(200);
+  const csrfToken = extractCsrfToken(listPage.text);
+
+  await adminAgent
+    .post(`/admin/content/${content._id}/lifecycle/archive`)
+    .type('form')
+    .send({ _csrf: csrfToken, returnTo: '/admin/content' })
+    .expect(302)
+    .expect('Location', '/admin/content?lifecycle=archive');
+
+  let updated = await Content.findById(content._id).lean();
+  assert.equal(updated.lifecycle, 'archived');
+  assert.equal(updated.available, false);
+  assert.ok(updated.archivedAt);
+
+  const memberAgent = await loginAs('streamer');
+  const archivedBrowse = await memberAgent.get('/streamer/browse?search=Admin%20Lifecycle%20Probe').expect(200);
+  assert.match(archivedBrowse.text, /No matching titles found/);
+  assert.doesNotMatch(archivedBrowse.text, /Lifecycle operations test title/);
+
+  await adminAgent
+    .post(`/admin/content/${content._id}/lifecycle/restore`)
+    .type('form')
+    .send({ _csrf: csrfToken, returnTo: '/admin/content' })
+    .expect(302);
+
+  updated = await Content.findById(content._id).lean();
+  assert.equal(updated.lifecycle, 'unpublished');
+  assert.equal(updated.available, false);
+
+  await adminAgent
+    .post(`/admin/content/${content._id}/lifecycle/publish`)
+    .type('form')
+    .send({ _csrf: csrfToken, returnTo: '/admin/content' })
+    .expect(302);
+
+  updated = await Content.findById(content._id).lean();
+  assert.equal(updated.lifecycle, 'published');
+  assert.equal(updated.available, true);
+
+  const publishedBrowse = await memberAgent.get('/streamer/browse?search=Admin%20Lifecycle%20Probe').expect(200);
+  assert.match(publishedBrowse.text, /Lifecycle operations test title/);
+});
+
+test('admin lifecycle mutations reject GET and missing CSRF requests', async () => {
+  const content = await Content.create({
+    title: 'Security Lifecycle Probe',
+    type: 'movie',
+    price: 3.99,
+    available: true,
+    lifecycle: 'published',
+    description: 'Security mutation test title',
+    genre: 'Test',
+  });
+
+  const adminAgent = await loginAs('admin');
+
+  await adminAgent
+    .get(`/admin/content/${content._id}/lifecycle/archive`)
+    .expect(404);
+
+  let updated = await Content.findById(content._id).lean();
+  assert.equal(updated.lifecycle, 'published');
+  assert.equal(updated.available, true);
+
+  await adminAgent
+    .post(`/admin/content/${content._id}/lifecycle/archive`)
+    .type('form')
+    .send({ returnTo: '/admin/content' })
+    .expect(403);
+
+  updated = await Content.findById(content._id).lean();
+  assert.equal(updated.lifecycle, 'published');
+  assert.equal(updated.available, true);
+});
+
 test('streamer can shortlist and rent available content', async () => {
   const streamerAgent = await loginAs('streamer');
   const content = await Content.findOne({ available: true }).lean();
@@ -181,6 +281,75 @@ test('streamer can shortlist and rent available content', async () => {
   assert.ok(rental.expiresAt);
   const rentalDays = Math.round((rental.expiresAt.getTime() - rental.rentedAt.getTime()) / (24 * 60 * 60 * 1000));
   assert.equal(rentalDays, 45);
+});
+
+test('member reviews, confirms, opens, and returns a rental by public reference', async () => {
+  const streamerAgent = await loginAs('streamer');
+  const content = await Content.findOne({ available: true }).lean();
+  assert.ok(content);
+
+  const reviewPage = await streamerAgent.get(`/streamer/content/${content._id}/review`).expect(200);
+  assert.match(reviewPage.text, /Confirm Rental/);
+  assert.match(reviewPage.text, /Simulated payment for demo review only/);
+  assert.match(reviewPage.text, /does not process payments or enable playback/);
+  const csrfToken = extractCsrfToken(reviewPage.text);
+
+  const firstConfirm = await streamerAgent
+    .post(`/streamer/content/${content._id}/rent`)
+    .type('form')
+    .send({ _csrf: csrfToken })
+    .expect(302);
+
+  assert.match(firstConfirm.headers.location, /^\/streamer\/rentals\?rented=true&ref=SNX-/);
+
+  const user = await User.findOne({ email: 'streamer@gmail.com' }).lean();
+  const rental = await Rental.findOne({ userId: user._id, contentId: content._id }).lean();
+  assert.ok(rental);
+  assert.ok(rental.publicReference);
+
+  await streamerAgent
+    .post(`/streamer/content/${content._id}/rent`)
+    .type('form')
+    .send({ _csrf: csrfToken })
+    .expect(302);
+
+  const activeCount = await Rental.countDocuments({ userId: user._id, contentId: content._id, status: 'active' });
+  assert.equal(activeCount, 1);
+
+  const detailPage = await streamerAgent.get(`/streamer/rentals/ref/${rental.publicReference}`).expect(200);
+  assert.match(detailPage.text, /Rental confirmation/);
+  assert.match(detailPage.text, new RegExp(rental.publicReference));
+  assert.match(detailPage.text, /Return Access/);
+
+  const secondStreamer = request.agent(createApp());
+  const signupPage = await secondStreamer.get('/signup').expect(200);
+  const signupCsrf = extractCsrfToken(signupPage.text);
+  await secondStreamer
+    .post('/signup')
+    .type('form')
+    .send({
+      email: 'reference-owner-check@example.com',
+      password: 'streamerpass',
+      confirmPassword: 'streamerpass',
+      _csrf: signupCsrf,
+    })
+    .expect(302);
+
+  await secondStreamer
+    .get(`/streamer/rentals/ref/${rental.publicReference}`)
+    .expect(403);
+
+  const returnCsrf = extractCsrfToken(detailPage.text);
+  await streamerAgent
+    .post(`/streamer/rentals/${rental._id}/checkout`)
+    .type('form')
+    .send({ _csrf: returnCsrf })
+    .expect(302)
+    .expect('Location', '/streamer/rentals?checkout=success');
+
+  const returned = await Rental.findById(rental._id).lean();
+  assert.equal(returned.status, 'returned');
+  assert.equal(returned.endReason, 'member_returned');
 });
 
 test('rental capacity blocks the sixth style over-limit rental and admin sees slots', async () => {
@@ -254,6 +423,68 @@ test('search treats regex metacharacters as literal input', async () => {
   const wildcardResult = await contentService.searchContent('.*');
   assert.equal(wildcardResult.success, true);
   assert.equal(wildcardResult.data.length, 0);
+});
+
+test('member catalog supports URL-backed sort and pagination state', async () => {
+  await Content.deleteMany({});
+  await Content.create([
+    { title: 'Alpha', type: 'movie', price: 1.99, available: true, description: 'First', genre: 'Drama' },
+    { title: 'Bravo', type: 'movie', price: 5.99, available: true, description: 'Second', genre: 'Drama' },
+  ]);
+
+  const streamerAgent = await loginAs('streamer');
+  const response = await streamerAgent
+    .get('/streamer/browse?sort=price_desc&page=1')
+    .expect(200);
+
+  assert.match(response.text, /Browse Titles/);
+  assert.match(response.text, /Price: high to low/);
+  assert.ok(response.text.indexOf('Bravo') < response.text.indexOf('Alpha'));
+});
+
+test('login regenerates the session id after authentication', async () => {
+  const agent = request.agent(createApp());
+  const loginPage = await agent.get('/login').expect(200);
+  const initialCookie = loginPage.headers['set-cookie']?.find(cookie => cookie.startsWith('streamnexus.sid='));
+  const csrfToken = extractCsrfToken(loginPage.text);
+
+  const loginResponse = await agent
+    .post('/login')
+    .type('form')
+    .send({ email: 'admin@gmail.com', password: 'admin', _csrf: csrfToken })
+    .expect(302);
+
+  const nextCookie = loginResponse.headers['set-cookie']?.find(cookie => cookie.startsWith('streamnexus.sid='));
+  assert.ok(initialCookie);
+  assert.ok(nextCookie);
+  assert.notEqual(initialCookie.split(';')[0], nextCookie.split(';')[0]);
+});
+
+test('stale sessionVersion forces reauthentication', async () => {
+  const streamerAgent = await loginAs('streamer');
+  const user = await User.findOne({ email: 'streamer@gmail.com' }).lean();
+  await User.updateOne({ _id: user._id }, { $inc: { sessionVersion: 1 } });
+
+  await streamerAgent
+    .get('/streamer/browse')
+    .expect(302)
+    .expect('Location', '/login');
+});
+
+test('suspended accounts fail with a generic authentication response', async () => {
+  await User.updateOne({ email: 'streamer@gmail.com' }, { $set: { status: 'suspended' } });
+  const agent = request.agent(createApp());
+  const loginPage = await agent.get('/login').expect(200);
+  const csrfToken = extractCsrfToken(loginPage.text);
+
+  const response = await agent
+    .post('/login')
+    .type('form')
+    .send({ email: 'streamer@gmail.com', password: 'streamer', _csrf: csrfToken })
+    .expect(401);
+
+  assert.match(response.text, /Invalid email or password/);
+  assert.doesNotMatch(response.text, /suspended/i);
 });
 
 test('rate limits repeated login attempts', async () => {

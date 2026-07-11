@@ -235,13 +235,14 @@ function setupContentModal() {
     fields.price.textContent = `$${item.price}`;
     fields.rating.textContent = item.rating && item.rating !== '0.0' ? `${item.rating}/10` : 'Not rated';
     fields.duration.textContent = item.duration || 'Runtime TBD';
-    fields.capacity.textContent = `${item.capacity.remaining} of ${item.capacity.rentalLimit} slots open`;
+    fields.capacity.textContent = `${item.capacity.remaining} of ${item.capacity.rentalLimit} licences open`;
     fields.cast.textContent = item.cast ? `Cast: ${item.cast}` : '';
     fields.shortlistForm.action = item.shortlistUrl;
-    fields.shortlistButton.textContent = item.isShortlisted ? 'Remove Shortlist' : 'Shortlist';
+    fields.shortlistButton.textContent = item.isShortlisted ? 'Remove from My List' : 'Add to My List';
     fields.rentForm.action = item.rentUrl;
+    fields.rentForm.method = 'GET';
     fields.rentButton.disabled = !item.available || item.capacity.isFull;
-    fields.rentButton.textContent = item.capacity.isFull ? 'Rental Full' : 'Rent Now';
+    fields.rentButton.textContent = item.capacity.isFull ? 'Rental Full' : 'Activate Rental';
     fields.detailsLink.href = item.detailUrl;
 
     modal.removeAttribute('hidden');
@@ -336,11 +337,12 @@ function setupActionButtons() {
 function setupToasts() {
   const params = new URLSearchParams(window.location.search);
   if (params.has('signedup')) ToastNotification.success('Account created. Welcome to StreamNexus.');
-  if (params.has('rented')) ToastNotification.success('Title rented. Your 45-day access window is active.');
-  if (params.has('checkout')) ToastNotification.success('Rental completed.');
+  if (params.has('rented')) ToastNotification.success('Rental confirmation is active. Your 45-day access window has started.');
+  if (params.has('checkout')) ToastNotification.success('Access returned.');
   if (params.has('created')) ToastNotification.success('Content created.');
   if (params.has('updated')) ToastNotification.success('Content updated.');
-  if (params.has('deleted')) ToastNotification.success('Content deleted.');
+  if (params.has('deleted')) ToastNotification.success('Content archived.');
+  if (params.has('archived')) ToastNotification.success('Title archived.');
 }
 
 function setupFocusMode() {
@@ -357,8 +359,8 @@ function setupFocusMode() {
 
 window.confirmCheckout = function (rentalId) {
   ConfirmDialog.show(
-    'Complete Rental?',
-    'This marks the simulated rental as complete and frees one active slot for the title.',
+    'Return access?',
+    'This returns the simulated rental access and frees one licence for the title.',
     () => {
       const form = document.createElement('form');
       form.method = 'POST';
@@ -372,8 +374,8 @@ window.confirmCheckout = function (rentalId) {
 
 window.confirmDelete = function (contentId) {
   ConfirmDialog.show(
-    'Delete Content?',
-    'This removes the title from the demo catalog.',
+    'Archive title?',
+    'This removes the title from the member catalog without deleting the record.',
     () => {
       const form = document.createElement('form');
       form.method = 'POST';

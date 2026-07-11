@@ -1,41 +1,29 @@
 const contentService = require('../services/contentService');
-const rentalService = require('../services/rentalService');
 const { catchAsync, AppError } = require('../middleware/errorHandler');
 const { validateContentData } = require('../utils/validators');
 const logger = require('../utils/logger');
+const { createAdminUseCases } = require('../src/modules/admin/admin.useCases');
+
+const adminUseCases = createAdminUseCases();
 
 const dashboard = catchAsync(async (req, res) => {
-  const contentResult = await contentService.getAllContent();
-  const rentalsResult = await rentalService.getAllRentals();
-  const statsResult = await rentalService.getRentalStats();
+  const result = await adminUseCases.loadDashboard();
 
-  if (!contentResult.success || !rentalsResult.success) {
+  if (!result.success) {
     return res.status(500).render('admin/dashboard', {
-      contents: [],
-      rentals: [],
-      stats: { totalRentals: 0, activeRentals: 0, completedRentals: 0 },
+      ...result.data,
       error: 'Failed to load dashboard',
     });
   }
-  const capacityResult = await rentalService.attachCapacityToContents(contentResult.data || []);
-  const contents = capacityResult.success ? capacityResult.data : contentResult.data || [];
-  const capacityStats = contents.reduce((totals, item) => {
-    const capacity = item.capacity || { rentalLimit: item.rentalLimit || 5, activeRentals: 0, remaining: item.rentalLimit || 5 };
-    totals.totalSlots += capacity.rentalLimit;
-    totals.activeSlots += capacity.activeRentals;
-    totals.remainingSlots += capacity.remaining;
-    return totals;
-  }, { totalSlots: 0, activeSlots: 0, remainingSlots: 0 });
 
   res.render('admin/dashboard', {
-    contents,
-    rentals: rentalsResult.data || [],
-    stats: { ...(statsResult.data || {}), ...capacityStats },
+    ...result.data,
+    archived: req.query.archived === 'true',
   });
 });
 
 const contentList = catchAsync(async (req, res) => {
-  const result = await contentService.getAllContent();
+  const result = await adminUseCases.loadContentList();
 
   if (!result.success) {
     return res.status(500).render('admin/content-list', {
@@ -44,7 +32,7 @@ const contentList = catchAsync(async (req, res) => {
     });
   }
 
-  res.render('admin/content-list', { contents: result.data || [] });
+  res.render('admin/content-list', { contents: result.data || [], lifecycle: req.query.lifecycle || '' });
 });
 
 const showNewContent = (req, res) => {
@@ -117,11 +105,25 @@ const deleteContent = catchAsync(async (req, res) => {
   const result = await contentService.deleteContent(req.params.id);
   if (!result.success) {
     const statusCode = result.statusCode || 400;
-    throw new AppError(result.error || 'Failed to delete content', statusCode);
+    throw new AppError(result.error || 'Failed to archive content', statusCode);
   }
 
-  logger.info(`Content deleted by admin: ${req.params.id}`);
-  res.redirect('/admin/dashboard?deleted=true');
+  logger.info(`Content archived by admin: ${req.params.id}`);
+  res.redirect('/admin/dashboard?archived=true');
+});
+
+const updateLifecycle = catchAsync(async (req, res) => {
+  const result = await contentService.updateLifecycle(req.params.id, req.params.action);
+  if (!result.success) {
+    const statusCode = result.statusCode || 400;
+    throw new AppError(result.error || 'Failed to update content lifecycle', statusCode);
+  }
+
+  logger.info(`Content lifecycle ${req.params.action} by admin: ${req.params.id}`);
+  const returnTo = typeof req.body.returnTo === 'string' && req.body.returnTo.startsWith('/admin/')
+    ? req.body.returnTo
+    : '/admin/content';
+  res.redirect(`${returnTo}?lifecycle=${encodeURIComponent(req.params.action)}`);
 });
 
 module.exports = {
@@ -132,4 +134,5 @@ module.exports = {
   showEditContent,
   updateContent,
   deleteContent,
+  updateLifecycle,
 };

@@ -10,6 +10,11 @@ const getCsrfToken = (req) => {
   return req.session.csrfToken;
 };
 
+const rotateCsrfToken = (req) => {
+  req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+  return req.session.csrfToken;
+};
+
 const csrfProtection = (req, res, next) => {
   const token = getCsrfToken(req);
   res.locals.csrfToken = token;
@@ -33,4 +38,4 @@ const csrfProtection = (req, res, next) => {
   next();
 };
 
-module.exports = { csrfProtection };
+module.exports = { csrfProtection, rotateCsrfToken };

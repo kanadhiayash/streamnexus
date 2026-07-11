@@ -14,8 +14,10 @@ const attachShortlistState = async (userId, contents) => {
 };
 
 const browse = catchAsync(async (req, res) => {
-  const { type, search } = req.query;
+  const { type, search, sort = 'title', page = '1' } = req.query;
   const filters = {};
+  const pageSize = 12;
+  const currentPage = Math.max(1, Number.parseInt(page, 10) || 1);
 
   if (type && ['movie', 'tv'].includes(type)) {
     filters.type = type;
@@ -36,15 +38,33 @@ const browse = catchAsync(async (req, res) => {
       search: search || '',
     });
   }
-  const capacityResult = await rentalService.attachCapacityToContents(result.data || []);
+  const sortedData = [...(result.data || [])].sort((a, b) => {
+    if (sort === 'price_asc') return Number(a.price || 0) - Number(b.price || 0);
+    if (sort === 'price_desc') return Number(b.price || 0) - Number(a.price || 0);
+    if (sort === 'newest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    return String(a.title || '').localeCompare(String(b.title || ''));
+  });
+  const totalPages = Math.max(1, Math.ceil(sortedData.length / pageSize));
+  const pageContents = sortedData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const capacityResult = await rentalService.attachCapacityToContents(pageContents);
   const contentsWithCapacity = capacityResult.success ? capacityResult.data : result.data || [];
   const contents = await attachShortlistState(req.session.user.id, contentsWithCapacity);
 
   res.render('streamer/browse', {
     contents,
-    heroItems: contents.slice(0, 5),
+    heroItems: sortedData.slice(0, 5),
     type: type || '',
     search: search || '',
+    sort,
+    pagination: {
+      currentPage,
+      totalPages,
+      totalItems: sortedData.length,
+      hasPrevious: currentPage > 1,
+      hasNext: currentPage < totalPages,
+      previousPage: Math.max(1, currentPage - 1),
+      nextPage: Math.min(totalPages, currentPage + 1),
+    },
   });
 });
 
@@ -63,6 +83,25 @@ const details = catchAsync(async (req, res) => {
     content: capacityResult.success ? capacityResult.data : contentResult.data,
     isShortlisted,
     similar: similarCapacityResult.success ? similarCapacityResult.data : similarResult.data || [],
+  });
+});
+
+const reviewRental = catchAsync(async (req, res) => {
+  const contentResult = await contentService.getContentById(req.params.id);
+  if (!contentResult.success) {
+    throw new AppError(contentResult.error || 'Content not found', 404);
+  }
+
+  const capacityResult = await rentalService.attachCapacityToContent(contentResult.data);
+  const content = capacityResult.success ? capacityResult.data : contentResult.data;
+  res.render('streamer/rental-review', {
+    content,
+    capacity: content.capacity || {
+      rentalLimit: content.rentalLimit || 5,
+      activeRentals: 0,
+      remaining: content.rentalLimit || 5,
+      isFull: false,
+    },
   });
 });
 
@@ -103,7 +142,7 @@ const rentContent = catchAsync(async (req, res) => {
     return res.status(400).render('error', { message: result.error || 'Failed to rent content' });
   }
 
-  res.redirect('/streamer/rentals?rented=true');
+  res.redirect(`/streamer/rentals?rented=true&ref=${encodeURIComponent(result.data.publicReference || '')}`);
 });
 
 const rentals = catchAsync(async (req, res) => {
@@ -116,14 +155,28 @@ const rentals = catchAsync(async (req, res) => {
   }
 
   const active = result.data.filter(r => r.status === 'active');
-  const completed = result.data.filter(r => r.status === 'completed');
+  const completed = result.data.filter(r => ['completed', 'returned', 'expired', 'cancelled'].includes(r.status));
 
   res.render('streamer/rentals', {
     rentals: result.data || [],
     active,
     completed,
     rented: req.query.rented === 'true',
+    reference: req.query.ref || '',
   });
+});
+
+const rentalDetail = catchAsync(async (req, res) => {
+  const result = await rentalService.getRentalByPublicReference(
+    req.params.publicReference,
+    req.session.user.id
+  );
+  if (!result.success) {
+    const statusCode = result.statusCode || 404;
+    throw new AppError(result.error || 'Rental not found', statusCode);
+  }
+
+  res.render('streamer/rental-detail', { rental: result.data });
 });
 
 const checkout = catchAsync(async (req, res) => {
@@ -140,10 +193,12 @@ const checkout = catchAsync(async (req, res) => {
 module.exports = {
   browse,
   details,
+  reviewRental,
   addToShortlist,
   removeFromShortlist,
   shortlist,
   rentContent,
   rentals,
+  rentalDetail,
   checkout,
 };

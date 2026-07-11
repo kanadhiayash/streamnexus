@@ -50,7 +50,7 @@ body {
   overflow-x: hidden;
   background: var(--canvas);
   color: var(--ink);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Avenir Next", Avenir, "Trebuchet MS", ui-sans-serif, system-ui, sans-serif;
   line-height: 1.5;
 }
 
@@ -69,6 +69,27 @@ img {
 
 a {
   color: inherit;
+}
+
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 4000;
+  padding: 10px 12px;
+  color: var(--on-primary);
+  background: var(--primary);
+  border-radius: 6px;
+  transform: translateY(-160%);
+  transition: transform var(--transition);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+#main-content:focus {
+  outline: none;
 }
 
 h1,
@@ -175,6 +196,7 @@ button,
   align-items: center;
   justify-content: center;
   min-height: 40px;
+  min-width: 40px;
   padding: 0 14px;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -188,6 +210,15 @@ button,
   text-decoration: none;
   cursor: pointer;
   transition: background var(--transition), border-color var(--transition), color var(--transition), transform var(--transition);
+}
+
+button,
+.btn,
+input,
+select,
+textarea,
+a {
+  touch-action: manipulation;
 }
 
 button:hover,
@@ -257,6 +288,20 @@ button:disabled,
   gap: 16px;
   margin-bottom: 18px;
   flex-wrap: wrap;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+  color: var(--text-secondary);
+}
+
+.pagination .disabled {
+  pointer-events: none;
+  opacity: 0.45;
 }
 
 .page-toolbar h1 {
@@ -336,6 +381,16 @@ select:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(145, 70, 255, 0.28);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid rgba(169, 112, 255, 0.82);
+  outline-offset: 3px;
 }
 
 .login-box {
@@ -768,6 +823,12 @@ tr:hover td {
   color: #e3d5ff;
   background: rgba(145, 70, 255, 0.13);
   border-color: rgba(145, 70, 255, 0.34);
+}
+
+.alert-warning {
+  color: #ffe9b3;
+  background: rgba(255, 176, 0, 0.13);
+  border-color: rgba(255, 176, 0, 0.34);
 }
 
 .toast {
