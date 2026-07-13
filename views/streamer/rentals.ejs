@@ -12,13 +12,13 @@
   <% if (rented && reference) { %>
     <div class='alert alert-success' role='status'>
       Rental confirmed. Reference <strong><%= reference %></strong> is active for 45 days.
-      <a href='/streamer/rentals/ref/<%= encodeURIComponent(reference) %>'>View confirmation</a>
+      <a href='/my-access/ref/<%= encodeURIComponent(reference) %>'>View confirmation</a>
     </div>
   <% } %>
   <% if (rentals.length === 0) { %>
     <div class='empty-state' role='status'>
       <p>No rentals yet. Browse and activate rental access for your first title.</p>
-      <a href='/streamer/browse' class='btn btn-primary' style='margin-top:1rem;'>Browse Titles</a>
+      <a href='/home' class='btn btn-primary' style='margin-top:1rem;'>Browse Titles</a>
     </div>
   <% } else { %>
     <section aria-labelledby='active-rentals-heading'>
@@ -56,7 +56,7 @@
               </div>
               <div class='card-footer'>
                 <% if (r.publicReference) { %>
-                  <a class='btn btn-primary' href='/streamer/rentals/ref/<%= encodeURIComponent(r.publicReference) %>'>Confirmation</a>
+                  <a class='btn btn-primary' href='/my-access/ref/<%= encodeURIComponent(r.publicReference) %>'>Confirmation</a>
                 <% } %>
                 <button type='button' class='btn btn-success' data-checkout-id='<%= r._id %>' aria-label='Return access for <%= r.contentId ? r.contentId.title : "this rental" %>'>Return Access</button>
               </div>
@@ -95,7 +95,7 @@
               </div>
               <div class='card-footer'>
                 <% if (r.publicReference) { %>
-                  <a class='btn btn-secondary' href='/streamer/rentals/ref/<%= encodeURIComponent(r.publicReference) %>'>Details</a>
+                  <a class='btn btn-secondary' href='/my-access/ref/<%= encodeURIComponent(r.publicReference) %>'>Details</a>
                 <% } else { %>
                   <button type='button' class='btn btn-secondary' disabled>Legacy record</button>
                 <% } %>

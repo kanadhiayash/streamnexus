@@ -1,0 +1,29 @@
+<section>
+  <div class='page-toolbar'>
+    <div>
+      <p class='eyebrow'>Program</p>
+      <h1><%= slug %></h1>
+    </div>
+    <a href='/catalog' class='btn btn-secondary'>Catalog</a>
+  </div>
+  <% if (!contents || contents.length === 0) { %>
+    <div class='empty-state' role='status'>
+      <p>No published titles are attached to this program yet.</p>
+    </div>
+  <% } else { %>
+    <div class='grid'>
+      <% contents.forEach(content => { %>
+        <article class='card'>
+          <img class='content-poster' src='<%= content.image || "/images/default.svg" %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
+          <div class='card-content'>
+            <h2><%= content.title %></h2>
+            <p><%= content.description || content.shortDescription || '' %></p>
+          </div>
+          <div class='card-footer'>
+            <a href='/titles/<%= encodeURIComponent(content.slug || content._id) %>' class='btn btn-primary'>View Title</a>
+          </div>
+        </article>
+      <% }); %>
+    </div>
+  <% } %>
+</section>

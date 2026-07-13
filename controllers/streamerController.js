@@ -14,6 +14,19 @@ const attachShortlistState = async (userId, contents) => {
   }));
 };
 
+const titlePath = content => `/titles/${encodeURIComponent(content.slug || content._id)}`;
+
+const redirectWithQuery = (res, path, query = {}) => {
+  const params = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params.set(key, value);
+    }
+  });
+  const queryString = params.toString();
+  return res.redirect(queryString ? `${path}?${queryString}` : path);
+};
+
 const browse = catchAsync(async (req, res) => {
   const { type, search, sort = 'title', page = '1' } = req.query;
   const filters = {};
@@ -69,6 +82,29 @@ const browse = catchAsync(async (req, res) => {
   });
 });
 
+const legacyBrowseRedirect = catchAsync(async (req, res) => redirectWithQuery(res, '/home', req.query));
+
+const legacyShortlistRedirect = catchAsync(async (req, res) => res.redirect('/my-list'));
+
+const legacyRentalsRedirect = catchAsync(async (req, res) => redirectWithQuery(res, '/my-access', req.query));
+
+const legacyRentalDetailRedirect = catchAsync(async (req, res) => {
+  res.redirect(`/my-access/ref/${encodeURIComponent(req.params.publicReference)}`);
+});
+
+const legacyReviewRedirect = catchAsync(async (req, res) => {
+  res.redirect(`/titles/${encodeURIComponent(req.params.id)}/review`);
+});
+
+const legacyContentRedirect = catchAsync(async (req, res) => {
+  const contentResult = await contentService.getContentById(req.params.id);
+  if (!contentResult.success) {
+    throw new AppError(contentResult.error || 'Content not found', 404);
+  }
+  const content = contentResult.data.toObject ? contentResult.data.toObject() : contentResult.data;
+  res.redirect(titlePath(content));
+});
+
 const details = catchAsync(async (req, res) => {
   const contentResult = await contentService.getContentById(req.params.id);
   if (!contentResult.success) {
@@ -112,11 +148,11 @@ const addToShortlist = catchAsync(async (req, res) => {
     throw new AppError(result.error || 'Failed to add to shortlist', 400);
   }
 
-  res.redirect(`/streamer/content/${req.params.id}`);
+  res.redirect(`/titles/${encodeURIComponent(req.params.id)}`);
 });
 
 const removeFromShortlist = catchAsync(async (req, res) => {
-  const returnTo = requireSafeReturnPath(req.body.returnTo, ['/streamer/']) || '/streamer/shortlist';
+  const returnTo = requireSafeReturnPath(req.body.returnTo, ['/home', '/my-list', '/titles/', '/streamer/']) || '/my-list';
   const result = await userService.removeFromShortlist(req.session.user.id, req.params.id);
   if (!result.success) {
     throw new AppError(result.error || 'Failed to remove from shortlist', 400);
@@ -143,7 +179,7 @@ const rentContent = catchAsync(async (req, res) => {
     return res.status(400).render('error', { message: result.error || 'Failed to rent content' });
   }
 
-  res.redirect(`/streamer/rentals?rented=true&ref=${encodeURIComponent(result.data.publicReference || '')}`);
+  res.redirect(`/my-access?rented=true&ref=${encodeURIComponent(result.data.publicReference || '')}`);
 });
 
 const rentals = catchAsync(async (req, res) => {
@@ -188,10 +224,21 @@ const checkout = catchAsync(async (req, res) => {
   }
 
   logger.info(`Checkout completed for rental ${req.params.id}`);
-  res.redirect('/streamer/rentals?checkout=success');
+  res.redirect('/my-access?checkout=success');
+});
+
+const account = catchAsync(async (req, res) => {
+  res.render('streamer/account', {
+    account: {
+      email: req.session.user.email,
+      role: req.session.user.role === 'streamer' ? 'member' : req.session.user.role,
+      status: 'active',
+    },
+  });
 });
 
 module.exports = {
+  account,
   browse,
   details,
   reviewRental,
@@ -202,4 +249,10 @@ module.exports = {
   rentals,
   rentalDetail,
   checkout,
+  legacyBrowseRedirect,
+  legacyContentRedirect,
+  legacyRentalDetailRedirect,
+  legacyRentalsRedirect,
+  legacyReviewRedirect,
+  legacyShortlistRedirect,
 };

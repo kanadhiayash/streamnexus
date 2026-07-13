@@ -36,7 +36,7 @@ test('auth module registers public accounts through repository boundary', async 
   assert.equal(created[0].email, 'new-member@example.com');
   assert.equal(created[0].passwordHash, 'hashed:demo123');
   assert.deepEqual(result.sessionUser, { id: 'member-id', email: 'new-member@example.com', role: 'member', sessionVersion: 1 });
-  assert.equal(result.redirectTo, '/streamer/browse?signedup=true');
+  assert.equal(result.redirectTo, '/home?signedup=true');
 });
 
 test('[SNX-SEC-010] authentication logs contain no email password token or session ID', async () => {
