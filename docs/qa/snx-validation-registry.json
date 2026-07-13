@@ -424,6 +424,69 @@
       "title": "partner audit payload is privacy-safe",
       "ownerIssue": 40,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-100",
+      "area": "SEC",
+      "title": "login throttle applies by account and IP",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-101",
+      "area": "SEC",
+      "title": "signup throttle blocks automated abuse",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-102",
+      "area": "SEC",
+      "title": "unsafe return destination is rejected",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-103",
+      "area": "SEC",
+      "title": "oversized request body is rejected",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-104",
+      "area": "SEC",
+      "title": "object ownership is enforced server-side",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-105",
+      "area": "SEC",
+      "title": "state mutation without CSRF is rejected",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-106",
+      "area": "SEC",
+      "title": "idempotent access confirmation prevents duplicate writes",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-107",
+      "area": "SEC",
+      "title": "logs exclude sensitive authentication and session data",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-020",
+      "area": "AUTH",
+      "title": "suspended account cannot use protected routes",
+      "ownerIssue": 41,
+      "status": "implemented"
     }
   ]
 }

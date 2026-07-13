@@ -14,6 +14,7 @@ const contentService = require('../../services/contentService');
 const rentalService = require('../../services/rentalService');
 const { errorHandler, AppError } = require('../../middleware/errorHandler');
 const { csrfProtection } = require('../../middleware/csrf');
+const { queryLengthGuard } = require('../../middleware/requestGuards');
 const { buildConfig, assertSandboxDatabase } = require('../config/environment');
 const { getRoleDestination } = require('../modules/auth/roleDestinations');
 
@@ -35,8 +36,9 @@ const registerMiddleware = (app, config) => {
       },
     })
   );
-  app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
+  app.use(express.urlencoded({ extended: true, limit: config.security.bodyLimit }));
+  app.use(express.json({ limit: config.security.bodyLimit }));
+  app.use(queryLengthGuard(config.security.queryMaxLength));
   app.use(methodOverride('_method'));
   app.use(express.static(path.join(__dirname, '..', '..', 'public')));
   app.get('/favicon.ico', (req, res) => res.status(204).end());

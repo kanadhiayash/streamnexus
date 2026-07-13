@@ -1,5 +1,6 @@
 const contentService = require('../services/contentService');
 const { catchAsync, AppError } = require('../middleware/errorHandler');
+const { requireSafeReturnPath } = require('../middleware/requestGuards');
 const { validateContentData } = require('../utils/validators');
 const logger = require('../utils/logger');
 const { createAdminUseCases } = require('../src/modules/admin/admin.useCases');
@@ -113,6 +114,7 @@ const deleteContent = catchAsync(async (req, res) => {
 });
 
 const updateLifecycle = catchAsync(async (req, res) => {
+  const returnTo = requireSafeReturnPath(req.body.returnTo, ['/admin/']) || '/admin/content';
   const result = await contentService.updateLifecycle(req.params.id, req.params.action);
   if (!result.success) {
     const statusCode = result.statusCode || 400;
@@ -120,9 +122,6 @@ const updateLifecycle = catchAsync(async (req, res) => {
   }
 
   logger.info(`Content lifecycle ${req.params.action} by admin: ${req.params.id}`);
-  const returnTo = typeof req.body.returnTo === 'string' && req.body.returnTo.startsWith('/admin/')
-    ? req.body.returnTo
-    : '/admin/content';
   res.redirect(`${returnTo}?lifecycle=${encodeURIComponent(req.params.action)}`);
 });
 

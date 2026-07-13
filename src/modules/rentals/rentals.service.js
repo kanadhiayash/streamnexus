@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 const logger = require('../../../utils/logger');
 const { ConflictError, ForbiddenError, NotFoundError, toServiceResult } = require('../../shared/errors/domainErrors');
 const { assertObjectId } = require('../../shared/validation/objectId');
@@ -22,6 +24,13 @@ const buildRentalWindow = (startDate = new Date()) => {
   const rentedAt = new Date(startDate);
   const expiresAt = new Date(rentedAt.getTime() + RENTAL_DAYS * DAY_IN_MS);
   return { rentedAt, expiresAt };
+};
+
+const hashIdempotencyKey = (value) => {
+  if (typeof value !== 'string' || !value.trim()) {
+    return null;
+  }
+  return crypto.createHash('sha256').update(value.trim()).digest('hex');
 };
 
 const normalizeRentalDates = (rental) => {
@@ -61,6 +70,14 @@ const createRentalsService = ({
     return toServiceResult(async () => {
       assertObjectId(userId, 'user ID');
       assertObjectId(contentId, 'content ID');
+
+      const idempotencyKeyHash = hashIdempotencyKey(options.idempotencyKey) || options.idempotencyKeyHash;
+      if (idempotencyKeyHash) {
+        const existingByKey = await repository.findByIdempotencyKey({ userId, idempotencyKeyHash });
+        if (existingByKey) {
+          return { ...existingByKey, idempotent: true };
+        }
+      }
 
       const existingRental = await repository.findActiveByUserAndContent({ userId, contentId });
       if (existingRental) {
@@ -111,7 +128,7 @@ const createRentalsService = ({
             version: RENTAL_POLICY.version,
             durationDays: RENTAL_POLICY.durationDays,
           },
-          idempotencyKeyHash: options.idempotencyKeyHash,
+          idempotencyKeyHash,
           date: rentalWindow.rentedAt,
           rentedAt: rentalWindow.rentedAt,
           startedAt: rentalWindow.rentedAt,
@@ -276,6 +293,7 @@ module.exports = {
   buildCapacity,
   buildRentalWindow,
   createRentalsService,
+  hashIdempotencyKey,
   normalizeRentalDates,
   normalizeRentalLimit,
 };

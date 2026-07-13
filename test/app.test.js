@@ -21,6 +21,7 @@ let Content;
 let User;
 let Rental;
 let contentService;
+let redactSensitive;
 
 const extractCsrfToken = (html) => {
   const match = html.match(/name=['"]_csrf['"] value=['"]([^'"]+)['"]/);
@@ -65,6 +66,7 @@ test.before(async () => {
   User = require('../models/User');
   Rental = require('../models/Rental');
   contentService = require('../services/contentService');
+  ({ redactSensitive } = require('../middleware/errorHandler'));
 
   await mongoose.connect(process.env.MONGO_URI);
 });
@@ -229,7 +231,7 @@ test('admin archives, restores, and publishes content without hard deleting it',
   assert.match(publishedBrowse.text, /Lifecycle operations test title/);
 });
 
-test('admin lifecycle mutations reject GET and missing CSRF requests', async () => {
+test('[SNX-SEC-105] admin lifecycle mutations reject GET and missing CSRF requests', async () => {
   const content = await Content.create({
     title: 'Security Lifecycle Probe',
     type: 'movie',
@@ -556,7 +558,7 @@ test('[SNX-AUTH-005] suspended account is rejected', async () => {
   assert.doesNotMatch(response.text, /suspended/i);
 });
 
-test('rate limits repeated login attempts', async () => {
+test('[SNX-SEC-100] login throttle applies by account and IP', async () => {
   const agent = request.agent(createApp());
   const loginPage = await agent.get('/login').expect(200);
   const csrfToken = extractCsrfToken(loginPage.text);
@@ -574,4 +576,181 @@ test('rate limits repeated login attempts', async () => {
     .type('form')
     .send({ email: 'admin@gmail.com', password: 'wrong-password', _csrf: csrfToken })
     .expect(429);
+});
+
+test('[SNX-SEC-101] signup throttle blocks automated abuse', async () => {
+  const previousLimit = process.env.SIGNUP_RATE_LIMIT_MAX;
+  process.env.SIGNUP_RATE_LIMIT_MAX = '2';
+
+  try {
+    const agent = request.agent(createApp());
+    const signupPage = await agent.get('/signup').expect(200);
+    const csrfToken = extractCsrfToken(signupPage.text);
+
+    for (let i = 0; i < 2; i++) {
+      await agent
+        .post('/signup')
+        .type('form')
+        .send({
+          email: `invalid-signup-${i}@example.com`,
+          password: 'streamerpass',
+          confirmPassword: 'mismatch',
+          _csrf: csrfToken,
+        })
+        .expect(400);
+    }
+
+    await agent
+      .post('/signup')
+      .type('form')
+      .send({
+        email: 'invalid-signup-3@example.com',
+        password: 'streamerpass',
+        confirmPassword: 'mismatch',
+        _csrf: csrfToken,
+      })
+      .expect(429);
+  } finally {
+    if (previousLimit === undefined) {
+      delete process.env.SIGNUP_RATE_LIMIT_MAX;
+    } else {
+      process.env.SIGNUP_RATE_LIMIT_MAX = previousLimit;
+    }
+  }
+});
+
+test('[SNX-SEC-102] unsafe return destination is rejected', async () => {
+  const streamerAgent = await loginAs('streamer');
+  const content = await Content.findOne({ available: true }).lean();
+  const detailsPage = await streamerAgent.get(`/streamer/content/${content._id}`).expect(200);
+  const csrfToken = extractCsrfToken(detailsPage.text);
+
+  await streamerAgent
+    .post(`/streamer/content/${content._id}/shortlist`)
+    .type('form')
+    .send({ _csrf: csrfToken })
+    .expect(302);
+
+  await streamerAgent
+    .post(`/streamer/content/${content._id}/shortlist/remove`)
+    .type('form')
+    .send({ _csrf: csrfToken, returnTo: 'https://evil.example/steal' })
+    .expect(400);
+
+  const user = await User.findOne({ email: 'streamer@gmail.com' }).lean();
+  assert.equal(user.shortlist.length, 1);
+
+  await streamerAgent
+    .post(`/streamer/content/${content._id}/shortlist/remove`)
+    .type('form')
+    .send({ _csrf: csrfToken, returnTo: '/streamer/shortlist' })
+    .expect(302)
+    .expect('Location', '/streamer/shortlist');
+});
+
+test('[SNX-SEC-103] oversized request body is rejected', async () => {
+  const previousBodyLimit = process.env.REQUEST_BODY_LIMIT;
+  const previousQueryLimit = process.env.REQUEST_QUERY_MAX_LENGTH;
+  process.env.REQUEST_BODY_LIMIT = '200b';
+  process.env.REQUEST_QUERY_MAX_LENGTH = '12';
+
+  try {
+    const agent = request.agent(createApp());
+    const loginPage = await agent.get('/login').expect(200);
+    const csrfToken = extractCsrfToken(loginPage.text);
+
+    await agent
+      .post('/login')
+      .type('form')
+      .send({ email: 'admin@gmail.com', password: 'x'.repeat(500), _csrf: csrfToken })
+      .expect(413);
+
+    await request(createApp())
+      .get(`/?${'q'.repeat(13)}=1`)
+      .expect(414);
+  } finally {
+    if (previousBodyLimit === undefined) delete process.env.REQUEST_BODY_LIMIT;
+    else process.env.REQUEST_BODY_LIMIT = previousBodyLimit;
+    if (previousQueryLimit === undefined) delete process.env.REQUEST_QUERY_MAX_LENGTH;
+    else process.env.REQUEST_QUERY_MAX_LENGTH = previousQueryLimit;
+  }
+});
+
+test('[SNX-SEC-104] object ownership is enforced server-side', async () => {
+  const ownerAgent = await loginAs('streamer');
+  const content = await Content.findOne({ available: true }).lean();
+  const reviewPage = await ownerAgent.get(`/streamer/content/${content._id}/review`).expect(200);
+  const csrfToken = extractCsrfToken(reviewPage.text);
+
+  await ownerAgent
+    .post(`/streamer/content/${content._id}/rent`)
+    .type('form')
+    .send({ _csrf: csrfToken })
+    .expect(302);
+
+  const owner = await User.findOne({ email: 'streamer@gmail.com' }).lean();
+  const rental = await Rental.findOne({ userId: owner._id, contentId: content._id }).lean();
+  const otherAgent = request.agent(createApp());
+  const signupPage = await otherAgent.get('/signup').expect(200);
+  const signupCsrf = extractCsrfToken(signupPage.text);
+
+  await otherAgent
+    .post('/signup')
+    .type('form')
+    .send({
+      email: 'object-owner-check@example.com',
+      password: 'streamerpass',
+      confirmPassword: 'streamerpass',
+      _csrf: signupCsrf,
+    })
+    .expect(302);
+
+  await otherAgent
+    .get(`/streamer/rentals/ref/${rental.publicReference}`)
+    .expect(403);
+});
+
+test('[SNX-SEC-106] idempotent access confirmation prevents duplicate writes', async () => {
+  const streamerAgent = await loginAs('streamer');
+  const content = await Content.findOne({ available: true }).lean();
+  const reviewPage = await streamerAgent.get(`/streamer/content/${content._id}/review`).expect(200);
+  const csrfToken = extractCsrfToken(reviewPage.text);
+  const idempotencyKey = 'snx-confirmation-test-key';
+
+  await streamerAgent
+    .post(`/streamer/content/${content._id}/rent`)
+    .set('Idempotency-Key', idempotencyKey)
+    .type('form')
+    .send({ _csrf: csrfToken })
+    .expect(302);
+
+  await streamerAgent
+    .post(`/streamer/content/${content._id}/rent`)
+    .set('Idempotency-Key', idempotencyKey)
+    .type('form')
+    .send({ _csrf: csrfToken })
+    .expect(302);
+
+  const user = await User.findOne({ email: 'streamer@gmail.com' }).lean();
+  const rentals = await Rental.find({ userId: user._id, contentId: content._id }).lean();
+  assert.equal(rentals.length, 1);
+  assert.ok(rentals[0].idempotencyKeyHash);
+});
+
+test('[SNX-SEC-107] logs exclude sensitive authentication and session data', () => {
+  const redacted = redactSensitive('email=private@example.com password=secret token=abc cookie=sid sessionId=xyz authorization=bearer');
+
+  assert.doesNotMatch(redacted, /private@example\.com|secret|abc|sid|xyz|bearer/i);
+  assert.match(redacted, /redacted/);
+});
+
+test('[SNX-AUTH-020] suspended account cannot use protected routes', async () => {
+  const streamerAgent = await loginAs('streamer');
+  const user = await User.findOne({ email: 'streamer@gmail.com' }).lean();
+  await User.updateOne({ _id: user._id }, { $set: { status: 'suspended' } });
+
+  await streamerAgent
+    .get('/streamer/browse')
+    .expect(302)
+    .expect('Location', '/login');
 });

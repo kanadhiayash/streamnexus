@@ -34,6 +34,10 @@ const createRentalsRepository = ({ ContentModel = Content, RentalModel = Rental,
     return RentalModel.findOne({ userId, contentId, status: 'active' }).lean();
   },
 
+  findByIdempotencyKey({ userId, idempotencyKeyHash }) {
+    return RentalModel.findOne({ userId, idempotencyKeyHash }).lean();
+  },
+
   findActiveRentalDocument({ userId, contentId }) {
     return RentalModel.findOne({ userId, contentId, status: 'active' });
   },

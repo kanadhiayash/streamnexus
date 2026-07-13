@@ -1,5 +1,12 @@
 const logger = require('../utils/logger');
 
+const SENSITIVE_PATTERN = /(email|password|token|cookie|sessionId|session|authorization)=([^&\s]+)/gi;
+const SECRET_WORD_PATTERN = /(password|token|cookie|sessionId|session|authorization)/gi;
+
+const redactSensitive = (value = '') => String(value)
+  .replace(SENSITIVE_PATTERN, '$1=[redacted]')
+  .replace(SECRET_WORD_PATTERN, '[redacted]');
+
 class AppError extends Error {
   constructor(message, statusCode = 500) {
     super(message);
@@ -12,22 +19,25 @@ const errorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.message = err.message || 'Internal server error';
 
-  logger.error(`${err.statusCode} - ${err.message}`, err);
+  const safeMessage = redactSensitive(err.message);
+  const safeStack = redactSensitive(err.stack || '');
+
+  logger.error(`${err.statusCode} - ${safeMessage}`, safeStack);
 
   // Always log full error details for debugging
   console.error('[ERROR]', {
     statusCode: err.statusCode,
-    message: err.message,
+    message: safeMessage,
     path: req.path,
     method: req.method,
-    stack: err.stack
+    stack: safeStack
   });
 
   if (process.env.NODE_ENV === 'development') {
     return res.status(err.statusCode).json({
       success: false,
-      error: err.message,
-      stack: err.stack,
+      error: safeMessage,
+      stack: safeStack,
       timestamp: err.timestamp,
     });
   }
@@ -55,4 +65,4 @@ const asyncHandler = (fn) => (req, res, next) => {
 
 const catchAsync = (fn) => asyncHandler(fn);
 
-module.exports = { AppError, errorHandler, asyncHandler, catchAsync };
+module.exports = { AppError, errorHandler, asyncHandler, catchAsync, redactSensitive };
