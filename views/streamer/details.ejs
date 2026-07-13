@@ -1,5 +1,5 @@
 <section>
-  <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false }; %>
+  <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 20, activeRentals: 0, remaining: content.rentalLimit || 20, isFull: false }; %>
   <div class='details-card'>
     <img class='content-poster' src='<%= content.image %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
     <div class='details-info'>
@@ -40,7 +40,7 @@
       <div class='grid'>
         <% similar.forEach(item => { %>
           <div class='card'>
-            <% const itemCapacity = item.capacity || { rentalLimit: item.rentalLimit || 5, activeRentals: 0, remaining: item.rentalLimit || 5, isFull: false }; %>
+            <% const itemCapacity = item.capacity || { rentalLimit: item.rentalLimit || 20, activeRentals: 0, remaining: item.rentalLimit || 20, isFull: false }; %>
             <img class='content-poster' src='<%= item.image %>' alt='<%= item.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
             <div class='card-content'>
               <h3><%= item.title %></h3>

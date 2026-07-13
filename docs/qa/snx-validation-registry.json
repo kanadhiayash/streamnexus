@@ -256,6 +256,62 @@
       "title": "access audit payload excludes credentials and session data",
       "ownerIssue": 37,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-001",
+      "area": "CAPACITY",
+      "title": "nineteenth seat reserves successfully",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-002",
+      "area": "CAPACITY",
+      "title": "twentieth seat reserves successfully",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-003",
+      "area": "CAPACITY",
+      "title": "twenty-first seat is rejected",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-004",
+      "area": "CAPACITY",
+      "title": "reconciliation repairs stale projection",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-005",
+      "area": "CAPACITY",
+      "title": "repeated reconciliation is idempotent",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-006",
+      "area": "CAPACITY",
+      "title": "release occurs exactly once",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-011",
+      "area": "DATA",
+      "title": "customized capacities are preserved",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-010",
+      "area": "FIXTURE",
+      "title": "legacy demo default migrates from 5 to 20",
+      "ownerIssue": 38,
+      "status": "implemented"
     }
   ]
 }

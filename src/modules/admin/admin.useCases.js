@@ -1,5 +1,6 @@
 const contentService = require('../../../services/contentService');
 const rentalService = require('../../../services/rentalService');
+const { RENTAL_POLICY } = require('../../config/rentalPolicy');
 
 const createAdminUseCases = ({
   catalog = contentService,
@@ -25,7 +26,11 @@ const createAdminUseCases = ({
     const capacityResult = await rentals.attachCapacityToContents(contentResult.data || []);
     const contents = capacityResult.success ? capacityResult.data : contentResult.data || [];
     const capacityStats = contents.reduce((totals, item) => {
-      const capacity = item.capacity || { rentalLimit: item.rentalLimit || 5, activeRentals: 0, remaining: item.rentalLimit || 5 };
+      const capacity = item.capacity || {
+        rentalLimit: item.rentalLimit || RENTAL_POLICY.defaultTitleLicenceLimit,
+        activeRentals: 0,
+        remaining: item.rentalLimit || RENTAL_POLICY.defaultTitleLicenceLimit,
+      };
       totals.totalSlots += capacity.rentalLimit;
       totals.activeSlots += capacity.activeRentals;
       totals.remainingSlots += capacity.remaining;
