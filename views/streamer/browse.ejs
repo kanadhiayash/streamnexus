@@ -230,7 +230,7 @@
               <div class='hero-actions'>
                 <button type='button' class='btn btn-primary' data-modal-content-id='<%= item._id %>'>View Details</button>
                 <form method='get' action='/titles/<%= item._id %>/review' class='inline-form'>
-                  <button type='submit' class='btn btn-success' <%= !item.available || (item.capacity && item.capacity.isFull) ? 'disabled' : '' %>>Activate Rental</button>
+                  <button type='submit' class='btn btn-success' <%= !item.available || (item.capacity && item.capacity.isFull) ? 'disabled' : '' %>>Activate Access</button>
                 </form>
               </div>
               <div class='capacity-strip'>
@@ -355,7 +355,7 @@
             <button type='submit' class='btn btn-secondary' data-modal-shortlist-button>My List</button>
           </form>
           <form method='get' data-modal-rent-form>
-            <button type='submit' class='btn btn-success' data-modal-rent-button>Activate Rental</button>
+            <button type='submit' class='btn btn-success' data-modal-rent-button>Activate Access</button>
           </form>
           <a class='btn btn-primary' href='#' data-modal-details-link>Details Page</a>
         </div>

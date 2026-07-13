@@ -86,7 +86,7 @@ const createRentalsService = ({
 
       const activeForUser = await repository.countActiveByUser(userId);
       if (activeForUser >= RENTAL_POLICY.maxActiveRentalsPerMember) {
-        throw new ConflictError(`Active rental limit reached. Return a title before renting another.`);
+        throw new ConflictError('Active access limit reached. Return an access pass before activating another.');
       }
 
       const content = await repository.findContentById(contentId);
@@ -94,14 +94,14 @@ const createRentalsService = ({
         throw new NotFoundError('Content not found');
       }
       if (!content.available) {
-        throw new ConflictError('Content is not available for rental');
+        throw new ConflictError('This title is not available for access activation');
       }
 
       const reservedContent = await repository.reserveLicence(contentId);
       if (!reservedContent) {
         const activeCount = await repository.countActiveByContent(contentId);
         const capacity = buildCapacity(content, activeCount);
-        throw new ConflictError(`Rental capacity reached for this title. ${capacity.rentalLimit} streamers already have active access.`);
+        throw new ConflictError(`Capacity reached. All simulated access seats are currently active for this title. ${capacity.rentalLimit} members already have active access.`);
       }
 
       let rental;

@@ -886,6 +886,69 @@
       "title": "member copy does not imply playback or AI recommendations",
       "ownerIssue": 48,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-200",
+      "area": "ACCESS",
+      "title": "access review reflects canonical policy",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-201",
+      "area": "ACCESS",
+      "title": "confirmation creates one entitlement",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-202",
+      "area": "ACCESS",
+      "title": "duplicate confirmation is idempotent",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-203",
+      "area": "ACCESS",
+      "title": "My Access separates active and history states",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-204",
+      "area": "ACCESS",
+      "title": "return updates entitlement and capacity once",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-205",
+      "area": "ACCESS",
+      "title": "expired and cancelled states remain terminal",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-100",
+      "area": "CAPACITY",
+      "title": "at-capacity conflict maps to recovery UI",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-230",
+      "area": "A11Y",
+      "title": "access state is understandable without colour",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-140",
+      "area": "SEC",
+      "title": "member can read only owned access records",
+      "ownerIssue": 49,
+      "status": "implemented"
     }
   ]
 }

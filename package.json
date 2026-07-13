@@ -1,7 +1,7 @@
 {
   "name": "streamnexus",
   "version": "1.0.0",
-  "description": "Role-based streaming content rental prototype built with Express, EJS, and MongoDB.",
+  "description": "Curated streaming access platform prototype built with Express, EJS, and MongoDB.",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",

@@ -137,7 +137,7 @@ test('[SNX-IA-010] public title details hide member-only actions from guests', a
   assert.match(response.text, /Create Account/);
   assert.match(response.text, /Back to Catalog/);
   assert.doesNotMatch(response.text, /Add to My List/);
-  assert.doesNotMatch(response.text, /Activate Rental/);
+  assert.doesNotMatch(response.text, /Activate Access/);
 });
 
 test('public pages send defensive browser security headers', async () => {
@@ -326,13 +326,13 @@ test('streamer can shortlist and rent available content', async () => {
   assert.equal(rentalDays, 45);
 });
 
-test('member reviews, confirms, opens, and returns a rental by public reference', async () => {
+test('member reviews, confirms, opens, and returns access by public reference', async () => {
   const streamerAgent = await loginAs('streamer');
   const content = await Content.findOne({ available: true }).lean();
   assert.ok(content);
 
   const reviewPage = await streamerAgent.get(`/titles/${content._id}/review`).expect(200);
-  assert.match(reviewPage.text, /Confirm Rental/);
+  assert.match(reviewPage.text, /Review Access Pass/);
   assert.match(reviewPage.text, /Simulated payment for demo review only/);
   assert.match(reviewPage.text, /does not process payments or enable playback/);
   const csrfToken = extractCsrfToken(reviewPage.text);
@@ -360,7 +360,7 @@ test('member reviews, confirms, opens, and returns a rental by public reference'
   assert.equal(activeCount, 1);
 
   const detailPage = await streamerAgent.get(`/my-access/ref/${rental.publicReference}`).expect(200);
-  assert.match(detailPage.text, /Rental confirmation/);
+  assert.match(detailPage.text, /Access pass/);
   assert.match(detailPage.text, new RegExp(rental.publicReference));
   assert.match(detailPage.text, /Return Access/);
 
@@ -388,7 +388,7 @@ test('member reviews, confirms, opens, and returns a rental by public reference'
     .type('form')
     .send({ _csrf: returnCsrf })
     .expect(302)
-    .expect('Location', '/my-access?checkout=success');
+    .expect('Location', '/my-access?returned=true');
 
   const returned = await Rental.findById(rental._id).lean();
   assert.equal(returned.status, 'returned');
@@ -430,7 +430,7 @@ test('rental capacity blocks the sixth style over-limit rental and admin sees sl
     .post(`/titles/${content._id}/rent`)
     .type('form')
     .send({ _csrf: secondCsrf })
-    .expect(400);
+    .expect(409);
 
   const adminAgent = await loginAs('admin');
   const dashboard = await adminAgent.get('/admin/dashboard').expect(200);
