@@ -15,5 +15,9 @@ router.get('/content/:id/edit', adminCtrl.showEditContent);
 router.put('/content/:id', adminMutationRateLimiter, adminCtrl.updateContent);
 router.post('/content/:id/lifecycle/:action', adminMutationRateLimiter, adminCtrl.updateLifecycle);
 router.delete('/content/:id', adminMutationRateLimiter, adminCtrl.deleteContent);
+router.post('/members/:id/suspend', adminMutationRateLimiter, adminCtrl.updateMemberStatus);
+router.post('/members/:id/restore', adminMutationRateLimiter, adminCtrl.updateMemberStatus);
+router.post('/access/:id/cancel', adminMutationRateLimiter, adminCtrl.cancelAccess);
+router.post('/system/reconcile', adminMutationRateLimiter, adminCtrl.reconcileCapacity);
 
 module.exports = router;

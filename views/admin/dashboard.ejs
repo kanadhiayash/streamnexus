@@ -10,6 +10,16 @@
   <% if (typeof archived !== 'undefined' && archived) { %>
     <div class='alert alert-success' role='status'>Title archived. It is no longer visible to members.</div>
   <% } %>
+  <% const ops = typeof operations !== 'undefined' && operations ? operations : { alerts: [], members: [], partners: [], programs: [], auditEvents: [] }; %>
+  <% if (typeof member !== 'undefined' && member) { %>
+    <div class='alert alert-success' role='status'>Member status updated.</div>
+  <% } %>
+  <% if (typeof access !== 'undefined' && access === 'cancelled') { %>
+    <div class='alert alert-success' role='status'>Access entitlement cancelled and capacity released.</div>
+  <% } %>
+  <% if (typeof reconciled !== 'undefined' && reconciled !== '') { %>
+    <div class='alert alert-success' role='status'>Capacity reconciliation completed. <%= reconciled %> title<%= reconciled === '1' ? '' : 's' %> updated.</div>
+  <% } %>
 
   <div class='stats-grid' aria-label='Rental summary'>
     <div class='stat-card'>
@@ -29,6 +39,26 @@
       <strong><%= stats.remainingSlots || 0 %></strong>
     </div>
   </div>
+
+  <section id='attention-required' aria-labelledby='attention-heading'>
+    <div class='section-heading'>
+      <h2 id='attention-heading'>Attention Required</h2>
+      <p><%= ops.alerts.length %> alert<%= ops.alerts.length === 1 ? '' : 's' %></p>
+    </div>
+    <% if (ops.alerts.length === 0) { %>
+      <div class='empty-state' role='status'><p>No operational alerts.</p></div>
+    <% } else { %>
+      <div class='grid'>
+        <% ops.alerts.forEach(alert => { %>
+          <article class='component-card'>
+            <p class='eyebrow'><%= alert.label %></p>
+            <p><%= alert.message %></p>
+            <a href='<%= alert.href || "#system-health" %>' class='btn btn-secondary btn-sm'>Review</a>
+          </article>
+        <% }); %>
+      </div>
+    <% } %>
+  </section>
 
   <h2 class='section-title'>Inventory Management</h2>
   <div class='page-toolbar'>
@@ -82,21 +112,22 @@
     </div>
   <% } %>
 
-  <h2 class='section-title section-title-lg'>Recent Rentals</h2>
+  <h2 id='access-activity' class='section-title section-title-lg'>Access Activity</h2>
   <% if (rentals.length === 0) { %>
     <div class='empty-state' role='status'>
-      <p>No rental activity yet.</p>
+      <p>No access activity yet.</p>
     </div>
   <% } else { %>
     <div class='table-wrap'>
       <table>
         <thead>
           <tr>
-            <th>User Email</th>
-            <th>Content</th>
+            <th>Member</th>
+            <th>Title</th>
             <th>Status</th>
-            <th>Rental Date</th>
+            <th>Started</th>
             <th>Expires</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -106,15 +137,130 @@
               <td><%= r.contentId ? r.contentId.title : 'Deleted Content' %></td>
               <td>
                 <span class='status <%= r.status === "active" ? "available" : "unavailable" %>'>
-                  <%= r.status === 'active' ? 'Active' : 'Completed' %>
+                  <%= r.status === 'active' ? 'Active access' : r.status %>
                 </span>
               </td>
               <td><%= new Date(r.rentedAt || r.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
               <td><%= new Date(r.expiresAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+              <td>
+                <% if (r.status === 'active') { %>
+                  <form method='post' action='/admin/access/<%= r._id %>/cancel' class='inline-form'>
+                    <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+                    <input type='hidden' name='confirmation' value='CANCEL' />
+                    <button type='submit' class='btn btn-danger btn-sm'>Cancel Access</button>
+                  </form>
+                <% } else { %>
+                  <span class='muted-copy'>Terminal</span>
+                <% } %>
+              </td>
             </tr>
           <% }); %>
         </tbody>
       </table>
     </div>
   <% } %>
+
+  <section id='members' aria-labelledby='members-heading'>
+    <div class='section-heading'>
+      <h2 id='members-heading'>Members</h2>
+      <p><%= ops.members.length %> account<%= ops.members.length === 1 ? '' : 's' %></p>
+    </div>
+    <div class='table-wrap'>
+      <table>
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Status</th>
+            <th>Session version</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% ops.members.forEach(memberRecord => { %>
+            <tr>
+              <td><%= memberRecord.displayName || 'Member' %></td>
+              <td><span class='status <%= memberRecord.status === "active" ? "available" : "unavailable" %>'><%= memberRecord.status %></span></td>
+              <td><%= memberRecord.sessionVersion || 1 %></td>
+              <td>
+                <% if (memberRecord.status === 'active') { %>
+                  <form method='post' action='/admin/members/<%= memberRecord._id %>/suspend' class='inline-form'>
+                    <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+                    <input type='hidden' name='confirmation' value='SUSPEND' />
+                    <button type='submit' class='btn btn-danger btn-sm'>Suspend</button>
+                  </form>
+                <% } else { %>
+                  <form method='post' action='/admin/members/<%= memberRecord._id %>/restore' class='inline-form'>
+                    <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+                    <input type='hidden' name='confirmation' value='RESTORE' />
+                    <button type='submit' class='btn btn-secondary btn-sm'>Restore</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id='partner-operations' aria-labelledby='partner-operations-heading'>
+    <div class='section-heading'>
+      <h2 id='partner-operations-heading'>Partner Operations</h2>
+      <p><%= ops.partners.length %> partner<%= ops.partners.length === 1 ? '' : 's' %> / <%= ops.programs.length %> program<%= ops.programs.length === 1 ? '' : 's' %></p>
+    </div>
+    <div class='table-wrap'>
+      <table>
+        <thead>
+          <tr>
+            <th>Program</th>
+            <th>Partner</th>
+            <th>Status</th>
+            <th>Titles</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% ops.programs.forEach(program => { %>
+            <tr>
+              <td><%= program.name %></td>
+              <td><%= program.partnerId ? program.partnerId.name : 'Unassigned' %></td>
+              <td><span class='status <%= program.status === "published" ? "available" : "unavailable" %>'><%= program.status %></span></td>
+              <td><%= (program.titleIds || []).length %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id='system-health' aria-labelledby='system-health-heading'>
+    <div class='section-heading'>
+      <h2 id='system-health-heading'>System Health</h2>
+      <p>Capacity reconciliation and safe audit stream</p>
+    </div>
+    <form method='post' action='/admin/system/reconcile' class='actions'>
+      <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+      <input type='hidden' name='confirmation' value='RECONCILE' />
+      <button type='submit' class='btn btn-primary'>Reconcile Capacity</button>
+    </form>
+    <div class='table-wrap'>
+      <table>
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Target</th>
+            <th>When</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% ops.auditEvents.forEach(event => { %>
+            <tr>
+              <td><%= event.action %></td>
+              <td><%= event.targetType %></td>
+              <td><%= new Date(event.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </section>
 </section>

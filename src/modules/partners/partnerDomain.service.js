@@ -58,6 +58,37 @@ const createPartnerDomainService = ({
   return {
     assertScopedPartnerAccess,
 
+    async loadWorkspace(actor) {
+      return toServiceResult(async () => {
+        const partner = await repository.findPartnerForUser(actor.userId);
+        if (!partner) {
+          return {
+            partner: null,
+            programs: [],
+            titles: [],
+            releaseWindows: [],
+            accessActivity: [],
+            alerts: [{ kind: 'scope', label: 'No assigned partner', message: 'This account is not assigned to an active partner record.' }],
+          };
+        }
+        assertScopedPartnerAccess(actor, partner);
+        const [programs, titles, releaseWindows, accessActivity] = await Promise.all([
+          repository.findProgramsByPartner(partner._id),
+          repository.findTitlesByPartner(partner._id),
+          repository.findReleaseWindowsByPartner(partner._id),
+          repository.findRentalsByPartner(partner._id),
+        ]);
+        return {
+          partner,
+          programs,
+          titles,
+          releaseWindows,
+          accessActivity,
+          alerts: buildPartnerAlerts({ programs, titles, releaseWindows }),
+        };
+      });
+    },
+
     async createProgram(actor, partnerId, programInput) {
       return toServiceResult(async () => {
         const partner = await repository.findPartnerById(partnerId);
@@ -88,6 +119,25 @@ const createPartnerDomainService = ({
           ...patch,
           titleIds: patch.titleIds ? stableUniqueIds(patch.titleIds) : program.titleIds,
         });
+        await recordAudit({
+          action: 'SNX.program.updated',
+          actorId: actor.userId,
+          targetType: 'program',
+          targetId: programId,
+        });
+        return updated;
+      });
+    },
+
+    async updateProgramStatus(actor, programId, status) {
+      return toServiceResult(async () => {
+        if (!['draft', 'published', 'archived'].includes(status)) {
+          throw new ValidationError('Unsupported program status');
+        }
+        const program = await repository.findProgramById(programId);
+        const partner = program ? await repository.findPartnerById(program.partnerId) : null;
+        assertScopedPartnerAccess(actor, partner);
+        const updated = await repository.updateProgram(programId, { status });
         await recordAudit({
           action: 'SNX.program.updated',
           actorId: actor.userId,
@@ -141,8 +191,23 @@ const createPartnerDomainService = ({
   };
 };
 
+const buildPartnerAlerts = ({ programs = [], titles = [], releaseWindows = [], now = new Date() }) => {
+  const alerts = [];
+  programs.filter(program => program.status !== 'published').forEach(program => {
+    alerts.push({ kind: 'program', label: 'Program not published', message: `${program.name} is ${program.status}.` });
+  });
+  titles.filter(title => title.lifecycle !== 'published').forEach(title => {
+    alerts.push({ kind: 'title', label: 'Title not published', message: `${title.title} is ${title.lifecycle || 'not published'}.` });
+  });
+  releaseWindows.filter(window => new Date(window.closesAt) < now).forEach(() => {
+    alerts.push({ kind: 'window', label: 'Expired release window', message: 'A release window has closed.' });
+  });
+  return alerts.slice(0, 12);
+};
+
 module.exports = {
   assertScopedPartnerAccess,
+  buildPartnerAlerts,
   createPartnerDomainService,
   hasOverlappingWindow,
   isWindowEligible,

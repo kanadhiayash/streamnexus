@@ -949,6 +949,69 @@
       "title": "member can read only owned access records",
       "ownerIssue": 49,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-100",
+      "area": "PARTNER",
+      "title": "partner dashboard is ownership-scoped",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-101",
+      "area": "PARTNER",
+      "title": "partner cannot edit another partner program",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ADMIN-100",
+      "area": "ADMIN",
+      "title": "admin dashboard reports canonical operational state",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ADMIN-101",
+      "area": "ADMIN",
+      "title": "admin member suspension invalidates access safely",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ADMIN-102",
+      "area": "ADMIN",
+      "title": "admin cancellation releases entitlement capacity once",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ADMIN-103",
+      "area": "ADMIN",
+      "title": "reconciliation action reports deterministic result",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-240",
+      "area": "A11Y",
+      "title": "operations tables and forms are keyboard usable",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-150",
+      "area": "SEC",
+      "title": "destructive operations require role ownership CSRF and confirmation",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-151",
+      "area": "SEC",
+      "title": "audit views expose no sensitive payloads",
+      "ownerIssue": 50,
+      "status": "implemented"
     }
   ]
 }
