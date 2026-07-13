@@ -10,6 +10,10 @@ const ALLOWED_ACTIONS = new Set([
   'saved_titles.removed',
   'rentals.created',
   'rentals.completed',
+  'SNX.access.confirmed',
+  'SNX.access.returned',
+  'SNX.access.expired',
+  'SNX.access.cancelled',
 ]);
 
 const createAuditService = ({ logger: injectedLogger = logger } = {}) => ({

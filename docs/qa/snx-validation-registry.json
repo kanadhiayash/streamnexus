@@ -207,6 +207,55 @@
       "title": "authentication logs contain no email password token or session ID",
       "ownerIssue": 36,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-010",
+      "area": "ACCESS",
+      "title": "legacy rental maps to canonical access entitlement",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-011",
+      "area": "ACCESS",
+      "title": "active entitlement returns once and becomes terminal",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-012",
+      "area": "ACCESS",
+      "title": "expired entitlement remains terminal",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-013",
+      "area": "ACCESS",
+      "title": "cancelled entitlement remains terminal",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-014",
+      "area": "ACCESS",
+      "title": "duplicate active access is deterministic",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-010",
+      "area": "DATA",
+      "title": "entitlement snapshots remain backward compatible",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-020",
+      "area": "SEC",
+      "title": "access audit payload excludes credentials and session data",
+      "ownerIssue": 37,
+      "status": "implemented"
     }
   ]
 }
