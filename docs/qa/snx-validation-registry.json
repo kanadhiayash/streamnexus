@@ -74,6 +74,62 @@
       "title": "diagnostic policy excludes sensitive payload fields",
       "ownerIssue": 33,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-001",
+      "area": "BRAND",
+      "title": "required production brand assets exist and are non-empty",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-002",
+      "area": "BRAND",
+      "title": "shared and auth surfaces contain no temporary SN placeholder",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-003",
+      "area": "BRAND",
+      "title": "favicon manifest social and token references resolve from the layout",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-004",
+      "area": "BRAND",
+      "title": "approved dark and light variants are present",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-005",
+      "area": "BRAND",
+      "title": "application and social PNG dimensions match the production contract",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-006",
+      "area": "BRAND",
+      "title": "registry owns the approved brand validation identifiers",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-001",
+      "area": "A11Y",
+      "title": "logo links have an accessible StreamNexus home name",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-002",
+      "area": "SEC",
+      "title": "committed SVG assets contain no scripts or unsafe external references",
+      "ownerIssue": 34,
+      "status": "implemented"
     }
   ]
 }

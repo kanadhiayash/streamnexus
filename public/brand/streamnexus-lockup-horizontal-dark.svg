@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="128" viewBox="0 0 520 128" role="img" aria-labelledby="title desc">
+  <title id="title">StreamNexus horizontal lockup dark</title>
+  <desc id="desc">StreamNexus Connected Play Nexus horizontal lockup for dark surfaces.</desc>
+  <defs>
+    <linearGradient id="snxLockupGradient" x1="16" y1="112" x2="112" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7C3AED"/>
+      <stop offset="0.5" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#0F172A"/>
+  <path d="M31 43c0-8.8 7.2-16 16-16h47v18H49c-1.1 0-2 .9-2 2v5c0 1.1.9 2 2 2h30c10.5 0 19 8.5 19 19v12c0 10.5-8.5 19-19 19H31V86h47c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2H47c-8.8 0-16-7.2-16-16V43Z" fill="url(#snxLockupGradient)"/>
+  <circle cx="33" cy="33" r="8" fill="#22D3EE"/>
+  <circle cx="95" cy="95" r="8" fill="#A78BFA"/>
+  <text x="152" y="66" fill="#F8FAFC" font-family="Avenir Next, Avenir, Trebuchet MS, Arial, sans-serif" font-size="46" font-weight="800">StreamNexus</text>
+  <text x="155" y="94" fill="#22D3EE" font-family="Avenir Next, Avenir, Trebuchet MS, Arial, sans-serif" font-size="13" font-weight="800">DISCOVER • CONNECT • ACCESS</text>
+</svg>

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0.0",
+  "productId": "SNX",
+  "name": "StreamNexus",
+  "markName": "Connected Play Nexus",
+  "tagline": "DISCOVER • CONNECT • ACCESS",
+  "colors": {
+    "ink": "#0F172A",
+    "paper": "#F8FAFC",
+    "violet": "#7C3AED",
+    "electricBlue": "#2563EB",
+    "cyan": "#06B6D4"
+  },
+  "assets": {
+    "mark": "/brand/streamnexus-mark.svg",
+    "lockupHorizontalDark": "/brand/streamnexus-lockup-horizontal-dark.svg",
+    "lockupHorizontalLight": "/brand/streamnexus-lockup-horizontal-light.svg",
+    "socialPreview": "/brand/social-preview.png"
+  }
+}
