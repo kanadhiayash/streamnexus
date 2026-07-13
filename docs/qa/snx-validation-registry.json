@@ -368,6 +368,62 @@
       "title": "fixture output contains no credentials or proprietary data",
       "ownerIssue": 39,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-010",
+      "area": "PARTNER",
+      "title": "partner ownership is enforced",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-011",
+      "area": "PARTNER",
+      "title": "partner cannot mutate another partner record",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-012",
+      "area": "PARTNER",
+      "title": "admin can operate across partners",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-020",
+      "area": "DATA",
+      "title": "program-title relationship remains consistent",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-021",
+      "area": "DATA",
+      "title": "collection membership is deterministic",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-020",
+      "area": "ACCESS",
+      "title": "release window controls unlock eligibility",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-021",
+      "area": "ACCESS",
+      "title": "expired release window blocks new access",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-030",
+      "area": "SEC",
+      "title": "partner audit payload is privacy-safe",
+      "ownerIssue": 40,
+      "status": "implemented"
     }
   ]
 }

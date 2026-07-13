@@ -5,6 +5,7 @@ const contentSchema = new mongoose.Schema(
     schemaVersion: { type: Number, default: 1, index: true },
     fixtureId: { type: String, default: null },
     fixtureOwner: { type: String, default: null, index: true },
+    partnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Partner', default: null, index: true },
     programKey: { type: String, default: null, index: true },
     collectionKeys: [{ type: String }],
     accessMode: { type: String, enum: ['screening', 'festival', 'partner_preview'], default: 'screening' },
