@@ -15,6 +15,7 @@ const rentalService = require('../../services/rentalService');
 const { errorHandler, AppError } = require('../../middleware/errorHandler');
 const { csrfProtection } = require('../../middleware/csrf');
 const { buildConfig, assertSandboxDatabase } = require('../config/environment');
+const { getRoleDestination } = require('../modules/auth/roleDestinations');
 
 const registerMiddleware = (app, config) => {
   app.use(
@@ -89,11 +90,11 @@ const registerRoutes = (app) => {
   app.use('/content', contentRoutes);
 
   app.get('/', async (req, res, next) => {
-    if (req.session.user?.role === 'admin') {
-      return res.redirect('/admin/dashboard');
-    }
-    if (req.session.user?.role === 'streamer') {
-      return res.redirect('/streamer/browse');
+    if (req.session.user) {
+      const destination = getRoleDestination(req.session.user.role);
+      if (destination !== '/') {
+        return res.redirect(destination);
+      }
     }
 
     try {

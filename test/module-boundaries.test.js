@@ -39,22 +39,40 @@ test('auth module registers public accounts through repository boundary', async 
   assert.equal(result.redirectTo, '/streamer/browse?signedup=true');
 });
 
-test('auth module keeps routine emails out of failure logs', async () => {
+test('[SNX-SEC-010] authentication logs contain no email password token or session ID', async () => {
   const warnings = [];
+  const info = [];
   const service = createAuthService({
     repository: {
-      findByEmail: async () => null,
+      findByEmail: async () => ({
+        _id: 'member-id',
+        email: 'private-person@example.com',
+        password: 'stored-hash',
+        role: 'member',
+        status: 'active',
+        sessionVersion: 1,
+      }),
+      recordLogin: async () => ({ modifiedCount: 1 }),
     },
     auditService: silentAudit,
-    logger: { ...silentLogger, warn: message => warnings.push(message) },
+    compare: async () => false,
+    logger: {
+      ...silentLogger,
+      info: message => info.push(message),
+      warn: message => warnings.push(message),
+    },
   });
 
   await assert.rejects(
-    () => service.authenticate({ email: 'private-person@example.com', password: 'wrong-password' }),
+    () => service.authenticate({ email: 'private-person@example.com', password: 'wrong-password-token-session-123' }),
     /Invalid email or password/
   );
 
-  assert.equal(warnings.some(message => message.includes('private-person@example.com')), false);
+  const logs = [...warnings, ...info].join('\n');
+  assert.doesNotMatch(logs, /private-person@example\.com/);
+  assert.doesNotMatch(logs, /wrong-password-token-session-123/);
+  assert.doesNotMatch(logs, /token/i);
+  assert.doesNotMatch(logs, /session/i);
 });
 
 test('catalog module validates admin title input before repository writes', async () => {

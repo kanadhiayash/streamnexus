@@ -45,6 +45,16 @@ const loginAs = async (role) => {
   return agent;
 };
 
+const submitLogin = async (agent, credentials) => {
+  const loginPage = await agent.get('/login').expect(200);
+  const csrfToken = extractCsrfToken(loginPage.text);
+
+  return agent
+    .post('/login')
+    .type('form')
+    .send({ ...credentials, _csrf: csrfToken });
+};
+
 test.before(async () => {
   mongoServer = await MongoMemoryServer.create();
   process.env.MONGO_URI = mongoServer.getUri('streamnexus_test');
@@ -460,6 +470,65 @@ test('login regenerates the session id after authentication', async () => {
   assert.notEqual(initialCookie.split(';')[0], nextCookie.split(';')[0]);
 });
 
+test('[SNX-AUTH-001] member login persists after redirect', async () => {
+  const agent = request.agent(createApp());
+  const response = await submitLogin(agent, { email: 'streamer@gmail.com', password: 'streamer' });
+
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.location, '/streamer/browse');
+  assert.ok(response.headers['set-cookie']?.some(cookie => cookie.startsWith('streamnexus.sid=')));
+
+  const destination = await agent.get('/streamer/browse').expect(200);
+  assert.match(destination.text, /Browse Titles/);
+  assert.doesNotMatch(destination.text, /Sign In/);
+});
+
+test('[SNX-AUTH-002] admin login persists after redirect', async () => {
+  const agent = request.agent(createApp());
+  const response = await submitLogin(agent, { email: 'admin@gmail.com', password: 'admin' });
+
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.location, '/admin/dashboard');
+
+  const dashboard = await agent.get('/admin/dashboard').expect(200);
+  assert.match(dashboard.text, /Admin Dashboard/);
+  assert.doesNotMatch(dashboard.text, /Sign In/);
+});
+
+test('[SNX-AUTH-003] valid session persists after reload', async () => {
+  const agent = request.agent(createApp());
+  const response = await submitLogin(agent, { email: 'streamer@gmail.com', password: 'streamer' });
+
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.location, '/streamer/browse');
+
+  await agent.get('/streamer/browse').expect(200);
+  const reloaded = await agent.get('/streamer/browse').expect(200);
+  assert.match(reloaded.text, /Browse Titles/);
+});
+
+test('[SNX-AUTH-004] legacy demo account is repaired', async () => {
+  await User.updateOne(
+    { email: 'streamer@gmail.com' },
+    { $unset: { role: '', status: '', sessionVersion: '', shortlist: '', rented: '' } }
+  );
+
+  await seedDatabase({ isProduction: false });
+
+  const repaired = await User.findOne({ email: 'streamer@gmail.com' }).lean();
+  assert.equal(repaired.role, 'streamer');
+  assert.equal(repaired.status, 'active');
+  assert.equal(repaired.sessionVersion, 1);
+  assert.deepEqual(repaired.shortlist, []);
+  assert.deepEqual(repaired.rented, []);
+
+  const agent = request.agent(createApp());
+  const response = await submitLogin(agent, { email: 'streamer@gmail.com', password: 'streamer' });
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.location, '/streamer/browse');
+  await agent.get('/streamer/browse').expect(200);
+});
+
 test('stale sessionVersion forces reauthentication', async () => {
   const streamerAgent = await loginAs('streamer');
   const user = await User.findOne({ email: 'streamer@gmail.com' }).lean();
@@ -471,7 +540,7 @@ test('stale sessionVersion forces reauthentication', async () => {
     .expect('Location', '/login');
 });
 
-test('suspended accounts fail with a generic authentication response', async () => {
+test('[SNX-AUTH-005] suspended account is rejected', async () => {
   await User.updateOne({ email: 'streamer@gmail.com' }, { $set: { status: 'suspended' } });
   const agent = request.agent(createApp());
   const loginPage = await agent.get('/login').expect(200);

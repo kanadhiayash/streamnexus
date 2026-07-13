@@ -165,6 +165,48 @@
       "title": "public claims remain evidence-bounded",
       "ownerIssue": 35,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-001",
+      "area": "AUTH",
+      "title": "member login persists after redirect",
+      "ownerIssue": 36,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-002",
+      "area": "AUTH",
+      "title": "admin login persists after redirect",
+      "ownerIssue": 36,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-003",
+      "area": "AUTH",
+      "title": "valid session persists after reload",
+      "ownerIssue": 36,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-004",
+      "area": "AUTH",
+      "title": "legacy demo account is repaired",
+      "ownerIssue": 36,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-005",
+      "area": "AUTH",
+      "title": "suspended account is rejected",
+      "ownerIssue": 36,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-010",
+      "area": "SEC",
+      "title": "authentication logs contain no email password token or session ID",
+      "ownerIssue": 36,
+      "status": "implemented"
     }
   ]
 }

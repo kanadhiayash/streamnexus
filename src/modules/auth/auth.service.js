@@ -5,6 +5,7 @@ const { validateEmail, validatePassword } = require('../../../utils/validators')
 const { ConflictError, ValidationError, NotFoundError, ForbiddenError } = require('../../shared/errors/domainErrors');
 const { createAuditService } = require('../audit/audit.service');
 const { createAuthRepository } = require('./auth.repository');
+const { getRoleDestination } = require('./roleDestinations');
 
 const buildSessionUser = (user) => ({
   id: user._id,
@@ -52,7 +53,7 @@ const createAuthService = ({
     return {
       user,
       sessionUser: buildSessionUser(user),
-      redirectTo: '/streamer/browse?signedup=true',
+      redirectTo: getRoleDestination(user.role, { signedUp: true }),
     };
   },
 
@@ -91,7 +92,7 @@ const createAuthService = ({
     return {
       user,
       sessionUser: buildSessionUser(user),
-      redirectTo: user.role === 'admin' ? '/admin/dashboard' : '/streamer/browse',
+      redirectTo: getRoleDestination(user.role),
     };
   },
 
