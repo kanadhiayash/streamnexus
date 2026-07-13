@@ -1012,6 +1012,69 @@
       "title": "audit views expose no sensitive payloads",
       "ownerIssue": 50,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-100",
+      "area": "RELEASE",
+      "title": "complete validation registry passes",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-101",
+      "area": "RELEASE",
+      "title": "final dev commit is reproducibly verified",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-102",
+      "area": "RELEASE",
+      "title": "50-title fixture count and identity pass",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-103",
+      "area": "RELEASE",
+      "title": "all role journeys pass browser acceptance",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-104",
+      "area": "RELEASE",
+      "title": "capture assets reference the verified commit",
+      "ownerIssue": 51,
+      "status": "deferred-until-yash-review"
+    },
+    {
+      "id": "SNX-CI-100",
+      "area": "CI",
+      "title": "final required checks are green",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-300",
+      "area": "A11Y",
+      "title": "manual accessibility acceptance passes",
+      "ownerIssue": 51,
+      "status": "deferred-until-yash-review"
+    },
+    {
+      "id": "SNX-SEC-200",
+      "area": "SEC",
+      "title": "no unresolved high-severity security finding remains",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-100",
+      "area": "DATA",
+      "title": "reconciliation and fixture reset are repeatable",
+      "ownerIssue": 51,
+      "status": "implemented"
     }
   ]
 }
