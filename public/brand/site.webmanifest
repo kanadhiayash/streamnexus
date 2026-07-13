@@ -1,7 +1,7 @@
 {
   "name": "StreamNexus",
   "short_name": "SNX",
-  "description": "Role-based digital entertainment rental prototype.",
+  "description": "Curated screening and access platform prototype.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0F172A",

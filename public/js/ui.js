@@ -320,7 +320,7 @@ function setupContentModal() {
     fields.rentForm.action = item.rentUrl;
     fields.rentForm.method = 'GET';
     fields.rentButton.disabled = !item.available || item.capacity.isFull;
-    fields.rentButton.textContent = item.capacity.isFull ? 'Rental Full' : 'Activate Rental';
+    fields.rentButton.textContent = item.capacity.isFull ? 'Access Full' : 'Activate Access';
     fields.detailsLink.href = item.detailUrl;
 
     modal.removeAttribute('hidden');
@@ -447,13 +447,26 @@ function setupActionButtons() {
       window.confirmDelete(button.dataset.deleteId);
     });
   });
+
+  document.querySelectorAll('[data-copy-text]').forEach(button => {
+    button.addEventListener('click', async () => {
+      const value = button.dataset.copyText || '';
+      if (!value) return;
+      try {
+        await navigator.clipboard.writeText(value);
+        ToastNotification.success('Reference copied.');
+      } catch (error) {
+        ToastNotification.info(value);
+      }
+    });
+  });
 }
 
 function setupToasts() {
   const params = new URLSearchParams(window.location.search);
   if (params.has('signedup')) ToastNotification.success('Account created. Welcome to StreamNexus.');
-  if (params.has('rented')) ToastNotification.success('Rental confirmation is active. Your 45-day access window has started.');
-  if (params.has('checkout')) ToastNotification.success('Access returned.');
+  if (params.has('rented')) ToastNotification.success('Access pass confirmed. Your 45-day access window has started.');
+  if (params.has('returned') || params.has('checkout')) ToastNotification.success('Access returned.');
   if (params.has('created')) ToastNotification.success('Content created.');
   if (params.has('updated')) ToastNotification.success('Content updated.');
   if (params.has('deleted')) ToastNotification.success('Content archived.');
@@ -475,11 +488,11 @@ function setupFocusMode() {
 window.confirmCheckout = function (rentalId) {
   ConfirmDialog.show(
     'Return access?',
-    'This returns the simulated rental access and frees one licence for the title.',
+    'This returns the simulated access pass and frees one licence for the title.',
     () => {
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = `/streamer/rentals/${rentalId}/checkout`;
+      form.action = `/my-access/${rentalId}/checkout`;
       appendCsrfInput(form);
       document.body.appendChild(form);
       form.submit();

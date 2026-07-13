@@ -1,6 +1,8 @@
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_PAGE_SIZE = 12;
 const DEFAULT_CAPACITY_LIMIT = 20;
+const ACCESS_DURATION_DAYS = 45;
+const ACCESS_CURRENCY = 'CAD';
 
 const PROGRAM_LABELS = {
   'program-northstar': 'Northstar Program',
@@ -53,9 +55,52 @@ const normalizeCapacity = (title = {}) => {
   };
 };
 
+const releaseWindowState = (title = {}, now = new Date()) => {
+  const window = title.releaseWindow || {};
+  const opensAt = window.opensAt ? new Date(window.opensAt) : null;
+  const closesAt = window.closesAt ? new Date(window.closesAt) : null;
+  if (opensAt && now < opensAt) {
+    return {
+      status: 'upcoming',
+      label: 'Access window not open yet',
+      message: `Access opens ${opensAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}.`,
+      opensAt,
+      closesAt,
+    };
+  }
+  if (closesAt && now > closesAt) {
+    return {
+      status: 'expired',
+      label: 'Access window closed',
+      message: `Access closed ${closesAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}.`,
+      opensAt,
+      closesAt,
+    };
+  }
+  if (opensAt || closesAt) {
+    return {
+      status: 'open',
+      label: 'Access window open',
+      message: closesAt
+        ? `Access closes ${closesAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}.`
+        : 'Access window is open.',
+      opensAt,
+      closesAt,
+    };
+  }
+  return {
+    status: 'open',
+    label: 'Access window open',
+    message: 'Standard access window is open.',
+    opensAt: null,
+    closesAt: null,
+  };
+};
+
 const buildAccessState = ({ title, isShortlisted = false, canAccessMemberActions = true }) => {
   const capacity = normalizeCapacity(title);
-  const available = Boolean(title?.available) && !capacity.isFull;
+  const windowState = releaseWindowState(title);
+  const available = Boolean(title?.available) && !capacity.isFull && windowState.status === 'open';
   let primaryAction = 'sign_in';
   let primaryLabel = 'Sign In';
   let primaryHref = '/login';
@@ -63,7 +108,7 @@ const buildAccessState = ({ title, isShortlisted = false, canAccessMemberActions
 
   if (canAccessMemberActions) {
     primaryAction = available ? 'activate_access' : 'unavailable';
-    primaryLabel = available ? 'Activate Rental' : 'Full or unavailable';
+    primaryLabel = available ? 'Activate Access' : 'Unavailable';
     primaryHref = reviewPath(title);
   }
 
@@ -71,6 +116,7 @@ const buildAccessState = ({ title, isShortlisted = false, canAccessMemberActions
     available,
     canAccessMemberActions,
     capacity,
+    releaseWindow: windowState,
     isShortlisted: Boolean(isShortlisted),
     primaryAction,
     primaryLabel,
@@ -484,6 +530,51 @@ const buildMemberHomePage = ({ titles = [], query = {}, shortlistTitles = [], re
   };
 };
 
+const buildAccessReviewPage = ({ title, accessError = null }) => {
+  const content = buildTitleCard(title, { canAccessMemberActions: true });
+  const capacity = content.capacity;
+  const conflict = accessError
+    ? {
+        code: accessError.code || 'ACCESS_CONFLICT',
+        message: accessError.error || accessError.message || 'Access could not be confirmed.',
+      }
+    : content.access.releaseWindow.status !== 'open'
+      ? { code: 'WINDOW_CLOSED', message: content.access.releaseWindow.message }
+    : !content.available
+      ? { code: 'UNAVAILABLE', message: 'This title is not available for access activation right now.' }
+      : capacity.isFull
+        ? { code: 'AT_CAPACITY', message: 'All simulated access seats are currently active for this title.' }
+        : null;
+
+  return {
+    page: {
+      kind: 'access-review',
+      title: `Review access for ${content.title}`,
+      emptyState: null,
+    },
+    content,
+    capacity,
+    accessPolicy: {
+      durationDays: ACCESS_DURATION_DAYS,
+      currencyCode: content.currencyCode || ACCESS_CURRENCY,
+      simulatedAmount: Number(content.price || 0).toFixed(2),
+      version: 'rental-v1',
+      limitations: [
+        'No real payment is processed.',
+        'No protected playback is enabled.',
+        'Returning access releases one simulated title licence.',
+      ],
+    },
+    conflict,
+    recoveryActions: [
+      { href: '/my-access', label: 'Open My Access' },
+      { href: '/home#browse-titles', label: 'Browse available titles' },
+      { href: content.detailUrl, label: 'Back to title details' },
+    ],
+    canConfirm: !conflict,
+  };
+};
+
 const buildShortlistPage = ({ titles = [] }) => ({
   page: {
     kind: 'my-list',
@@ -503,17 +594,34 @@ const buildRentalCard = rental => {
   const status = plain.status || 'active';
   const isActive = status === 'active';
   const expiresAt = plain.expiresAt ? new Date(plain.expiresAt) : null;
+  const startedAt = plain.rentedAt || plain.startedAt || plain.date || plain.createdAt;
+  const endedAt = rentalEndedAt(plain);
+  const statusLabel = status === 'returned'
+    ? 'Access returned'
+    : status === 'expired'
+      ? 'Access expired'
+      : status === 'cancelled'
+        ? 'Access cancelled'
+        : status === 'active'
+          ? 'Active access'
+          : status;
   return {
     ...plain,
     content,
     title: content?.title || plain.titleSnapshot?.title || 'Content Deleted',
     image: content?.image || content?.posterReference || plain.titleSnapshot?.posterReference || '/images/default.svg',
     status,
-    statusLabel: status === 'returned' ? 'Access returned' : status === 'active' ? 'Active rental' : status,
+    statusLabel,
     isActive,
     confirmationHref: plain.publicReference ? `/my-access/ref/${encodeURIComponent(plain.publicReference)}` : null,
     expiresWithinSevenDays: Boolean(isActive && expiresAt && (expiresAt.getTime() - Date.now()) <= (7 * DAY_IN_MS)),
-    endedAt: rentalEndedAt(plain),
+    daysRemaining: isActive && expiresAt ? Math.max(daysUntil(expiresAt), 0) : null,
+    endedAt,
+    lifecycle: [
+      { label: 'Confirmed', date: startedAt, isComplete: true },
+      { label: 'Expires', date: plain.expiresAt, isComplete: !endedAt },
+      { label: statusLabel, date: endedAt, isComplete: Boolean(endedAt) },
+    ],
   };
 };
 
@@ -524,15 +632,16 @@ const buildAccessPage = ({ rentals = [], query = {} }) => {
   return {
     page: {
       kind: 'my-access',
-      title: 'My Rentals',
+      title: 'My Access',
       emptyState: cards.length === 0
-        ? { kind: 'empty', message: 'No rentals yet. Browse and activate rental access for your first title.', actionHref: '/home', actionLabel: 'Browse Titles' }
+        ? { kind: 'empty', message: 'No access passes yet. Browse titles and activate a simulated access pass for your first title.', actionHref: '/home', actionLabel: 'Browse Titles' }
         : null,
     },
     rentals: cards,
     active,
     completed,
     rented: query.rented === 'true',
+    returned: query.returned === 'true' || query.checkout === 'success',
     reference: query.ref || '',
   };
 };
@@ -540,7 +649,7 @@ const buildAccessPage = ({ rentals = [], query = {} }) => {
 const buildRentalDetailPage = ({ rental }) => ({
   page: {
     kind: 'access-detail',
-    title: 'Rental confirmation',
+    title: 'Access pass details',
     emptyState: null,
   },
   rental: buildRentalCard(rental),
@@ -591,6 +700,7 @@ const buildPublicErrorModel = (error) => ({
 module.exports = {
   buildAdminOperationsPage,
   buildAccessPage,
+  buildAccessReviewPage,
   buildAccessState,
   buildAccountPage,
   buildCatalogPage,

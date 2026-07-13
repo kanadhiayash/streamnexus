@@ -1,11 +1,23 @@
 <section>
   <div class='page-toolbar'>
     <div>
-      <p class='eyebrow'>Rental review</p>
-      <h1>Confirm Rental</h1>
+      <p class='eyebrow'>Access review</p>
+      <h1>Review Access Pass</h1>
     </div>
     <a href='/titles/<%= content._id %>' class='btn btn-secondary'>Back to Details</a>
   </div>
+
+  <% if (conflict) { %>
+    <div class='alert alert-warning' role='alert'>
+      <strong>Access cannot be confirmed right now.</strong>
+      <span><%= conflict.message %></span>
+      <div class='actions'>
+        <% recoveryActions.forEach(action => { %>
+          <a href='<%= action.href %>' class='btn btn-secondary btn-sm'><%= action.label %></a>
+        <% }); %>
+      </div>
+    </div>
+  <% } %>
 
   <div class='details-card'>
     <img class='content-poster' src='<%= content.image || "/images/default.svg" %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
@@ -14,17 +26,23 @@
       <p class='meta-line'><%= content.type.toUpperCase() %> / <%= content.genre || 'General' %> / <%= content.duration || 'Runtime TBD' %></p>
       <p><%= content.description %></p>
       <dl class='details-list'>
-        <div><dt>Rental price</dt><dd>$<%= Number(content.price || 0).toFixed(2) %> CAD</dd></div>
-        <div><dt>Access window</dt><dd>45 days from confirmation</dd></div>
+        <div><dt>Simulated price</dt><dd>$<%= accessPolicy.simulatedAmount %> <%= accessPolicy.currencyCode %></dd></div>
+        <div><dt>Access window</dt><dd><%= accessPolicy.durationDays %> days from confirmation</dd></div>
         <div><dt>Licence availability</dt><dd><%= capacity.remaining %> of <%= capacity.rentalLimit %> open</dd></div>
+        <div><dt>Release window</dt><dd><%= content.access.releaseWindow.label %>. <%= content.access.releaseWindow.message %></dd></div>
         <div><dt>Payment mode</dt><dd>Simulated payment for demo review only</dd></div>
       </dl>
+      <ul class='policy-list' aria-label='Access limitations'>
+        <% accessPolicy.limitations.forEach(item => { %>
+          <li><%= item %></li>
+        <% }); %>
+      </ul>
       <div class='alert alert-warning' role='note'>
-        This demo does not process payments or enable playback. Confirming creates a rental record, starts the 45-day access window, and reserves one title licence.
+        This demo does not process payments or enable playback. Confirming creates one access record, starts the <%= accessPolicy.durationDays %>-day access window, and reserves one title licence.
       </div>
       <form method='post' action='/titles/<%= content._id %>/rent' class='details-actions'>
         <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
-        <button type='submit' class='btn btn-success' <%= !content.available || capacity.isFull ? 'disabled' : '' %>>Confirm Rental</button>
+        <button type='submit' class='btn btn-success' <%= canConfirm ? '' : 'disabled' %>>Confirm Access</button>
         <a href='/home' class='btn btn-secondary'>Cancel</a>
       </form>
     </div>

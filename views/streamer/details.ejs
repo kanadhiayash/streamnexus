@@ -11,7 +11,7 @@
       <div class='capacity-meter' aria-label='Rental capacity for <%= content.title %>'>
         <span style='width:<%= Math.min(100, Math.round((capacity.activeRentals / capacity.rentalLimit) * 100)) %>%'></span>
       </div>
-      <p class='capacity-copy'><%= capacity.remaining %> of <%= capacity.rentalLimit %> rental licences available. Rentals last 45 days.</p>
+      <p class='capacity-copy'><%= capacity.remaining %> of <%= capacity.rentalLimit %> simulated access seats available. Access lasts 45 days.</p>
       <% if (!showMemberActions) { %>
         <div class='component-card public-access-note'>
           <p class='eyebrow'>Public screening detail</p>
@@ -40,8 +40,8 @@
             </button>
           </form>
           <form method='get' action='/titles/<%= content._id %>/review' class='inline-form'>
-            <button type='submit' class='btn btn-success' aria-label='Rent <%= content.title %>' <%= !content.available || capacity.isFull ? 'disabled' : '' %>>
-              Activate Rental
+            <button type='submit' class='btn btn-success' aria-label='Activate access for <%= content.title %>' <%= !content.available || capacity.isFull ? 'disabled' : '' %>>
+              Activate Access
             </button>
           </form>
           <a href='/home' class='btn btn-secondary'>Back to Catalog</a>

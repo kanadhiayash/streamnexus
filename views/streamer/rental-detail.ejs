@@ -1,32 +1,48 @@
 <section>
   <div class='page-toolbar'>
     <div>
-      <p class='eyebrow'>Rental confirmation</p>
-      <h1><%= rental.contentId ? rental.contentId.title : 'Rental Details' %></h1>
+      <p class='eyebrow'>Access pass</p>
+      <h1><%= rental.title %></h1>
     </div>
-    <a href='/my-access' class='btn btn-secondary'>Back to Rentals</a>
+    <a href='/my-access' class='btn btn-secondary'>Back to My Access</a>
   </div>
 
   <div class='details-card'>
-    <img class='content-poster' src='<%= rental.contentId && rental.contentId.image ? rental.contentId.image : "/images/default.svg" %>' alt='<%= rental.contentId ? rental.contentId.title : "Content" %>' loading='lazy' data-fallback-src='/images/default.svg' />
+    <img class='content-poster' src='<%= rental.image %>' alt='<%= rental.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
     <div class='details-info'>
       <span class='status <%= rental.status === "active" ? "available" : "unavailable" %>'>
-        <%= rental.status === 'active' ? 'Active rental' : rental.status === 'returned' ? 'Access returned' : rental.status %>
+        <%= rental.statusLabel %>
       </span>
       <dl class='details-list'>
-        <div><dt>Public reference</dt><dd><%= rental.publicReference || 'Legacy rental' %></dd></div>
+        <div>
+          <dt>Public reference</dt>
+          <dd>
+            <span><%= rental.publicReference || 'Legacy access record' %></span>
+            <% if (rental.publicReference) { %>
+              <button type='button' class='btn btn-secondary btn-sm' data-copy-text='<%= rental.publicReference %>'>Copy</button>
+            <% } %>
+          </dd>
+        </div>
         <div><dt>Started</dt><dd><%= new Date(rental.rentedAt || rental.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></dd></div>
         <div><dt>Access until</dt><dd><%= new Date(rental.expiresAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></dd></div>
-        <div><dt>Policy</dt><dd>45-day simulated rental window</dd></div>
+        <div><dt>Policy</dt><dd>45-day simulated access window</dd></div>
       </dl>
-      <% if (rental.status === 'active' && (new Date(rental.expiresAt).getTime() - Date.now()) <= (7 * 24 * 60 * 60 * 1000)) { %>
+      <ol class='access-timeline' aria-label='Access lifecycle timeline'>
+        <% rental.lifecycle.forEach(item => { %>
+          <li class='<%= item.isComplete ? "complete" : "" %>'>
+            <strong><%= item.label %></strong>
+            <span><%= item.date ? new Date(item.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Pending' %></span>
+          </li>
+        <% }); %>
+      </ol>
+      <% if (rental.expiresWithinSevenDays) { %>
         <div class='alert alert-warning' role='status'>Access expires within 7 days.</div>
       <% } %>
       <% if (rental.status === 'active') { %>
         <div class='alert alert-success' role='status'>This title is active. Returning access frees the title licence immediately.</div>
-        <button type='button' class='btn btn-success' data-checkout-id='<%= rental._id %>' aria-label='Return access for <%= rental.contentId ? rental.contentId.title : "this rental" %>'>Return Access</button>
+        <button type='button' class='btn btn-success' data-checkout-id='<%= rental._id %>' aria-label='Return access for <%= rental.title %>'>Return Access</button>
       <% } else { %>
-        <div class='alert alert-info' role='status'>This rental is no longer active.</div>
+        <div class='alert alert-info' role='status'>This access pass is terminal and cannot be reactivated from history.</div>
       <% } %>
     </div>
   </div>

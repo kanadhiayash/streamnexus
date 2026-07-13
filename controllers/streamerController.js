@@ -111,7 +111,11 @@ const rentContent = catchAsync(async (req, res) => {
     idempotencyKey: req.get('Idempotency-Key') || req.body.idempotencyKey,
   });
   if (!result.success) {
-    return res.status(400).render('error', { message: result.error || 'Failed to rent content' });
+    const model = await pageUseCases.rentalReview({
+      id: req.params.id,
+      accessError: result,
+    });
+    return res.status(result.statusCode || 400).render('streamer/rental-review', model);
   }
 
   res.redirect(`/my-access?rented=true&ref=${encodeURIComponent(result.data.publicReference || '')}`);
@@ -146,8 +150,8 @@ const checkout = catchAsync(async (req, res) => {
     throw new AppError(result.error || 'Failed to complete checkout', statusCode);
   }
 
-  logger.info(`Checkout completed for rental ${req.params.id}`);
-  res.redirect('/my-access?checkout=success');
+  logger.info(`Access returned for rental ${req.params.id}`);
+  res.redirect('/my-access?returned=true');
 });
 
 const account = catchAsync(async (req, res) => {

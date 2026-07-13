@@ -5,6 +5,7 @@ const { MEMBER_COMPATIBLE_ROLES } = require('../auth/roleDestinations');
 const { PageApplicationError, assertServiceSuccess } = require('./page.errors');
 const {
   buildAccessPage,
+  buildAccessReviewPage,
   buildAccountPage,
   buildCatalogPage,
   buildMemberHomePage,
@@ -152,17 +153,13 @@ const createPageUseCases = ({
     });
   },
 
-  async rentalReview({ id }) {
+  async rentalReview({ id, accessError = null }) {
     const title = assertServiceSuccess(await services.content.getContentById(id), 'Content not found', 404);
     const content = assertServiceSuccess(
       await services.rentals.attachCapacityToContent(title),
       'Failed to load title'
     );
-    return {
-      page: { kind: 'rental-review', title: `Confirm ${content.title}`, emptyState: null },
-      content,
-      capacity: content.capacity,
-    };
+    return buildAccessReviewPage({ title: content, accessError });
   },
 
   async myList({ user }) {
