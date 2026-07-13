@@ -9,7 +9,7 @@
   <% if (contents.length === 0) { %>
     <div class='empty-state' role='status'>
       <p>My List is empty. Browse titles and save a few for later.</p>
-      <a href='/home' class='btn btn-primary' style='margin-top:1rem;'>Browse Titles</a>
+      <a href='/home' class='btn btn-primary empty-action'>Browse Titles</a>
     </div>
   <% } else { %>
     <div class='grid'>
@@ -26,7 +26,7 @@
           <div class='card-footer'>
             <div class='actions'>
               <a href='/titles/<%= content._id %>' class='btn btn-primary btn-sm' aria-label='View details for <%= content.title %>'>View</a>
-              <form method='post' action='/titles/<%= content._id %>/shortlist/remove' style='display:inline;'>
+              <form method='post' action='/titles/<%= content._id %>/shortlist/remove' class='inline-form'>
                 <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
                 <button type='submit' class='btn btn-danger btn-sm' aria-label='Remove <%= content.title %> from My List'>Remove</button>
               </form>

@@ -17,7 +17,7 @@
       </span>
       <div class='details-actions'>
         <% if (showMemberActions) { %>
-          <form method='post' action='/titles/<%= content._id %>/<%= isShortlisted ? "shortlist/remove" : "shortlist" %>' style='display:inline;'>
+          <form method='post' action='/titles/<%= content._id %>/<%= isShortlisted ? "shortlist/remove" : "shortlist" %>' class='inline-form'>
             <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
             <% if (isShortlisted) { %>
               <input type='hidden' name='returnTo' value='/titles/<%= content._id %>' />
@@ -26,7 +26,7 @@
               <%= isShortlisted ? 'Remove from My List' : 'Add to My List' %>
             </button>
           </form>
-          <form method='get' action='/titles/<%= content._id %>/review' style='display:inline;'>
+          <form method='get' action='/titles/<%= content._id %>/review' class='inline-form'>
             <button type='submit' class='btn btn-success' aria-label='Rent <%= content.title %>' <%= !content.available || capacity.isFull ? 'disabled' : '' %>>
               Activate Rental
             </button>
@@ -42,7 +42,7 @@
   </div>
 
   <% if (similar && similar.length > 0) { %>
-    <section style='margin-top:2rem;' aria-labelledby='similar-heading'>
+    <section class='section-spacer' aria-labelledby='similar-heading'>
       <h2 id='similar-heading'>Similar <%= content.type === 'tv' ? 'TV Series' : 'Movies' %></h2>
       <div class='grid'>
         <% similar.forEach(item => { %>
