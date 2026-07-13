@@ -2,6 +2,7 @@ const contentService = require('../services/contentService');
 const userService = require('../services/userService');
 const rentalService = require('../services/rentalService');
 const { catchAsync, AppError } = require('../middleware/errorHandler');
+const { requireSafeReturnPath } = require('../middleware/requestGuards');
 const logger = require('../utils/logger');
 
 const attachShortlistState = async (userId, contents) => {
@@ -115,14 +116,12 @@ const addToShortlist = catchAsync(async (req, res) => {
 });
 
 const removeFromShortlist = catchAsync(async (req, res) => {
+  const returnTo = requireSafeReturnPath(req.body.returnTo, ['/streamer/']) || '/streamer/shortlist';
   const result = await userService.removeFromShortlist(req.session.user.id, req.params.id);
   if (!result.success) {
     throw new AppError(result.error || 'Failed to remove from shortlist', 400);
   }
 
-  const returnTo = typeof req.body.returnTo === 'string' && req.body.returnTo.startsWith('/streamer/')
-    ? req.body.returnTo
-    : '/streamer/shortlist';
   res.redirect(returnTo);
 });
 
@@ -137,7 +136,9 @@ const shortlist = catchAsync(async (req, res) => {
 });
 
 const rentContent = catchAsync(async (req, res) => {
-  const result = await rentalService.createRental(req.session.user.id, req.params.id);
+  const result = await rentalService.createRental(req.session.user.id, req.params.id, {
+    idempotencyKey: req.get('Idempotency-Key') || req.body.idempotencyKey,
+  });
   if (!result.success) {
     return res.status(400).render('error', { message: result.error || 'Failed to rent content' });
   }
