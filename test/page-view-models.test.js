@@ -49,6 +49,7 @@ test('[SNX-IA-020] route use case returns the correct page model', async () => {
     },
     rentals: {
       attachCapacityToContents: async titles => ({ success: true, data: titles }),
+      getUserRentals: async () => ({ success: true, data: [] }),
     },
     user: {
       getShortlist: async () => ({ success: true, data: [title()] }),
@@ -60,7 +61,8 @@ test('[SNX-IA-020] route use case returns the correct page model', async () => {
     query: { search: 'neon', sort: 'price_desc' },
   });
 
-  assert.equal(page.page.kind, 'member-catalog');
+  assert.equal(page.page.kind, 'member-home');
+  assert.equal(page.memberHome.state, 'populated');
   assert.equal(page.page.filters.search, 'neon');
   assert.equal(page.contents[0].isShortlisted, true);
 });

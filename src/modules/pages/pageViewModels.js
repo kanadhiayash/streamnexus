@@ -388,6 +388,102 @@ const buildPublicCollectionPage = ({ slug, titles = [] }) => {
   };
 };
 
+const daysUntil = (value) => {
+  if (!value) return null;
+  return Math.ceil((new Date(value).getTime() - Date.now()) / DAY_IN_MS);
+};
+
+const byEditorialOrder = (a, b) => {
+  const aRank = Number(a.editorialRank || a.featuredRank || 999);
+  const bRank = Number(b.editorialRank || b.featuredRank || 999);
+  return aRank - bRank || asString(a.title).localeCompare(asString(b.title));
+};
+
+const groupByGenre = (cards = []) => {
+  const grouped = new Map();
+  for (const card of cards) {
+    const genre = card.genre || 'General';
+    const group = grouped.get(genre) || {
+      key: genre.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      label: genre,
+      href: `/home?search=${encodeURIComponent(genre)}`,
+      titles: [],
+    };
+    group.titles.push(card);
+    grouped.set(genre, group);
+  }
+  return Array.from(grouped.values())
+    .sort((a, b) => b.titles.length - a.titles.length || a.label.localeCompare(b.label))
+    .slice(0, 3)
+    .map(group => ({
+      ...group,
+      titles: group.titles.sort(byEditorialOrder).slice(0, 4),
+    }));
+};
+
+const buildMemberHomePage = ({ titles = [], query = {}, shortlistTitles = [], rentals = [] }) => {
+  const catalog = buildCatalogPage({
+    titles,
+    query,
+    shortlistIds: new Set(shortlistTitles.map(title => titleId(title))),
+    basePath: '/home',
+    kind: 'member-home',
+  });
+  const titleCards = titles.map(title => buildTitleCard(title, { canAccessMemberActions: true })).sort(byEditorialOrder);
+  const myListPreview = shortlistTitles
+    .map(title => buildTitleCard(title, { isShortlisted: true, canAccessMemberActions: true }))
+    .sort(byEditorialOrder)
+    .slice(0, 4);
+  const rentalCards = rentals.map(buildRentalCard);
+  const activeAccess = rentalCards
+    .filter(rental => rental.isActive)
+    .sort((a, b) => new Date(a.expiresAt || 0) - new Date(b.expiresAt || 0));
+  const expiringSoon = activeAccess
+    .filter(rental => rental.expiresWithinSevenDays)
+    .slice(0, 4);
+  const newTitles = [...titleCards]
+    .sort((a, b) => new Date(b.publishedAt || b.createdAt || 0) - new Date(a.publishedAt || a.createdAt || 0) || byEditorialOrder(a, b))
+    .slice(0, 6);
+  const programs = groupByProgram(titleCards);
+  const genreRails = groupByGenre(titleCards);
+  const spotlight = titleCards.find(card => card.collectionKeys.includes('collection-featured')) || titleCards[0] || null;
+  const isFresh = activeAccess.length === 0 && myListPreview.length === 0;
+
+  return {
+    ...catalog,
+    page: {
+      ...catalog.page,
+      kind: 'member-home',
+      title: 'Member Home',
+      description: 'Authenticated StreamNexus member workspace with access state, saved titles, and deterministic screening discovery.',
+    },
+    memberHome: {
+      state: isFresh ? 'fresh' : 'populated',
+      activeAccess: activeAccess.slice(0, 4).map(rental => ({
+        ...rental,
+        daysRemaining: daysUntil(rental.expiresAt),
+      })),
+      expiringSoon: expiringSoon.map(rental => ({
+        ...rental,
+        daysRemaining: daysUntil(rental.expiresAt),
+      })),
+      myListPreview,
+      programs,
+      newTitles,
+      genreRails,
+      sponsoredScreening: spotlight
+        ? {
+            eyebrow: 'Sponsored screening',
+            title: spotlight.title,
+            body: 'Fictional placement used to show how a partner-supported screening module would be labeled in the member workspace.',
+            href: spotlight.detailUrl,
+            meta: `${spotlight.genre || 'General'} / ${spotlight.capacity.remaining} licences open`,
+          }
+        : null,
+    },
+  };
+};
+
 const buildShortlistPage = ({ titles = [] }) => ({
   page: {
     kind: 'my-list',
@@ -500,6 +596,7 @@ module.exports = {
   buildCatalogPage,
   buildPagination,
   buildPartnerDashboardPage,
+  buildMemberHomePage,
   buildPublicCollectionPage,
   buildPublicDiscoveryPage,
   buildPublicErrorModel,

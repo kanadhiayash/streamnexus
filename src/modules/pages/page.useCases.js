@@ -7,6 +7,7 @@ const {
   buildAccessPage,
   buildAccountPage,
   buildCatalogPage,
+  buildMemberHomePage,
   buildPartnerDashboardPage,
   buildPublicCollectionPage,
   buildPublicDiscoveryPage,
@@ -63,8 +64,14 @@ const createPageUseCases = ({
     const titles = await loadCatalogContent({ query, services });
     const titlesWithCapacity = await attachCapacity({ titles, services });
     const shortlistResult = await services.user.getShortlist(user.id);
-    const shortlistIds = new Set((shortlistResult.data || []).map(item => item._id.toString()));
-    return buildCatalogPage({ titles: titlesWithCapacity, query, shortlistIds, basePath: '/home' });
+    const shortlistTitles = await attachCapacity({ titles: shortlistResult.data || [], services });
+    const rentals = assertServiceSuccess(await services.rentals.getUserRentals(user.id), 'Failed to load rentals');
+    return buildMemberHomePage({
+      titles: titlesWithCapacity,
+      query,
+      shortlistTitles,
+      rentals,
+    });
   },
 
   async publicCatalog({ query = {} } = {}) {
