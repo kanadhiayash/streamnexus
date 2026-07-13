@@ -17,6 +17,45 @@ const getDemoUsers = (isProduction = false) => {
   return { adminEmail, adminPassword, streamerEmail, streamerPassword };
 };
 
+const buildDemoRepair = (user, expectedRole) => {
+  const repair = {};
+  const validRoles = expectedRole === 'streamer' ? ['streamer', 'member'] : [expectedRole];
+
+  if (!validRoles.includes(user.role)) {
+    repair.role = expectedRole;
+  }
+
+  if (user.status == null) {
+    repair.status = 'active';
+  }
+
+  if (user.sessionVersion == null) {
+    repair.sessionVersion = 1;
+  }
+
+  if (!Array.isArray(user.shortlist)) {
+    repair.shortlist = [];
+  }
+
+  if (!Array.isArray(user.rented)) {
+    repair.rented = [];
+  }
+
+  return repair;
+};
+
+const repairDemoUser = async ({ email, expectedRole }) => {
+  const user = await User.findOne({ email }).lean();
+  if (!user) return false;
+
+  const repair = buildDemoRepair(user, expectedRole);
+  if (Object.keys(repair).length === 0) return false;
+
+  await User.updateOne({ _id: user._id }, { $set: repair });
+  logger.info(`Demo ${expectedRole} account repaired`);
+  return true;
+};
+
 const seedDatabase = async ({ isProduction = process.env.NODE_ENV === 'production' } = {}) => {
   try {
     const { adminEmail, adminPassword, streamerEmail, streamerPassword } = getDemoUsers(isProduction);
@@ -25,14 +64,18 @@ const seedDatabase = async ({ isProduction = process.env.NODE_ENV === 'productio
 
     if (!existingAdmin) {
       const hash = await bcrypt.hash(adminPassword, 10);
-      await User.create({ email: adminEmail, password: hash, role: 'admin', shortlist: [], rented: [] });
+      await User.create({ email: adminEmail, password: hash, role: 'admin', status: 'active', sessionVersion: 1, shortlist: [], rented: [] });
       logger.info('Admin user seeded');
+    } else {
+      await repairDemoUser({ email: adminEmail, expectedRole: 'admin' });
     }
 
     if (!existingStreamer) {
       const hash = await bcrypt.hash(streamerPassword, 10);
-      await User.create({ email: streamerEmail, password: hash, role: 'streamer', shortlist: [], rented: [] });
+      await User.create({ email: streamerEmail, password: hash, role: 'streamer', status: 'active', sessionVersion: 1, shortlist: [], rented: [] });
       logger.info('Streamer user seeded');
+    } else {
+      await repairDemoUser({ email: streamerEmail, expectedRole: 'streamer' });
     }
 
     const count = await Content.countDocuments();
@@ -58,4 +101,4 @@ const seedDatabase = async ({ isProduction = process.env.NODE_ENV === 'productio
   }
 };
 
-module.exports = { getDemoUsers, seedDatabase };
+module.exports = { buildDemoRepair, getDemoUsers, repairDemoUser, seedDatabase };

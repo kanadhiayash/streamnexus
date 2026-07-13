@@ -21,10 +21,15 @@ const regenerateSession = (req) => new Promise((resolve, reject) => {
   req.session.regenerate((error) => (error ? reject(error) : resolve()));
 });
 
+const saveSession = (req) => new Promise((resolve, reject) => {
+  req.session.save((error) => (error ? reject(error) : resolve()));
+});
+
 const establishSession = async (req, sessionUser) => {
   await regenerateSession(req);
   req.session.user = sessionUser;
   rotateCsrfToken(req);
+  await saveSession(req);
 };
 
 const showLogin = (req, res) => {
