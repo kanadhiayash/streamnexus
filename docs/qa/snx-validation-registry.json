@@ -592,6 +592,62 @@
       "title": "admin operations view model respects role scope",
       "ownerIssue": 43,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-010",
+      "area": "CI",
+      "title": "PR workflow runs all required gates",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-011",
+      "area": "CI",
+      "title": "workflow names use SNX prefix",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-012",
+      "area": "CI",
+      "title": "third-party actions are SHA-pinned",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-013",
+      "area": "CI",
+      "title": "workflow permissions are least-privilege",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-014",
+      "area": "CI",
+      "title": "superseded runs are cancelled",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-015",
+      "area": "CI",
+      "title": "untrusted PR code cannot reach privileged context",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-016",
+      "area": "CI",
+      "title": "release workflow accepts dev as source and main as target",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-120",
+      "area": "SEC",
+      "title": "workflow artifacts contain no secrets",
+      "ownerIssue": 44,
+      "status": "implemented"
     }
   ]
 }

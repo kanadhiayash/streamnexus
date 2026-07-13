@@ -1,0 +1,36 @@
+name: SNX / Release Verification
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snx-release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: SNX / release verify
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.ref == 'dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: SNX / Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: SNX / Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: SNX / Lockfile install
+        run: npm ci
+
+      - name: SNX / Release gate
+        run: npm run release:verify
