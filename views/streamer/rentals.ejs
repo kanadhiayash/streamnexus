@@ -1,7 +1,10 @@
 <section>
   <div class='page-toolbar'>
-    <h1>My Rentals</h1>
-    <div class='view-toggle' role='group' aria-label='Choose rentals view'>
+    <div>
+      <p class='eyebrow'>Member access</p>
+      <h1>My Access</h1>
+    </div>
+    <div class='view-toggle' role='group' aria-label='Choose access view'>
       <button type='button' data-view='grid' data-view-toggle class='active' aria-pressed='true'>Grid</button>
       <button type='button' data-view='list' data-view-toggle aria-pressed='false'>List</button>
     </div>
@@ -11,54 +14,59 @@
   <% } %>
   <% if (rented && reference) { %>
     <div class='alert alert-success' role='status'>
-      Rental confirmed. Reference <strong><%= reference %></strong> is active for 45 days.
-      <a href='/streamer/rentals/ref/<%= encodeURIComponent(reference) %>'>View confirmation</a>
+      Access pass confirmed. Reference <strong><%= reference %></strong> is active for 45 days.
+      <a href='/my-access/ref/<%= encodeURIComponent(reference) %>'>View confirmation</a>
+    </div>
+  <% } %>
+  <% if (returned) { %>
+    <div class='alert alert-info' role='status'>
+      Access returned. The title licence is available for another member action.
     </div>
   <% } %>
   <% if (rentals.length === 0) { %>
     <div class='empty-state' role='status'>
-      <p>No rentals yet. Browse and activate rental access for your first title.</p>
-      <a href='/streamer/browse' class='btn btn-primary' style='margin-top:1rem;'>Browse Titles</a>
+      <p>No access passes yet. Browse and activate simulated access for your first title.</p>
+      <a href='/home' class='btn btn-primary empty-action'>Browse Titles</a>
     </div>
   <% } else { %>
-    <section aria-labelledby='active-rentals-heading'>
+    <section aria-labelledby='active-access-heading'>
       <div class='section-heading'>
-        <h2 id='active-rentals-heading'>Active Access</h2>
+        <h2 id='active-access-heading'>Active Access</h2>
         <p><%= active.length %> title<%= active.length === 1 ? '' : 's' %></p>
       </div>
       <% if (active.length === 0) { %>
         <div class='empty-state' role='status'>
-          <p>No active rentals. Returned and expired rentals stay in History.</p>
+          <p>No active access passes. Returned, expired, and cancelled passes stay in History.</p>
         </div>
       <% } else { %>
         <div class='grid'>
           <% active.forEach(r => { %>
             <div class='card'>
-              <img class='content-poster' src='<%= r.contentId && r.contentId.image ? r.contentId.image : "/images/default.svg" %>' alt='<%= r.contentId ? r.contentId.title : "Content" %>' loading='lazy' data-fallback-src='/images/default.svg' />
+              <img class='content-poster' src='<%= r.image %>' alt='<%= r.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
               <div class='card-content'>
-                <h3><%= r.contentId ? r.contentId.title : 'Content Deleted' %></h3>
-                <p style='font-size:0.9rem;'>
+                <h3><%= r.title %></h3>
+                <p class='rental-status-line'>
                   <strong>Status:</strong>
-                  <span class='status available'>Active rental</span>
+                  <span class='status available'><%= r.statusLabel %></span>
                 </p>
-                <p style='color:var(--text-tertiary);font-size:0.85rem;'>
+                <p class='supporting-copy'>
                   Reference: <%= r.publicReference || 'Pending' %>
                 </p>
-                <p style='color:var(--text-tertiary);font-size:0.85rem;'>
+                <p class='supporting-copy'>
                   Started: <%= new Date(r.rentedAt || r.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
                 </p>
                 <p class='rental-window'>
                   Access until: <%= new Date(r.expiresAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
                 </p>
-                <% if ((new Date(r.expiresAt).getTime() - Date.now()) <= (7 * 24 * 60 * 60 * 1000)) { %>
+                <% if (r.expiresWithinSevenDays) { %>
                   <p class='alert alert-warning' role='status'>Access expires within 7 days.</p>
                 <% } %>
               </div>
               <div class='card-footer'>
                 <% if (r.publicReference) { %>
-                  <a class='btn btn-primary' href='/streamer/rentals/ref/<%= encodeURIComponent(r.publicReference) %>'>Confirmation</a>
+                  <a class='btn btn-primary' href='<%= r.confirmationHref %>'>Access Details</a>
                 <% } %>
-                <button type='button' class='btn btn-success' data-checkout-id='<%= r._id %>' aria-label='Return access for <%= r.contentId ? r.contentId.title : "this rental" %>'>Return Access</button>
+                <button type='button' class='btn btn-success' data-checkout-id='<%= r._id %>' aria-label='Return access for <%= r.title %>'>Return Access</button>
               </div>
             </div>
           <% }); %>
@@ -66,28 +74,28 @@
       <% } %>
     </section>
 
-    <section aria-labelledby='rental-history-heading' style='margin-top:2rem;'>
+    <section class='section-spacer' aria-labelledby='access-history-heading'>
       <div class='section-heading'>
-        <h2 id='rental-history-heading'>History</h2>
+        <h2 id='access-history-heading'>History</h2>
         <p><%= completed.length %> title<%= completed.length === 1 ? '' : 's' %></p>
       </div>
       <% if (completed.length === 0) { %>
         <div class='empty-state' role='status'>
-          <p>No returned or expired rentals yet.</p>
+          <p>No returned, expired, or cancelled access passes yet.</p>
         </div>
       <% } else { %>
         <div class='grid'>
           <% completed.forEach(r => { %>
             <div class='card'>
-              <img class='content-poster' src='<%= r.contentId && r.contentId.image ? r.contentId.image : "/images/default.svg" %>' alt='<%= r.contentId ? r.contentId.title : "Content" %>' loading='lazy' data-fallback-src='/images/default.svg' />
+              <img class='content-poster' src='<%= r.image %>' alt='<%= r.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
               <div class='card-content'>
-                <h3><%= r.contentId ? r.contentId.title : 'Content Deleted' %></h3>
-                <p style='font-size:0.9rem;'>
+                <h3><%= r.title %></h3>
+                <p class='rental-status-line'>
                   <strong>Status:</strong>
-                  <span class='status unavailable'><%= r.status === 'returned' ? 'Access returned' : r.status %></span>
+                  <span class='status unavailable'><%= r.statusLabel %></span>
                 </p>
-                <p style='color:var(--text-tertiary);font-size:0.85rem;'>
-                  Reference: <%= r.publicReference || 'Legacy rental' %>
+                <p class='supporting-copy'>
+                  Reference: <%= r.publicReference || 'Legacy access record' %>
                 </p>
                 <p class='rental-window'>
                   Window ended: <%= r.endedAt ? new Date(r.endedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : new Date(r.expiresAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
@@ -95,7 +103,7 @@
               </div>
               <div class='card-footer'>
                 <% if (r.publicReference) { %>
-                  <a class='btn btn-secondary' href='/streamer/rentals/ref/<%= encodeURIComponent(r.publicReference) %>'>Details</a>
+                  <a class='btn btn-secondary' href='<%= r.confirmationHref %>'>Details</a>
                 <% } else { %>
                   <button type='button' class='btn btn-secondary' disabled>Legacy record</button>
                 <% } %>

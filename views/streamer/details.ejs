@@ -1,5 +1,6 @@
 <section>
-  <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false }; %>
+  <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 20, activeRentals: 0, remaining: content.rentalLimit || 20, isFull: false }; %>
+  <% const showMemberActions = typeof canAccessMemberActions === 'undefined' ? true : canAccessMemberActions; %>
   <div class='details-card'>
     <img class='content-poster' src='<%= content.image %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
     <div class='details-info'>
@@ -10,37 +11,56 @@
       <div class='capacity-meter' aria-label='Rental capacity for <%= content.title %>'>
         <span style='width:<%= Math.min(100, Math.round((capacity.activeRentals / capacity.rentalLimit) * 100)) %>%'></span>
       </div>
-      <p class='capacity-copy'><%= capacity.remaining %> of <%= capacity.rentalLimit %> rental licences available. Rentals last 45 days.</p>
+      <p class='capacity-copy'><%= capacity.remaining %> of <%= capacity.rentalLimit %> simulated access seats available. Access lasts 45 days.</p>
+      <% if (!showMemberActions) { %>
+        <div class='component-card public-access-note'>
+          <p class='eyebrow'>Public screening detail</p>
+          <p>
+            This public page shows fictional metadata, simulated licence capacity, and a 45-day access window.
+            No real payment, playback, or commercial licence is processed.
+          </p>
+          <div class='capacity-strip'>
+            <span><%= content.accessMode ? content.accessMode.replace('_', ' ') : 'screening' %></span>
+            <span><%= capacity.remaining %>/<%= capacity.rentalLimit %> licences open</span>
+          </div>
+        </div>
+      <% } %>
       <span class='status <%= content.available && !capacity.isFull ? "available" : "unavailable" %>'>
         <%= content.available && !capacity.isFull ? 'Available' : 'Full or unavailable' %>
       </span>
       <div class='details-actions'>
-        <form method='post' action='/streamer/content/<%= content._id %>/<%= isShortlisted ? "shortlist/remove" : "shortlist" %>' style='display:inline;'>
-          <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
-          <% if (isShortlisted) { %>
-            <input type='hidden' name='returnTo' value='/streamer/content/<%= content._id %>' />
-          <% } %>
-          <button type='submit' class='btn btn-secondary'>
-            <%= isShortlisted ? 'Remove from My List' : 'Add to My List' %>
-          </button>
-        </form>
-        <form method='get' action='/streamer/content/<%= content._id %>/review' style='display:inline;'>
-          <button type='submit' class='btn btn-success' aria-label='Rent <%= content.title %>' <%= !content.available || capacity.isFull ? 'disabled' : '' %>>
-            Activate Rental
-          </button>
-        </form>
-        <a href='/streamer/browse' class='btn btn-secondary'>Back to Catalog</a>
+        <% if (showMemberActions) { %>
+          <form method='post' action='/titles/<%= content._id %>/<%= isShortlisted ? "shortlist/remove" : "shortlist" %>' class='inline-form'>
+            <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+            <% if (isShortlisted) { %>
+              <input type='hidden' name='returnTo' value='/titles/<%= content._id %>' />
+            <% } %>
+            <button type='submit' class='btn btn-secondary'>
+              <%= isShortlisted ? 'Remove from My List' : 'Add to My List' %>
+            </button>
+          </form>
+          <form method='get' action='/titles/<%= content._id %>/review' class='inline-form'>
+            <button type='submit' class='btn btn-success' aria-label='Activate access for <%= content.title %>' <%= !content.available || capacity.isFull ? 'disabled' : '' %>>
+              Activate Access
+            </button>
+          </form>
+          <a href='/home' class='btn btn-secondary'>Back to Catalog</a>
+        <% } else { %>
+          <a href='/login' class='btn btn-primary'>Sign In</a>
+          <a href='/signup' class='btn btn-secondary'>Create Account</a>
+          <a href='/catalog' class='btn btn-secondary'>Back to Catalog</a>
+        <% } %>
       </div>
     </div>
   </div>
 
   <% if (similar && similar.length > 0) { %>
-    <section style='margin-top:2rem;' aria-labelledby='similar-heading'>
+    <section class='section-spacer' aria-labelledby='similar-heading'>
       <h2 id='similar-heading'>Similar <%= content.type === 'tv' ? 'TV Series' : 'Movies' %></h2>
       <div class='grid'>
         <% similar.forEach(item => { %>
           <div class='card'>
-            <% const itemCapacity = item.capacity || { rentalLimit: item.rentalLimit || 5, activeRentals: 0, remaining: item.rentalLimit || 5, isFull: false }; %>
+            <% const itemCapacity = item.capacity || { rentalLimit: item.rentalLimit || 20, activeRentals: 0, remaining: item.rentalLimit || 20, isFull: false }; %>
             <img class='content-poster' src='<%= item.image %>' alt='<%= item.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
             <div class='card-content'>
               <h3><%= item.title %></h3>
@@ -49,7 +69,7 @@
               <p class='capacity-copy'><%= itemCapacity.remaining %>/<%= itemCapacity.rentalLimit %> licences open</p>
             </div>
             <div class='card-footer'>
-              <a href='/streamer/content/<%= item._id %>' class='btn btn-primary btn-sm' aria-label='View details for <%= item.title %>'>Details</a>
+              <a href='/titles/<%= item._id %>' class='btn btn-primary btn-sm' aria-label='View details for <%= item.title %>'>Details</a>
             </div>
           </div>
         <% }); %>

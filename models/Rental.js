@@ -39,6 +39,9 @@ rentalSchema.index(
 rentalSchema.index({ publicReference: 1 }, { unique: true, sparse: true });
 rentalSchema.index({ userId: 1, status: 1, expiresAt: 1 });
 rentalSchema.index({ titleId: 1, status: 1, expiresAt: 1 });
-rentalSchema.index({ userId: 1, idempotencyKeyHash: 1 }, { unique: true, sparse: true });
+rentalSchema.index(
+  { userId: 1, idempotencyKeyHash: 1 },
+  { unique: true, partialFilterExpression: { idempotencyKeyHash: { $type: 'string' } } }
+);
 
 module.exports = mongoose.model('Rental', rentalSchema);

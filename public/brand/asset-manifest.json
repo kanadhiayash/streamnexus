@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0.0",
+  "productId": "SNX",
+  "ownerIssue": 34,
+  "release": "streamnexus-brand-pack-v1.0.0",
+  "assets": [
+    "streamnexus-mark.svg",
+    "streamnexus-mark-mono-light.svg",
+    "streamnexus-mark-mono-dark.svg",
+    "streamnexus-wordmark-dark.svg",
+    "streamnexus-wordmark-light.svg",
+    "streamnexus-lockup-horizontal-dark.svg",
+    "streamnexus-lockup-horizontal-light.svg",
+    "streamnexus-lockup-stacked-dark.svg",
+    "streamnexus-lockup-stacked-light.svg",
+    "favicon.svg",
+    "favicon.ico",
+    "apple-touch-icon.png",
+    "app-icon-192.png",
+    "app-icon-512.png",
+    "app-icon-1024.png",
+    "social-preview.png",
+    "readme-banner.png",
+    "brand.css",
+    "brand-tokens.json",
+    "site.webmanifest"
+  ]
+}

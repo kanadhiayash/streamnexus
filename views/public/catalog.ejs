@@ -1,0 +1,81 @@
+<section class='public-page'>
+  <div class='page-toolbar'>
+    <div>
+      <p class='eyebrow'>Public catalog</p>
+      <h1>Curated Screenings</h1>
+      <p class='muted-copy'>Browse fictional published titles, then sign in only when you want member-only saved lists or simulated access activation.</p>
+    </div>
+    <% if (user) { %>
+      <a href='<%= user.role === "admin" ? "/admin/dashboard" : "/home" %>' class='btn btn-primary'><%= user.role === "admin" ? "Admin Dashboard" : "Member Catalog" %></a>
+    <% } else { %>
+      <a href='/login' class='btn btn-primary'>Sign In</a>
+    <% } %>
+  </div>
+
+  <form class='filter-bar' method='get' action='/catalog' aria-label='Search, sort, and filter public titles'>
+    <div class='form-group'>
+      <label for='search'>Search</label>
+      <input type='text' id='search' name='search' value='<%= search || "" %>' placeholder='Search title, genre, or description' />
+    </div>
+    <div class='form-group'>
+      <label for='type'>Type</label>
+      <select id='type' name='type'>
+        <option value='' <%= !type ? 'selected' : '' %>>All</option>
+        <option value='movie' <%= type === 'movie' ? 'selected' : '' %>>Movies</option>
+        <option value='tv' <%= type === 'tv' ? 'selected' : '' %>>TV Series</option>
+      </select>
+    </div>
+    <div class='form-group'>
+      <label for='sort'>Sort</label>
+      <select id='sort' name='sort'>
+        <option value='title' <%= sort === 'title' ? 'selected' : '' %>>Title</option>
+        <option value='newest' <%= sort === 'newest' ? 'selected' : '' %>>Newest</option>
+        <option value='price_asc' <%= sort === 'price_asc' ? 'selected' : '' %>>Price: low to high</option>
+        <option value='price_desc' <%= sort === 'price_desc' ? 'selected' : '' %>>Price: high to low</option>
+      </select>
+    </div>
+    <div class='filter-actions'>
+      <button type='submit' class='btn btn-primary'>Apply</button>
+      <a href='/catalog' class='btn btn-secondary'>Reset</a>
+    </div>
+  </form>
+
+  <% if (!contents || contents.length === 0) { %>
+    <div class='empty-state' role='status'>
+      <p><%= page.emptyState ? page.emptyState.message : 'No public titles are available right now.' %></p>
+      <a href='/catalog' class='btn btn-primary empty-action'>Reset Catalog</a>
+    </div>
+  <% } else { %>
+    <div class='grid poster-grid'>
+      <% contents.forEach(content => { %>
+        <article class='card poster-card title-card'>
+          <img class='content-poster' src='<%= content.image || "/images/default.svg" %>' alt='<%= content.posterAlt || content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
+          <div class='poster-overlay'>
+            <span class='status <%= content.available && !content.capacity.isFull ? "available" : "unavailable" %>'>
+              <%= content.available && !content.capacity.isFull ? 'Published' : 'Unavailable' %>
+            </span>
+          </div>
+          <div class='card-content'>
+            <p class='meta-line'><%= content.type.toUpperCase() %> / <%= content.genre || 'General' %></p>
+            <h2><%= content.title %></h2>
+            <p><%= content.shortDescription || content.description || '' %></p>
+            <div class='card-meta-row'>
+              <span><%= content.capacity.remaining %>/<%= content.capacity.rentalLimit %> licences</span>
+              <span><%= content.accessMode.replace('_', ' ') %></span>
+            </div>
+          </div>
+          <div class='card-footer'>
+            <a href='<%= content.detailUrl %>' class='btn btn-primary'>View Screening</a>
+          </div>
+        </article>
+      <% }); %>
+    </div>
+    <% if (pagination && pagination.totalPages > 1) { %>
+      <nav class='pagination' aria-label='Public catalog pagination'>
+        <a class='btn btn-secondary <%= pagination.hasPrevious ? "" : "disabled" %>' href='<%= pagination.previousHref %>'>Previous</a>
+        <span>Page <%= pagination.currentPage %> of <%= pagination.totalPages %> / <%= pagination.totalItems %> titles</span>
+        <a class='btn btn-secondary <%= pagination.hasNext ? "" : "disabled" %>' href='<%= pagination.nextHref %>'>Next</a>
+      </nav>
+    <% } %>
+  <% } %>
+</section>

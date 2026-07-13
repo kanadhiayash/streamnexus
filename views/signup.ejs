@@ -1,23 +1,70 @@
-<section class='login-box'>
+<% const hasAuthError = typeof error !== 'undefined' && error; %>
+<section class='login-box auth-panel'>
+  <a class='auth-brand' href='/' aria-label='StreamNexus home'>
+    <img src='/brand/streamnexus-lockup-horizontal-dark.svg' alt='' width='260' height='64' aria-hidden='true' />
+  </a>
+  <p class='eyebrow'>Member onboarding</p>
   <h1>Create Member Account</h1>
-  <p class='auth-subtitle'>Join the demo catalog as a member. Admin access is not available through signup.</p>
-  <% if (typeof error !== 'undefined' && error) { %><div class='alert alert-error' role='alert'><%= error %></div><% } %>
+  <p class='auth-subtitle'>Create member-only access for saved titles and simulated 45-day screening passes. Admin access is never created from this form.</p>
+  <% if (hasAuthError) { %>
+    <div class='alert alert-error' id='auth-error' role='alert'>
+      <strong>Account issue</strong>
+      <span><%= error %></span>
+    </div>
+  <% } %>
   <% if (typeof message !== 'undefined' && message) { %><div class='alert alert-info' role='status'><%= message %></div><% } %>
-  <form method='post' action='/signup' id='signupForm' data-validate-form>
+  <form method='post' action='/signup' id='signupForm' data-validate-form data-auth-form>
     <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
     <div class='form-group'>
       <label for='email'>Email</label>
-      <input type='email' id='email' name='email' value='<%= form && form.email ? form.email : "" %>' placeholder='you@example.com' autocomplete='username' required />
+      <input
+        type='email'
+        id='email'
+        name='email'
+        value='<%= form && form.email ? form.email : "" %>'
+        placeholder='you@example.com'
+        autocomplete='username'
+        aria-describedby='signup-email-help <%= hasAuthError ? "auth-error" : "" %>'
+        aria-invalid='<%= hasAuthError ? "true" : "false" %>'
+        required
+      />
+      <small id='signup-email-help' class='form-help'>Use an email address you can recognize in the demo workspace.</small>
     </div>
     <div class='form-group'>
       <label for='password'>Password</label>
-      <input type='password' id='password' name='password' placeholder='Minimum 3 characters for local demo' autocomplete='new-password' required />
+      <div class='password-field'>
+        <input
+          type='password'
+          id='password'
+          name='password'
+          placeholder='Minimum 3 characters for local demo'
+          autocomplete='new-password'
+          aria-describedby='signup-password-help <%= hasAuthError ? "auth-error" : "" %>'
+          aria-invalid='<%= hasAuthError ? "true" : "false" %>'
+          required
+        />
+        <button type='button' class='btn btn-secondary btn-sm' data-password-toggle aria-controls='password' aria-pressed='false'>Show</button>
+      </div>
+      <small id='signup-password-help' class='form-help'>This prototype keeps password rules short for local demo speed.</small>
     </div>
     <div class='form-group'>
       <label for='confirmPassword'>Confirm Password</label>
-      <input type='password' id='confirmPassword' name='confirmPassword' placeholder='Repeat password' autocomplete='new-password' required />
+      <div class='password-field'>
+        <input
+          type='password'
+          id='confirmPassword'
+          name='confirmPassword'
+          placeholder='Repeat password'
+          autocomplete='new-password'
+          aria-describedby='signup-confirm-help <%= hasAuthError ? "auth-error" : "" %>'
+          aria-invalid='<%= hasAuthError ? "true" : "false" %>'
+          required
+        />
+        <button type='button' class='btn btn-secondary btn-sm' data-password-toggle aria-controls='confirmPassword' aria-pressed='false'>Show</button>
+      </div>
+      <small id='signup-confirm-help' class='form-help'>Passwords must match before the member account is created.</small>
     </div>
-    <button type='submit' class='btn btn-primary' style='width:100%;'>Create Account</button>
+    <button type='submit' class='btn btn-primary btn-block' data-loading-label='Creating account...'>Create Account</button>
   </form>
   <p class='auth-switch'>Already have an account? <a href='/login'>Sign in</a>.</p>
 </section>

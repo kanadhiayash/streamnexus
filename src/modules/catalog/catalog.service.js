@@ -5,6 +5,7 @@ const { assertObjectId } = require('../../shared/validation/objectId');
 const { createAuditService } = require('../audit/audit.service');
 const { stableSlug, toMinorUnits } = require('../data/compatibility');
 const { createCatalogRepository } = require('./catalog.repository');
+const { RENTAL_POLICY } = require('../../config/rentalPolicy');
 
 const normalizeContentInput = (contentData) => {
   const { title, type, description, price, image, available, rating, genre, duration, cast, rentalLimit } = contentData;
@@ -22,7 +23,7 @@ const normalizeContentInput = (contentData) => {
     throw new ValidationError('Price must be a valid non-negative number');
   }
 
-  const numRentalLimit = rentalLimit ? Number(rentalLimit) : 5;
+  const numRentalLimit = rentalLimit ? Number(rentalLimit) : RENTAL_POLICY.defaultTitleLicenceLimit;
   if (isNaN(numRentalLimit) || numRentalLimit < 1 || numRentalLimit > 50) {
     throw new ValidationError('Rental limit must be a number between 1 and 50');
   }

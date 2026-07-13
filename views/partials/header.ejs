@@ -1,7 +1,7 @@
 <header class="nav" role="banner">
-  <a class="brand" href="/" aria-label="StreamNexus - Home">
-    <span class="brand-mark" aria-hidden="true">SN</span>
-    <span>StreamNexus</span>
+  <a class="brand" href="/" aria-label="StreamNexus home">
+    <img class="brand-logo-mark" src="/brand/streamnexus-mark.svg" alt="" width="34" height="34" aria-hidden="true" />
+    <img class="brand-logo-lockup" src="/brand/streamnexus-lockup-horizontal-dark.svg" alt="" width="196" height="48" aria-hidden="true" />
   </a>
   <nav role="navigation" aria-label="Main navigation">
     <% if (user) { %>
@@ -9,9 +9,9 @@
         <a href="/admin/dashboard" aria-label="Admin Dashboard">Admin Dashboard</a>
         <a href="/admin/content" aria-label="Manage Content">Content</a>
       <% } else { %>
-        <a href="/streamer/browse" aria-label="Browse available titles">Catalog</a>
-        <a href="/streamer/shortlist" aria-label="Your list">My List</a>
-        <a href="/streamer/rentals" aria-label="Your active rentals">Rentals</a>
+        <a href="/home" aria-label="Browse available titles">Catalog</a>
+        <a href="/my-list" aria-label="Your list">My List</a>
+        <a href="/my-access" aria-label="Your active access">My Access</a>
       <% } %>
       <form class="logout-form" method="post" action="/logout" role="form">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />

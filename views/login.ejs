@@ -1,24 +1,71 @@
-<section class='login-box'>
-  <h1>StreamNexus</h1>
-  <p class='auth-subtitle'>Sign in to manage the catalog or rent demo titles.</p>
-  <% if (typeof error !== 'undefined' && error) { %><div class='alert alert-error' role='alert'><%= error %></div><% } %>
+<% const hasAuthError = typeof error !== 'undefined' && error; %>
+<section class='login-box auth-panel'>
+  <a class='auth-brand' href='/' aria-label='StreamNexus home'>
+    <img src='/brand/streamnexus-lockup-horizontal-dark.svg' alt='' width='260' height='64' aria-hidden='true' />
+  </a>
+  <p class='eyebrow'>Screening access workspace</p>
+  <h1>Sign in to StreamNexus</h1>
+  <p class='auth-subtitle'>Use a demo persona or your member account to enter the correct workspace.</p>
+
+  <div class='demo-persona-grid' aria-label='Demo personas'>
+    <% demoPersonas.forEach(persona => { %>
+      <button
+        type='button'
+        class='component-card demo-persona-button'
+        data-demo-persona
+        data-demo-email='<%= persona.email %>'
+        data-demo-password='<%= persona.password %>'
+        aria-label='Use <%= persona.label %> credentials'
+      >
+        <strong><%= persona.label %></strong>
+        <span><%= persona.description %></span>
+      </button>
+    <% }); %>
+  </div>
+
+  <% if (hasAuthError) { %>
+    <div class='alert alert-error' id='auth-error' role='alert'>
+      <strong>Sign-in issue</strong>
+      <span><%= error %></span>
+    </div>
+  <% } %>
   <% if (typeof message !== 'undefined' && message) { %><div class='alert alert-info' role='status'><%= message %></div><% } %>
-  <form method='post' action='/login' id='loginForm' data-validate-form>
+  <form method='post' action='/login' id='loginForm' data-validate-form data-auth-form>
     <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+    <input type='hidden' name='returnTo' value='<%= typeof returnTo !== "undefined" ? returnTo : "" %>' />
     <div class='form-group'>
       <label for='email'>Email</label>
-      <input type='email' id='email' name='email' placeholder='admin@gmail.com' autocomplete='username' required />
+      <input
+        type='email'
+        id='email'
+        name='email'
+        value='<%= form && form.email ? form.email : "" %>'
+        placeholder='member@example.com'
+        autocomplete='username'
+        aria-describedby='email-help <%= hasAuthError ? "auth-error" : "" %>'
+        aria-invalid='<%= hasAuthError ? "true" : "false" %>'
+        required
+      />
+      <small id='email-help' class='form-help'>Demo personas fill this field without submitting the form.</small>
     </div>
     <div class='form-group'>
       <label for='password'>Password</label>
-      <input type='password' id='password' name='password' placeholder='••••••••' autocomplete='current-password' required />
+      <div class='password-field'>
+        <input
+          type='password'
+          id='password'
+          name='password'
+          placeholder='Enter password'
+          autocomplete='current-password'
+          aria-describedby='password-help <%= hasAuthError ? "auth-error" : "" %>'
+          aria-invalid='<%= hasAuthError ? "true" : "false" %>'
+          required
+        />
+        <button type='button' class='btn btn-secondary btn-sm' data-password-toggle aria-controls='password' aria-pressed='false'>Show</button>
+      </div>
+      <small id='password-help' class='form-help'>Authentication errors stay generic for account privacy.</small>
     </div>
-    <button type='submit' class='btn btn-primary' style='width:100%;'>Sign In</button>
+    <button type='submit' class='btn btn-primary btn-block' data-loading-label='Signing in...'>Sign In</button>
   </form>
-  <p class='auth-switch'>New here? <a href='/signup'>Create a streamer account</a>.</p>
-  <div class='demo-credentials'>
-    <p>Demo Credentials:</p>
-    <p><strong>Admin:</strong> admin@gmail.com / admin</p>
-    <p><strong>Streamer:</strong> streamer@gmail.com / streamer</p>
-  </div>
+  <p class='auth-switch'>New here? <a href='/signup'>Create a member account</a>.</p>
 </section>

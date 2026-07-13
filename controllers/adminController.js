@@ -1,10 +1,15 @@
 const contentService = require('../services/contentService');
 const { catchAsync, AppError } = require('../middleware/errorHandler');
+const { requireSafeReturnPath } = require('../middleware/requestGuards');
 const { validateContentData } = require('../utils/validators');
 const logger = require('../utils/logger');
 const { createAdminUseCases } = require('../src/modules/admin/admin.useCases');
 
 const adminUseCases = createAdminUseCases();
+const actorFromSession = (req) => ({
+  userId: req.session.user.id,
+  role: req.session.user.role,
+});
 
 const dashboard = catchAsync(async (req, res) => {
   const result = await adminUseCases.loadDashboard();
@@ -19,6 +24,9 @@ const dashboard = catchAsync(async (req, res) => {
   res.render('admin/dashboard', {
     ...result.data,
     archived: req.query.archived === 'true',
+    access: req.query.access || '',
+    member: req.query.member || '',
+    reconciled: req.query.reconciled || '',
   });
 });
 
@@ -113,6 +121,7 @@ const deleteContent = catchAsync(async (req, res) => {
 });
 
 const updateLifecycle = catchAsync(async (req, res) => {
+  const returnTo = requireSafeReturnPath(req.body.returnTo, ['/admin/']) || '/admin/content';
   const result = await contentService.updateLifecycle(req.params.id, req.params.action);
   if (!result.success) {
     const statusCode = result.statusCode || 400;
@@ -120,13 +129,48 @@ const updateLifecycle = catchAsync(async (req, res) => {
   }
 
   logger.info(`Content lifecycle ${req.params.action} by admin: ${req.params.id}`);
-  const returnTo = typeof req.body.returnTo === 'string' && req.body.returnTo.startsWith('/admin/')
-    ? req.body.returnTo
-    : '/admin/content';
   res.redirect(`${returnTo}?lifecycle=${encodeURIComponent(req.params.action)}`);
 });
 
+const updateMemberStatus = catchAsync(async (req, res) => {
+  const action = req.params.action || (req.path.endsWith('/suspend') ? 'suspend' : 'restore');
+  const expectedConfirmation = action === 'suspend' ? 'SUSPEND' : 'RESTORE';
+  if (req.body.confirmation !== expectedConfirmation) {
+    throw new AppError('Confirmation is required for member status changes', 400);
+  }
+  const result = action === 'suspend'
+    ? await adminUseCases.suspendMember(actorFromSession(req), req.params.id)
+    : await adminUseCases.restoreMember(actorFromSession(req), req.params.id);
+  if (!result.success) {
+    throw new AppError(result.error || 'Failed to update member status', result.statusCode || 400);
+  }
+  res.redirect(`/admin/dashboard?member=${encodeURIComponent(action)}`);
+});
+
+const cancelAccess = catchAsync(async (req, res) => {
+  if (req.body.confirmation !== 'CANCEL') {
+    throw new AppError('Confirmation is required to cancel access', 400);
+  }
+  const result = await adminUseCases.cancelAccess(actorFromSession(req), req.params.id);
+  if (!result.success) {
+    throw new AppError(result.error || 'Failed to cancel access', result.statusCode || 400);
+  }
+  res.redirect('/admin/dashboard?access=cancelled');
+});
+
+const reconcileCapacity = catchAsync(async (req, res) => {
+  if (req.body.confirmation !== 'RECONCILE') {
+    throw new AppError('Confirmation is required to reconcile capacity', 400);
+  }
+  const result = await adminUseCases.reconcileCapacity(actorFromSession(req));
+  if (!result.success) {
+    throw new AppError(result.error || 'Failed to reconcile capacity', result.statusCode || 400);
+  }
+  res.redirect(`/admin/dashboard?reconciled=${encodeURIComponent(result.data.updated || 0)}`);
+});
+
 module.exports = {
+  cancelAccess,
   dashboard,
   contentList,
   showNewContent,
@@ -135,4 +179,6 @@ module.exports = {
   updateContent,
   deleteContent,
   updateLifecycle,
+  reconcileCapacity,
+  updateMemberStatus,
 };

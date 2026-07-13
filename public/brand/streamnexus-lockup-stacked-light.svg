@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="360" viewBox="0 0 420 360" role="img" aria-labelledby="title desc">
+  <title id="title">StreamNexus stacked lockup light</title>
+  <desc id="desc">Stacked StreamNexus lockup for light surfaces.</desc>
+  <defs>
+    <linearGradient id="snxStackedGradient" x1="150" y1="150" x2="270" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7C3AED"/>
+      <stop offset="0.5" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  <rect x="146" y="24" width="128" height="128" rx="28" fill="#F8FAFC"/>
+  <path d="M177 67c0-8.8 7.2-16 16-16h47v18h-45c-1.1 0-2 .9-2 2v5c0 1.1.9 2 2 2h30c10.5 0 19 8.5 19 19v12c0 10.5-8.5 19-19 19h-48v-18h47c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2h-31c-8.8 0-16-7.2-16-16V67Z" fill="url(#snxStackedGradient)"/>
+  <circle cx="179" cy="57" r="8" fill="#7C3AED"/>
+  <circle cx="241" cy="119" r="8" fill="#06B6D4"/>
+  <text x="38" y="232" fill="#0F172A" font-family="Avenir Next, Avenir, Trebuchet MS, Arial, sans-serif" font-size="48" font-weight="800">StreamNexus</text>
+  <text x="91" y="266" fill="#2563EB" font-family="Avenir Next, Avenir, Trebuchet MS, Arial, sans-serif" font-size="14" font-weight="800">DISCOVER • CONNECT • ACCESS</text>
+</svg>

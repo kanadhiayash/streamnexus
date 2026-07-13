@@ -1,7 +1,7 @@
 {
   "name": "streamnexus",
   "version": "1.0.0",
-  "description": "Role-based streaming content rental prototype built with Express, EJS, and MongoDB.",
+  "description": "Curated streaming access platform prototype built with Express, EJS, and MongoDB.",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -10,13 +10,18 @@
     "sandbox:smoke": "node scripts/sandbox-smoke.js",
     "migrate:data:dry-run": "node scripts/migrate-data-contracts.js --dry-run",
     "migrate:data:fixture": "node scripts/migrate-data-contracts-fixture.js",
+    "fixtures:demo": "node scripts/demo-fixtures.js",
+    "reconcile:capacity": "node scripts/reconcile-licence-capacity.js",
     "test": "npm run test:syntax && npm run test:integration",
     "test:syntax": "node scripts/check-syntax.js",
     "test:integration": "node --test --test-concurrency=1 test/*.test.js",
     "test:ejs": "node scripts/compile-ejs.js",
     "test:load": "node scripts/load-test.js",
     "scan:secrets": "node scripts/scan-secrets.js",
-    "release:verify": "node scripts/release-verify.js"
+    "release:verify": "node scripts/release-verify.js",
+    "snx:test": "npm test",
+    "snx:validate": "node scripts/validate-snx-registry.js",
+    "snx:verify": "npm run snx:validate && npm run release:verify"
   },
   "keywords": [
     "express",

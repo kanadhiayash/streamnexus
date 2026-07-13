@@ -9,13 +9,13 @@
   <% if (contents.length === 0) { %>
     <div class='empty-state' role='status'>
       <p>My List is empty. Browse titles and save a few for later.</p>
-      <a href='/streamer/browse' class='btn btn-primary' style='margin-top:1rem;'>Browse Titles</a>
+      <a href='/home' class='btn btn-primary empty-action'>Browse Titles</a>
     </div>
   <% } else { %>
     <div class='grid'>
       <% contents.forEach(content => { %>
         <div class='card'>
-          <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false }; %>
+          <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 20, activeRentals: 0, remaining: content.rentalLimit || 20, isFull: false }; %>
           <img class='content-poster' src='<%= content.image %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
           <div class='card-content'>
             <h3><%= content.title %></h3>
@@ -25,8 +25,8 @@
           </div>
           <div class='card-footer'>
             <div class='actions'>
-              <a href='/streamer/content/<%= content._id %>' class='btn btn-primary btn-sm' aria-label='View details for <%= content.title %>'>View</a>
-              <form method='post' action='/streamer/content/<%= content._id %>/shortlist/remove' style='display:inline;'>
+              <a href='/titles/<%= content._id %>' class='btn btn-primary btn-sm' aria-label='View details for <%= content.title %>'>View</a>
+              <form method='post' action='/titles/<%= content._id %>/shortlist/remove' class='inline-form'>
                 <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
                 <button type='submit' class='btn btn-danger btn-sm' aria-label='Remove <%= content.title %> from My List'>Remove</button>
               </form>

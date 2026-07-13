@@ -105,7 +105,7 @@ function setLoadingState(button, isLoading) {
   if (isLoading) {
     button.disabled = true;
     button.dataset.originalText = button.textContent;
-    button.textContent = 'Loading...';
+    button.textContent = button.dataset.loadingLabel || 'Loading...';
     button.classList.add('loading');
   } else {
     button.disabled = false;
@@ -158,14 +158,22 @@ function setupCarousels() {
     const slides = Array.from(carousel.querySelectorAll('[data-carousel-slide]'));
     const prev = carousel.querySelector('[data-carousel-prev]');
     const next = carousel.querySelector('[data-carousel-next]');
+    const toggle = carousel.querySelector('[data-carousel-toggle]');
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const shouldAutoRotate = carousel.hasAttribute('data-carousel-auto') && !reduceMotion;
+    const intervalMs = Number.parseInt(carousel.dataset.carouselInterval, 10) || 6500;
     if (slides.length <= 1) {
       prev?.setAttribute('disabled', 'true');
       next?.setAttribute('disabled', 'true');
+      toggle?.setAttribute('disabled', 'true');
       return;
     }
 
     let activeIndex = slides.findIndex(slide => slide.classList.contains('active'));
     if (activeIndex < 0) activeIndex = 0;
+    let rotationTimer = null;
+    let userPaused = false;
+    let pointerStartX = null;
 
     const showSlide = (index) => {
       activeIndex = (index + slides.length) % slides.length;
@@ -174,8 +182,78 @@ function setupCarousels() {
       });
     };
 
-    prev?.addEventListener('click', () => showSlide(activeIndex - 1));
-    next?.addEventListener('click', () => showSlide(activeIndex + 1));
+    const stopRotation = () => {
+      if (rotationTimer) {
+        clearInterval(rotationTimer);
+        rotationTimer = null;
+      }
+      carousel.classList.add('is-paused');
+    };
+
+    const startRotation = () => {
+      if (!shouldAutoRotate || userPaused || rotationTimer || document.hidden) return;
+      carousel.classList.remove('is-paused');
+      rotationTimer = setInterval(() => showSlide(activeIndex + 1), intervalMs);
+    };
+
+    const updateToggle = () => {
+      if (!toggle) return;
+      toggle.setAttribute('aria-pressed', userPaused ? 'true' : 'false');
+      toggle.setAttribute('aria-label', userPaused ? 'Resume featured rotation' : 'Pause featured rotation');
+      toggle.textContent = userPaused ? 'Resume' : 'Pause';
+    };
+
+    const showManually = (index) => {
+      showSlide(index);
+      if (shouldAutoRotate && !userPaused) {
+        stopRotation();
+        startRotation();
+      }
+    };
+
+    prev?.addEventListener('click', () => showManually(activeIndex - 1));
+    next?.addEventListener('click', () => showManually(activeIndex + 1));
+    toggle?.addEventListener('click', () => {
+      userPaused = !userPaused;
+      if (userPaused) {
+        stopRotation();
+      } else {
+        startRotation();
+      }
+      updateToggle();
+    });
+
+    carousel.addEventListener('mouseenter', stopRotation);
+    carousel.addEventListener('mouseleave', startRotation);
+    carousel.addEventListener('focusin', stopRotation);
+    carousel.addEventListener('focusout', (event) => {
+      if (!carousel.contains(event.relatedTarget)) startRotation();
+    });
+    carousel.addEventListener('pointerdown', (event) => {
+      pointerStartX = event.clientX;
+    });
+    carousel.addEventListener('pointerup', (event) => {
+      if (pointerStartX === null) return;
+      const delta = event.clientX - pointerStartX;
+      pointerStartX = null;
+      if (Math.abs(delta) < 40) return;
+      showManually(delta > 0 ? activeIndex - 1 : activeIndex + 1);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopRotation();
+      } else {
+        startRotation();
+      }
+    });
+
+    if (reduceMotion) {
+      carousel.classList.add('is-reduced-motion');
+      toggle?.setAttribute('disabled', 'true');
+    } else {
+      updateToggle();
+      startRotation();
+    }
   });
 }
 
@@ -242,7 +320,7 @@ function setupContentModal() {
     fields.rentForm.action = item.rentUrl;
     fields.rentForm.method = 'GET';
     fields.rentButton.disabled = !item.available || item.capacity.isFull;
-    fields.rentButton.textContent = item.capacity.isFull ? 'Rental Full' : 'Activate Rental';
+    fields.rentButton.textContent = item.capacity.isFull ? 'Access Full' : 'Activate Access';
     fields.detailsLink.href = item.detailUrl;
 
     modal.removeAttribute('hidden');
@@ -304,7 +382,44 @@ function setupForms() {
     form.addEventListener('submit', (event) => {
       if (!window.validateForm(form.id)) {
         event.preventDefault();
+        return;
       }
+      const submitButton = form.querySelector('button[type="submit"]');
+      if (submitButton) setLoadingState(submitButton, true);
+    });
+  });
+}
+
+function setupAuthForms() {
+  document.querySelectorAll('[data-demo-persona]').forEach(button => {
+    button.addEventListener('click', () => {
+      const form = button.closest('.auth-panel')?.querySelector('form[data-auth-form]');
+      if (!form) return;
+
+      const email = form.querySelector('input[name="email"]');
+      const password = form.querySelector('input[name="password"]');
+      if (email) {
+        email.value = button.dataset.demoEmail || '';
+        email.setAttribute('aria-invalid', 'false');
+      }
+      if (password) {
+        password.value = button.dataset.demoPassword || '';
+        password.setAttribute('aria-invalid', 'false');
+      }
+      email?.focus();
+      ToastNotification.info(`${button.querySelector('strong')?.textContent || 'Demo'} credentials filled. Review and sign in when ready.`);
+    });
+  });
+
+  document.querySelectorAll('[data-password-toggle]').forEach(button => {
+    const input = document.getElementById(button.getAttribute('aria-controls'));
+    if (!input) return;
+
+    button.addEventListener('click', () => {
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      button.textContent = showing ? 'Show' : 'Hide';
+      button.setAttribute('aria-pressed', showing ? 'false' : 'true');
     });
   });
 }
@@ -332,13 +447,26 @@ function setupActionButtons() {
       window.confirmDelete(button.dataset.deleteId);
     });
   });
+
+  document.querySelectorAll('[data-copy-text]').forEach(button => {
+    button.addEventListener('click', async () => {
+      const value = button.dataset.copyText || '';
+      if (!value) return;
+      try {
+        await navigator.clipboard.writeText(value);
+        ToastNotification.success('Reference copied.');
+      } catch (error) {
+        ToastNotification.info(value);
+      }
+    });
+  });
 }
 
 function setupToasts() {
   const params = new URLSearchParams(window.location.search);
   if (params.has('signedup')) ToastNotification.success('Account created. Welcome to StreamNexus.');
-  if (params.has('rented')) ToastNotification.success('Rental confirmation is active. Your 45-day access window has started.');
-  if (params.has('checkout')) ToastNotification.success('Access returned.');
+  if (params.has('rented')) ToastNotification.success('Access pass confirmed. Your 45-day access window has started.');
+  if (params.has('returned') || params.has('checkout')) ToastNotification.success('Access returned.');
   if (params.has('created')) ToastNotification.success('Content created.');
   if (params.has('updated')) ToastNotification.success('Content updated.');
   if (params.has('deleted')) ToastNotification.success('Content archived.');
@@ -360,11 +488,11 @@ function setupFocusMode() {
 window.confirmCheckout = function (rentalId) {
   ConfirmDialog.show(
     'Return access?',
-    'This returns the simulated rental access and frees one licence for the title.',
+    'This returns the simulated access pass and frees one licence for the title.',
     () => {
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = `/streamer/rentals/${rentalId}/checkout`;
+      form.action = `/my-access/${rentalId}/checkout`;
       appendCsrfInput(form);
       document.body.appendChild(form);
       form.submit();
@@ -393,6 +521,7 @@ document.addEventListener('DOMContentLoaded', function () {
   setupCarousels();
   setupContentModal();
   setupForms();
+  setupAuthForms();
   setupImageFallbacks();
   setupActionButtons();
   setupToasts();

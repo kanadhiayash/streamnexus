@@ -4,7 +4,7 @@
   <% if (typeof errors !== 'undefined' && errors) { %>
     <div class='alert alert-error' role='alert'>
       <strong>Validation errors:</strong>
-      <ul style='margin-top: 0.5rem;'>
+      <ul class='form-error-list'>
         <% errors.forEach(error => { %>
           <li><%= error %></li>
         <% }); %>
@@ -15,15 +15,14 @@
     <div class='alert alert-error' role='alert'><%= message %></div>
   <% } %>
 
-  <div style='max-width:700px;background:var(--bg-secondary);border:1px solid var(--border-color);padding:2rem;border-radius:12px;margin-top:1.5rem;'>
+  <div class='form-panel'>
     <form method='post' action="<%= action %>" id='contentForm' data-validate-form>
       <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
-      <!-- Required Fields Section -->
-      <fieldset style='border:none;margin-bottom:2rem;'>
-        <legend style='font-size:1.1rem;font-weight:600;margin-bottom:1rem;'>Required Information</legend>
+      <fieldset class='form-fieldset'>
+        <legend>Required Information</legend>
 
         <div class='form-group'>
-          <label for='title'>Title <span style='color:var(--accent-red);'>*</span></label>
+          <label for='title'>Title <span class='required-marker'>*</span></label>
           <input
             type='text'
             id='title'
@@ -34,11 +33,11 @@
             aria-required='true'
             aria-describedby='title-desc'
           />
-          <small id='title-desc' style='color:var(--text-tertiary);'>The title of the movie or TV series</small>
+          <small id='title-desc' class='form-help'>The title of the movie or TV series</small>
         </div>
 
         <div class='form-group'>
-          <label for='type'>Type <span style='color:var(--accent-red);'>*</span></label>
+          <label for='type'>Type <span class='required-marker'>*</span></label>
           <select id='type' name='type' required aria-required='true'>
             <option value=''>Select a type...</option>
             <option value='movie' <% if(content && content.type === 'movie') { %>selected<% } %>>Movie</option>
@@ -47,7 +46,7 @@
         </div>
 
         <div class='form-group'>
-          <label for='price'>Price ($) <span style='color:var(--accent-red);'>*</span></label>
+          <label for='price'>Price ($) <span class='required-marker'>*</span></label>
           <input
             type='number'
             id='price'
@@ -61,11 +60,11 @@
             aria-required='true'
             aria-describedby='price-desc'
           />
-          <small id='price-desc' style='color:var(--text-tertiary);'>Rental price in USD</small>
+          <small id='price-desc' class='form-help'>Rental price in USD</small>
         </div>
 
         <div class='form-group'>
-          <label for='rentalLimit'>Active Rental Limit <span style='color:var(--accent-red);'>*</span></label>
+          <label for='rentalLimit'>Active Rental Limit <span class='required-marker'>*</span></label>
           <input
             type='number'
             id='rentalLimit'
@@ -73,18 +72,17 @@
             min='1'
             max='50'
             step='1'
-            value="<%= content ? (content.rentalLimit || 5) : 5 %>"
+            value="<%= content ? (content.rentalLimit || 20) : 20 %>"
             required
             aria-required='true'
             aria-describedby='rental-limit-desc'
           />
-          <small id='rental-limit-desc' style='color:var(--text-tertiary);'>Default is 5 active streamers per title.</small>
+          <small id='rental-limit-desc' class='form-help'>Default is 20 active access seats per title.</small>
         </div>
       </fieldset>
 
-      <!-- Optional Details Section -->
-      <fieldset style='border:none;margin-bottom:2rem;'>
-        <legend style='font-size:1.1rem;font-weight:600;margin-bottom:1rem;'>Additional Details</legend>
+      <fieldset class='form-fieldset'>
+        <legend>Additional Details</legend>
 
         <div class='form-group'>
           <label for='description'>Description</label>
@@ -95,7 +93,7 @@
             rows='4'
             aria-describedby='desc-desc'
           ><%= content ? content.description : '' %></textarea>
-          <small id='desc-desc' style='color:var(--text-tertiary);'>What is this content about?</small>
+          <small id='desc-desc' class='form-help'>What is this content about?</small>
         </div>
 
         <div class='form-group'>
@@ -157,11 +155,10 @@
         </div>
       </fieldset>
 
-      <!-- Status Section -->
-      <fieldset style='border:none;margin-bottom:2rem;'>
-        <legend style='font-size:1.1rem;font-weight:600;margin-bottom:1rem;'>Status</legend>
+      <fieldset class='form-fieldset'>
+        <legend>Status</legend>
         <div class='form-group'>
-          <label style='display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-weight:normal;'>
+          <label class='form-check'>
             <input
               type='checkbox'
               name='available'
@@ -173,8 +170,7 @@
         </div>
       </fieldset>
 
-      <!-- Actions -->
-      <div style='display:flex;gap:1rem;margin-top:2rem;border-top:1px solid var(--border-color);padding-top:2rem;'>
+      <div class='form-actions'>
         <button type='submit' class='btn btn-success'>
           <%= isEditing ? 'Update Content' : 'Create Content' %>
         </button>

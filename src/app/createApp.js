@@ -10,11 +10,17 @@ const authRoutes = require('../../routes/auth');
 const adminRoutes = require('../../routes/admin');
 const streamerRoutes = require('../../routes/streamer');
 const contentRoutes = require('../../routes/content');
-const contentService = require('../../services/contentService');
-const rentalService = require('../../services/rentalService');
+const memberRoutes = require('../../routes/member');
+const partnerRoutes = require('../../routes/partner');
+const publicRoutes = require('../../routes/public');
 const { errorHandler, AppError } = require('../../middleware/errorHandler');
 const { csrfProtection } = require('../../middleware/csrf');
+const { queryLengthGuard } = require('../../middleware/requestGuards');
 const { buildConfig, assertSandboxDatabase } = require('../config/environment');
+const { getRoleDestination } = require('../modules/auth/roleDestinations');
+const { createPageUseCases } = require('../modules/pages/page.useCases');
+
+const pageUseCases = createPageUseCases();
 
 const registerMiddleware = (app, config) => {
   app.use(
@@ -34,8 +40,9 @@ const registerMiddleware = (app, config) => {
       },
     })
   );
-  app.use(express.urlencoded({ extended: true }));
-  app.use(express.json());
+  app.use(express.urlencoded({ extended: true, limit: config.security.bodyLimit }));
+  app.use(express.json({ limit: config.security.bodyLimit }));
+  app.use(queryLengthGuard(config.security.queryMaxLength));
   app.use(methodOverride('_method'));
   app.use(express.static(path.join(__dirname, '..', '..', 'public')));
   app.get('/favicon.ico', (req, res) => res.status(204).end());
@@ -84,23 +91,23 @@ const registerMiddleware = (app, config) => {
 
 const registerRoutes = (app) => {
   app.use('/', authRoutes);
+  app.use('/', memberRoutes);
+  app.use('/partner', partnerRoutes);
+  app.use('/', publicRoutes);
   app.use('/admin', adminRoutes);
   app.use('/streamer', streamerRoutes);
   app.use('/content', contentRoutes);
 
   app.get('/', async (req, res, next) => {
-    if (req.session.user?.role === 'admin') {
-      return res.redirect('/admin/dashboard');
-    }
-    if (req.session.user?.role === 'streamer') {
-      return res.redirect('/streamer/browse');
+    if (req.session.user) {
+      const destination = getRoleDestination(req.session.user.role);
+      if (destination !== '/') {
+        return res.redirect(destination);
+      }
     }
 
     try {
-      const contentResult = await contentService.getAvailableContent();
-      const capacityResult = await rentalService.attachCapacityToContents(contentResult.data || []);
-      const featured = capacityResult.success ? capacityResult.data.slice(0, 8) : [];
-      res.render('index', { featured });
+      res.render('index', await pageUseCases.publicLanding({ user: req.session.user }));
     } catch (error) {
       next(error);
     }

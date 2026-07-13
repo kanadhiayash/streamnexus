@@ -70,9 +70,9 @@ const percentile = (values, p) => {
       .expect(302);
 
     for (let i = 0; i < ITERATIONS; i++) {
-      await timed('streamer-browse', () => streamer.get('/streamer/browse').expect(200), results);
-      await timed('streamer-search', () => streamer.get('/streamer/browse?search=neon&type=movie').expect(200), results);
-      await timed('streamer-rentals', () => streamer.get('/streamer/rentals').expect(200), results);
+      await timed('member-home', () => streamer.get('/home').expect(200), results);
+      await timed('member-search', () => streamer.get('/home?search=neon&type=movie').expect(200), results);
+      await timed('member-access', () => streamer.get('/my-access').expect(200), results);
     }
 
     const durations = results.map((result) => result.durationMs);

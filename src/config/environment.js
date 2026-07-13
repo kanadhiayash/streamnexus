@@ -44,6 +44,10 @@ const buildConfig = (env = process.env) => {
       ttlSeconds: 14 * 24 * 60 * 60,
       cookieMaxAgeMs: 7 * 24 * 60 * 60 * 1000,
     },
+    security: {
+      bodyLimit: env.REQUEST_BODY_LIMIT || '100kb',
+      queryMaxLength: Number(env.REQUEST_QUERY_MAX_LENGTH) || 2048,
+    },
     demo: {
       seed: env.SEED_DEMO_DATA === 'true' || (!isProduction && env.SEED_DEMO_DATA !== 'false'),
     },

@@ -1,0 +1,1080 @@
+{
+  "schemaVersion": "1.0.0",
+  "productId": "SNX",
+  "workstreamPattern": "^SNX-[0-9]{3}$",
+  "validationPattern": "^SNX-(AUTH|ACCESS|CAPACITY|FIXTURE|IA|UI|A11Y|SEC|CI|DATA|PARTNER|ADMIN|RELEASE|BRAND)-[0-9]{3}$",
+  "testTitlePattern": "^\\[SNX-(AUTH|ACCESS|CAPACITY|FIXTURE|IA|UI|A11Y|SEC|CI|DATA|PARTNER|ADMIN|RELEASE|BRAND)-[0-9]{3}\\] .+$",
+  "approvedAreas": [
+    "AUTH",
+    "ACCESS",
+    "CAPACITY",
+    "FIXTURE",
+    "IA",
+    "UI",
+    "A11Y",
+    "SEC",
+    "CI",
+    "DATA",
+    "PARTNER",
+    "ADMIN",
+    "RELEASE",
+    "BRAND"
+  ],
+  "ciCheckPrefix": "SNX / ",
+  "fixtureIds": {
+    "prefix": "SNX-TITLE",
+    "start": 1,
+    "end": 50,
+    "padding": 3
+  },
+  "diagnosticPolicy": {
+    "auditEventPattern": "^SNX\\.[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)+$",
+    "prohibitedFields": [
+      "email",
+      "password",
+      "token",
+      "cookie",
+      "sessionId",
+      "authorization"
+    ],
+    "publicMessageRule": "Validation IDs may appear in internal evidence and logs but must not replace clear user-facing messages."
+  },
+  "validations": [
+    {
+      "id": "SNX-CI-001",
+      "area": "CI",
+      "title": "validation registry contains unique IDs in approved areas",
+      "ownerIssue": 33,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-002",
+      "area": "CI",
+      "title": "npm SNX aliases resolve to canonical gates",
+      "ownerIssue": 33,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-003",
+      "area": "CI",
+      "title": "CI workflow uses SNX display identity and validates identifiers",
+      "ownerIssue": 33,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-001",
+      "area": "FIXTURE",
+      "title": "fixture range reserves exactly SNX-TITLE-001 through SNX-TITLE-050",
+      "ownerIssue": 33,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-001",
+      "area": "SEC",
+      "title": "diagnostic policy excludes sensitive payload fields",
+      "ownerIssue": 33,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-001",
+      "area": "BRAND",
+      "title": "required production brand assets exist and are non-empty",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-002",
+      "area": "BRAND",
+      "title": "shared and auth surfaces contain no temporary SN placeholder",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-003",
+      "area": "BRAND",
+      "title": "favicon manifest social and token references resolve from the layout",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-004",
+      "area": "BRAND",
+      "title": "approved dark and light variants are present",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-005",
+      "area": "BRAND",
+      "title": "application and social PNG dimensions match the production contract",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-006",
+      "area": "BRAND",
+      "title": "registry owns the approved brand validation identifiers",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-001",
+      "area": "A11Y",
+      "title": "logo links have an accessible StreamNexus home name",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-002",
+      "area": "SEC",
+      "title": "committed SVG assets contain no scripts or unsafe external references",
+      "ownerIssue": 34,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-001",
+      "area": "DATA",
+      "title": "canonical domain vocabulary is complete",
+      "ownerIssue": 35,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-001",
+      "area": "IA",
+      "title": "public and authenticated surfaces are distinct",
+      "ownerIssue": 35,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-001",
+      "area": "ACCESS",
+      "title": "entitlement states are defined",
+      "ownerIssue": 35,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-001",
+      "area": "PARTNER",
+      "title": "partner ownership boundaries are defined",
+      "ownerIssue": 35,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-001",
+      "area": "RELEASE",
+      "title": "public claims remain evidence-bounded",
+      "ownerIssue": 35,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-001",
+      "area": "AUTH",
+      "title": "member login persists after redirect",
+      "ownerIssue": 36,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-002",
+      "area": "AUTH",
+      "title": "admin login persists after redirect",
+      "ownerIssue": 36,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-003",
+      "area": "AUTH",
+      "title": "valid session persists after reload",
+      "ownerIssue": 36,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-004",
+      "area": "AUTH",
+      "title": "legacy demo account is repaired",
+      "ownerIssue": 36,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-005",
+      "area": "AUTH",
+      "title": "suspended account is rejected",
+      "ownerIssue": 36,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-010",
+      "area": "SEC",
+      "title": "authentication logs contain no email password token or session ID",
+      "ownerIssue": 36,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-010",
+      "area": "ACCESS",
+      "title": "legacy rental maps to canonical access entitlement",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-011",
+      "area": "ACCESS",
+      "title": "active entitlement returns once and becomes terminal",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-012",
+      "area": "ACCESS",
+      "title": "expired entitlement remains terminal",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-013",
+      "area": "ACCESS",
+      "title": "cancelled entitlement remains terminal",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-014",
+      "area": "ACCESS",
+      "title": "duplicate active access is deterministic",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-010",
+      "area": "DATA",
+      "title": "entitlement snapshots remain backward compatible",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-020",
+      "area": "SEC",
+      "title": "access audit payload excludes credentials and session data",
+      "ownerIssue": 37,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-001",
+      "area": "CAPACITY",
+      "title": "nineteenth seat reserves successfully",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-002",
+      "area": "CAPACITY",
+      "title": "twentieth seat reserves successfully",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-003",
+      "area": "CAPACITY",
+      "title": "twenty-first seat is rejected",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-004",
+      "area": "CAPACITY",
+      "title": "reconciliation repairs stale projection",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-005",
+      "area": "CAPACITY",
+      "title": "repeated reconciliation is idempotent",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-006",
+      "area": "CAPACITY",
+      "title": "release occurs exactly once",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-011",
+      "area": "DATA",
+      "title": "customized capacities are preserved",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-010",
+      "area": "FIXTURE",
+      "title": "legacy demo default migrates from 5 to 20",
+      "ownerIssue": 38,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-011",
+      "area": "FIXTURE",
+      "title": "exactly 50 title fixtures exist",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-012",
+      "area": "FIXTURE",
+      "title": "fixture IDs are complete and unique",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-013",
+      "area": "FIXTURE",
+      "title": "repeated seed is idempotent",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-014",
+      "area": "FIXTURE",
+      "title": "reset touches demo-owned records only",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-015",
+      "area": "FIXTURE",
+      "title": "every title has valid access and artwork metadata",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-016",
+      "area": "FIXTURE",
+      "title": "demo personas are deterministic",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-012",
+      "area": "DATA",
+      "title": "fixture slugs are stable and unique",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-021",
+      "area": "SEC",
+      "title": "fixture output contains no credentials or proprietary data",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-010",
+      "area": "PARTNER",
+      "title": "partner ownership is enforced",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-011",
+      "area": "PARTNER",
+      "title": "partner cannot mutate another partner record",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-012",
+      "area": "PARTNER",
+      "title": "admin can operate across partners",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-020",
+      "area": "DATA",
+      "title": "program-title relationship remains consistent",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-021",
+      "area": "DATA",
+      "title": "collection membership is deterministic",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-020",
+      "area": "ACCESS",
+      "title": "release window controls unlock eligibility",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-021",
+      "area": "ACCESS",
+      "title": "expired release window blocks new access",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-030",
+      "area": "SEC",
+      "title": "partner audit payload is privacy-safe",
+      "ownerIssue": 40,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-100",
+      "area": "SEC",
+      "title": "login throttle applies by account and IP",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-101",
+      "area": "SEC",
+      "title": "signup throttle blocks automated abuse",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-102",
+      "area": "SEC",
+      "title": "unsafe return destination is rejected",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-103",
+      "area": "SEC",
+      "title": "oversized request body is rejected",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-104",
+      "area": "SEC",
+      "title": "object ownership is enforced server-side",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-105",
+      "area": "SEC",
+      "title": "state mutation without CSRF is rejected",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-106",
+      "area": "SEC",
+      "title": "idempotent access confirmation prevents duplicate writes",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-107",
+      "area": "SEC",
+      "title": "logs exclude sensitive authentication and session data",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-020",
+      "area": "AUTH",
+      "title": "suspended account cannot use protected routes",
+      "ownerIssue": 41,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-010",
+      "area": "IA",
+      "title": "public landing remains accessible to guests",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-011",
+      "area": "IA",
+      "title": "member home is separate from public landing",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-012",
+      "area": "IA",
+      "title": "member login routes to member home",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-013",
+      "area": "IA",
+      "title": "admin login routes to admin dashboard",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-014",
+      "area": "IA",
+      "title": "partner login routes to scoped partner home",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-015",
+      "area": "IA",
+      "title": "legacy route redirects preserve safe intent",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-021",
+      "area": "AUTH",
+      "title": "guest is rejected from protected route",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-110",
+      "area": "SEC",
+      "title": "unsafe compatibility redirect is rejected",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-030",
+      "area": "DATA",
+      "title": "title view model is deterministic",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-030",
+      "area": "ACCESS",
+      "title": "access state maps to one primary action",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-020",
+      "area": "IA",
+      "title": "route use case returns the correct page model",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-010",
+      "area": "UI",
+      "title": "empty-state model is explicit",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-011",
+      "area": "UI",
+      "title": "pagination model preserves filters and sort",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-111",
+      "area": "SEC",
+      "title": "public error model exposes no internal stack data",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ADMIN-010",
+      "area": "ADMIN",
+      "title": "admin operations view model respects role scope",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-010",
+      "area": "CI",
+      "title": "PR workflow runs all required gates",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-011",
+      "area": "CI",
+      "title": "workflow names use SNX prefix",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-012",
+      "area": "CI",
+      "title": "third-party actions are SHA-pinned",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-013",
+      "area": "CI",
+      "title": "workflow permissions are least-privilege",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-014",
+      "area": "CI",
+      "title": "superseded runs are cancelled",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-015",
+      "area": "CI",
+      "title": "untrusted PR code cannot reach privileged context",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CI-016",
+      "area": "CI",
+      "title": "release workflow accepts dev as source and main as target",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-120",
+      "area": "SEC",
+      "title": "workflow artifacts contain no secrets",
+      "ownerIssue": 44,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-010",
+      "area": "BRAND",
+      "title": "approved palette maps to semantic tokens",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-100",
+      "area": "UI",
+      "title": "shared buttons render all states",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-101",
+      "area": "UI",
+      "title": "shared form controls render validation states",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-102",
+      "area": "UI",
+      "title": "title card variants remain consistent",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-103",
+      "area": "UI",
+      "title": "modal and toast states are reusable",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-100",
+      "area": "A11Y",
+      "title": "keyboard focus remains visible",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-101",
+      "area": "A11Y",
+      "title": "status does not rely on colour alone",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-102",
+      "area": "A11Y",
+      "title": "reduced-motion preference is respected",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-104",
+      "area": "UI",
+      "title": "component documentation defines approved and prohibited usage",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-105",
+      "area": "UI",
+      "title": "registry owns the pivot design system validation identifiers",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-200",
+      "area": "UI",
+      "title": "public landing renders curated discovery modules",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-201",
+      "area": "UI",
+      "title": "public title card opens a valid destination",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-202",
+      "area": "UI",
+      "title": "featured rotation advances and pauses correctly",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-030",
+      "area": "IA",
+      "title": "public program and collection routes resolve",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-100",
+      "area": "ACCESS",
+      "title": "public access explanation is accurate",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-200",
+      "area": "A11Y",
+      "title": "featured controls are keyboard operable",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-201",
+      "area": "A11Y",
+      "title": "reduced-motion mode disables automatic movement",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-010",
+      "area": "RELEASE",
+      "title": "public copy remains evidence-bounded",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-100",
+      "area": "AUTH",
+      "title": "member demo selector fills expected fields",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-101",
+      "area": "AUTH",
+      "title": "admin demo selector fills expected fields",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-102",
+      "area": "AUTH",
+      "title": "successful member login reaches member home",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-103",
+      "area": "AUTH",
+      "title": "successful admin login reaches admin dashboard",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-104",
+      "area": "AUTH",
+      "title": "signup creates member role only",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-105",
+      "area": "AUTH",
+      "title": "authenticated user cannot remain on guest auth page",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-210",
+      "area": "A11Y",
+      "title": "auth errors are announced and field-associated",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-130",
+      "area": "SEC",
+      "title": "authentication response does not enumerate accounts",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-300",
+      "area": "UI",
+      "title": "member home renders populated state",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-301",
+      "area": "UI",
+      "title": "member home renders fresh-member state",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-110",
+      "area": "ACCESS",
+      "title": "active access appears on member home",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-111",
+      "area": "ACCESS",
+      "title": "expiring access is prioritized correctly",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-302",
+      "area": "UI",
+      "title": "My List preview reflects saved state",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-303",
+      "area": "UI",
+      "title": "discovery card has a valid destination",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-220",
+      "area": "A11Y",
+      "title": "member rails are keyboard operable",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-020",
+      "area": "RELEASE",
+      "title": "member copy does not imply playback or AI recommendations",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-200",
+      "area": "ACCESS",
+      "title": "access review reflects canonical policy",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-201",
+      "area": "ACCESS",
+      "title": "confirmation creates one entitlement",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-202",
+      "area": "ACCESS",
+      "title": "duplicate confirmation is idempotent",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-203",
+      "area": "ACCESS",
+      "title": "My Access separates active and history states",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-204",
+      "area": "ACCESS",
+      "title": "return updates entitlement and capacity once",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-205",
+      "area": "ACCESS",
+      "title": "expired and cancelled states remain terminal",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-CAPACITY-100",
+      "area": "CAPACITY",
+      "title": "at-capacity conflict maps to recovery UI",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-230",
+      "area": "A11Y",
+      "title": "access state is understandable without colour",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-140",
+      "area": "SEC",
+      "title": "member can read only owned access records",
+      "ownerIssue": 49,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-100",
+      "area": "PARTNER",
+      "title": "partner dashboard is ownership-scoped",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-101",
+      "area": "PARTNER",
+      "title": "partner cannot edit another partner program",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ADMIN-100",
+      "area": "ADMIN",
+      "title": "admin dashboard reports canonical operational state",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ADMIN-101",
+      "area": "ADMIN",
+      "title": "admin member suspension invalidates access safely",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ADMIN-102",
+      "area": "ADMIN",
+      "title": "admin cancellation releases entitlement capacity once",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ADMIN-103",
+      "area": "ADMIN",
+      "title": "reconciliation action reports deterministic result",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-240",
+      "area": "A11Y",
+      "title": "operations tables and forms are keyboard usable",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-150",
+      "area": "SEC",
+      "title": "destructive operations require role ownership CSRF and confirmation",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-151",
+      "area": "SEC",
+      "title": "audit views expose no sensitive payloads",
+      "ownerIssue": 50,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-100",
+      "area": "RELEASE",
+      "title": "complete validation registry passes",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-101",
+      "area": "RELEASE",
+      "title": "final dev commit is reproducibly verified",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-102",
+      "area": "RELEASE",
+      "title": "50-title fixture count and identity pass",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-103",
+      "area": "RELEASE",
+      "title": "all role journeys pass browser acceptance",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-104",
+      "area": "RELEASE",
+      "title": "capture assets reference the verified commit",
+      "ownerIssue": 51,
+      "status": "deferred-until-yash-review"
+    },
+    {
+      "id": "SNX-CI-100",
+      "area": "CI",
+      "title": "final required checks are green",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-300",
+      "area": "A11Y",
+      "title": "manual accessibility acceptance passes",
+      "ownerIssue": 51,
+      "status": "deferred-until-yash-review"
+    },
+    {
+      "id": "SNX-SEC-200",
+      "area": "SEC",
+      "title": "no unresolved high-severity security finding remains",
+      "ownerIssue": 51,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-100",
+      "area": "DATA",
+      "title": "reconciliation and fixture reset are repeatable",
+      "ownerIssue": 51,
+      "status": "implemented"
+    }
+  ]
+}

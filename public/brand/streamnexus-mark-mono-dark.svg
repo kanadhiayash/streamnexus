@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">StreamNexus mono dark mark</title>
+  <desc id="desc">Dark single-color Connected Play Nexus symbol.</desc>
+  <rect width="128" height="128" rx="28" fill="#0F172A"/>
+  <path d="M31 43c0-8.8 7.2-16 16-16h47v18H49c-1.1 0-2 .9-2 2v5c0 1.1.9 2 2 2h30c10.5 0 19 8.5 19 19v12c0 10.5-8.5 19-19 19H31V86h47c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2H47c-8.8 0-16-7.2-16-16V43Z" fill="#F8FAFC"/>
+  <circle cx="33" cy="33" r="8" fill="#F8FAFC"/>
+  <circle cx="95" cy="95" r="8" fill="#F8FAFC"/>
+</svg>

@@ -82,7 +82,7 @@ const mapTitleToV2 = (titleRecord, activeLicenceCount = 0) => {
     rentalPriceMinor: amountMinor,
     currencyCode: title.currencyCode || RENTAL_POLICY.currencyCode,
     lifecycle,
-    licenceLimit: title.licenceLimit || title.rentalLimit || 5,
+    licenceLimit: title.licenceLimit || title.rentalLimit || RENTAL_POLICY.defaultTitleLicenceLimit,
     activeLicenceCount,
     editorialRank: title.editorialRank || null,
     publishedAt: title.publishedAt || (lifecycle === 'published' ? title.createdAt || null : null),

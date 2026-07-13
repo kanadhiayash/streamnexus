@@ -1,0 +1,124 @@
+<section>
+  <div class='page-toolbar'>
+    <div>
+      <p class='eyebrow'>Partner workspace</p>
+      <h1><%= workspace.partner ? workspace.partner.name : 'Partner Dashboard' %></h1>
+    </div>
+  </div>
+  <% if (workspace.alerts.length > 0) { %>
+    <section aria-labelledby='partner-alerts-heading'>
+      <div class='section-heading'>
+        <h2 id='partner-alerts-heading'>Attention Required</h2>
+        <p><%= workspace.alerts.length %> alert<%= workspace.alerts.length === 1 ? '' : 's' %></p>
+      </div>
+      <div class='grid'>
+        <% workspace.alerts.forEach(alert => { %>
+          <article class='component-card'>
+            <p class='eyebrow'><%= alert.label %></p>
+            <p><%= alert.message %></p>
+          </article>
+        <% }); %>
+      </div>
+    </section>
+  <% } %>
+
+  <section aria-labelledby='partner-programs-heading'>
+    <div class='section-heading'>
+      <h2 id='partner-programs-heading'>Programs</h2>
+      <p><%= workspace.programs.length %> program<%= workspace.programs.length === 1 ? '' : 's' %></p>
+    </div>
+    <% if (workspace.programs.length === 0) { %>
+      <div class='empty-state' role='status'><p>No scoped programs yet.</p></div>
+    <% } else { %>
+      <div class='table-wrap'>
+        <table>
+          <thead>
+            <tr>
+              <th>Program</th>
+              <th>Status</th>
+              <th>Titles</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% workspace.programs.forEach(program => { %>
+              <tr>
+                <td><%= program.name %></td>
+                <td><span class='status <%= program.status === "published" ? "available" : "unavailable" %>'><%= program.status %></span></td>
+                <td><%= (program.titleIds || []).length %></td>
+                <td>
+                  <form method='post' action='/partner/programs/<%= program._id %>/status' class='inline-form'>
+                    <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
+                    <input type='hidden' name='confirmation' value='UPDATE' />
+                    <select name='status' aria-label='Status for <%= program.name %>'>
+                      <% ['draft', 'published', 'archived'].forEach(status => { %>
+                        <option value='<%= status %>' <%= program.status === status ? 'selected' : '' %>><%= status %></option>
+                      <% }); %>
+                    </select>
+                    <button type='submit' class='btn btn-primary btn-sm'>Update</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </section>
+
+  <section aria-labelledby='partner-titles-heading'>
+    <div class='section-heading'>
+      <h2 id='partner-titles-heading'>Title Library</h2>
+      <p><%= workspace.titles.length %> title<%= workspace.titles.length === 1 ? '' : 's' %></p>
+    </div>
+    <div class='table-wrap'>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Lifecycle</th>
+            <th>Capacity</th>
+            <th>Release window</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% workspace.titles.forEach(title => { %>
+            <tr>
+              <td><%= title.title %></td>
+              <td><span class='status <%= title.lifecycle === "published" ? "available" : "unavailable" %>'><%= title.lifecycle %></span></td>
+              <td><%= title.activeLicenceCount || 0 %> active / <%= title.rentalLimit || 20 %> seats</td>
+              <td><%= title.releaseWindow && title.releaseWindow.closesAt ? new Date(title.releaseWindow.closesAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Not set' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby='partner-access-heading'>
+    <div class='section-heading'>
+      <h2 id='partner-access-heading'>Access Activity</h2>
+      <p><%= workspace.accessActivity.length %> record<%= workspace.accessActivity.length === 1 ? '' : 's' %></p>
+    </div>
+    <div class='table-wrap'>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Started</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% workspace.accessActivity.forEach(record => { %>
+            <tr>
+              <td><%= record.contentId ? record.contentId.title : 'Deleted title' %></td>
+              <td><span class='status <%= record.status === "active" ? "available" : "unavailable" %>'><%= record.status %></span></td>
+              <td><%= new Date(record.rentedAt || record.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

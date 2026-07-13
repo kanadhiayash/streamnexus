@@ -30,7 +30,7 @@ const extractCsrfToken = (html) => {
         _csrf: streamerCsrf,
       })
       .expect(302);
-    await streamer.get('/streamer/browse').expect(200);
+    await streamer.get('/home').expect(200);
 
     const admin = request.agent(app);
     const adminLogin = await admin.get('/login').expect(200);
