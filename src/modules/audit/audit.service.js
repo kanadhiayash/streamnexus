@@ -14,6 +14,9 @@ const ALLOWED_ACTIONS = new Set([
   'SNX.access.returned',
   'SNX.access.expired',
   'SNX.access.cancelled',
+  'SNX.partner.collection-created',
+  'SNX.program.created',
+  'SNX.program.updated',
 ]);
 
 const createAuditService = ({ logger: injectedLogger = logger } = {}) => ({
