@@ -12,6 +12,19 @@
         <span style='width:<%= Math.min(100, Math.round((capacity.activeRentals / capacity.rentalLimit) * 100)) %>%'></span>
       </div>
       <p class='capacity-copy'><%= capacity.remaining %> of <%= capacity.rentalLimit %> rental licences available. Rentals last 45 days.</p>
+      <% if (!showMemberActions) { %>
+        <div class='component-card public-access-note'>
+          <p class='eyebrow'>Public screening detail</p>
+          <p>
+            This public page shows fictional metadata, simulated licence capacity, and a 45-day access window.
+            No real payment, playback, or commercial licence is processed.
+          </p>
+          <div class='capacity-strip'>
+            <span><%= content.accessMode ? content.accessMode.replace('_', ' ') : 'screening' %></span>
+            <span><%= capacity.remaining %>/<%= capacity.rentalLimit %> licences open</span>
+          </div>
+        </div>
+      <% } %>
       <span class='status <%= content.available && !capacity.isFull ? "available" : "unavailable" %>'>
         <%= content.available && !capacity.isFull ? 'Available' : 'Full or unavailable' %>
       </span>

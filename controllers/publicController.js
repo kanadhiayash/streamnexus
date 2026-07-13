@@ -16,6 +16,14 @@ const renderCatalog = catchAsync(async (req, res) => {
   }
 });
 
+const renderAccessExplanation = catchAsync(async (req, res) => {
+  try {
+    res.render('public/access', pageUseCases.publicAccessExplanation());
+  } catch (error) {
+    throw normalizePageError(error);
+  }
+});
+
 const renderTitle = catchAsync(async (req, res) => {
   try {
     res.render('streamer/details', await pageUseCases.publicTitle({
@@ -44,6 +52,7 @@ const renderCollection = catchAsync(async (req, res) => {
 });
 
 module.exports = {
+  renderAccessExplanation,
   renderCatalog,
   renderCollection,
   renderProgram,

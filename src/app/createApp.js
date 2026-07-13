@@ -13,13 +13,14 @@ const contentRoutes = require('../../routes/content');
 const memberRoutes = require('../../routes/member');
 const partnerRoutes = require('../../routes/partner');
 const publicRoutes = require('../../routes/public');
-const contentService = require('../../services/contentService');
-const rentalService = require('../../services/rentalService');
 const { errorHandler, AppError } = require('../../middleware/errorHandler');
 const { csrfProtection } = require('../../middleware/csrf');
 const { queryLengthGuard } = require('../../middleware/requestGuards');
 const { buildConfig, assertSandboxDatabase } = require('../config/environment');
 const { getRoleDestination } = require('../modules/auth/roleDestinations');
+const { createPageUseCases } = require('../modules/pages/page.useCases');
+
+const pageUseCases = createPageUseCases();
 
 const registerMiddleware = (app, config) => {
   app.use(
@@ -106,10 +107,7 @@ const registerRoutes = (app) => {
     }
 
     try {
-      const contentResult = await contentService.getAvailableContent();
-      const capacityResult = await rentalService.attachCapacityToContents(contentResult.data || []);
-      const featured = capacityResult.success ? capacityResult.data.slice(0, 8) : [];
-      res.render('index', { featured });
+      res.render('index', await pageUseCases.publicLanding({ user: req.session.user }));
     } catch (error) {
       next(error);
     }

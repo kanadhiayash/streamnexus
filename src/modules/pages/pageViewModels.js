@@ -2,9 +2,31 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_PAGE_SIZE = 12;
 const DEFAULT_CAPACITY_LIMIT = 20;
 
+const PROGRAM_LABELS = {
+  'program-northstar': 'Northstar Program',
+  'program-afterlight': 'Afterlight Program',
+  'program-signal-lab': 'Signal Lab Program',
+  'program-harbor': 'Harbor Program',
+};
+
+const COLLECTION_LABELS = {
+  'collection-featured': 'Featured Screenings',
+  'collection-new-voices': 'New Voices',
+  'collection-weekend-screening': 'Weekend Screening',
+  'collection-staff-picks': 'Staff Picks',
+  'collection-catalog': 'Open Catalog',
+};
+
 const toPlain = value => (value && typeof value.toObject === 'function' ? value.toObject() : value);
 
 const asString = value => String(value || '');
+
+const humanizeKey = value => asString(value)
+  .replace(/^(program|collection)-/, '')
+  .split('-')
+  .filter(Boolean)
+  .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+  .join(' ');
 
 const titleId = title => asString(title?._id);
 
@@ -82,6 +104,13 @@ const buildTitleCard = (title, options = {}) => {
     rentUrl: reviewPath(plain),
     shortlistUrl: access.shortlist?.href || null,
     access,
+    accessMode: plain.accessMode || 'screening',
+    programKey: plain.programKey || null,
+    collectionKeys: Array.isArray(plain.collectionKeys) ? plain.collectionKeys : [],
+    releaseWindow: plain.releaseWindow || null,
+    shortDescription: plain.shortDescription || plain.description || '',
+    releaseYear: plain.releaseYear || null,
+    ageRating: plain.ageRating || '',
   };
 };
 
@@ -203,6 +232,162 @@ const buildCatalogPage = ({ titles = [], query = {}, shortlistIds = new Set(), b
   };
 };
 
+const groupByProgram = (cards = []) => {
+  const grouped = new Map();
+  for (const card of cards) {
+    if (!card.programKey) continue;
+    const group = grouped.get(card.programKey) || {
+      key: card.programKey,
+      label: PROGRAM_LABELS[card.programKey] || humanizeKey(card.programKey) || 'Screening Program',
+      href: `/programs/${encodeURIComponent(card.programKey)}`,
+      titles: [],
+    };
+    group.titles.push(card);
+    grouped.set(card.programKey, group);
+  }
+  return Array.from(grouped.values())
+    .sort((a, b) => b.titles.length - a.titles.length || a.label.localeCompare(b.label))
+    .slice(0, 4);
+};
+
+const groupByCollection = (cards = []) => {
+  const grouped = new Map();
+  for (const card of cards) {
+    for (const key of card.collectionKeys || []) {
+      const group = grouped.get(key) || {
+        key,
+        label: COLLECTION_LABELS[key] || humanizeKey(key) || 'Screening Collection',
+        href: `/collections/${encodeURIComponent(key)}`,
+        titles: [],
+      };
+      group.titles.push(card);
+      grouped.set(key, group);
+    }
+  }
+  return Array.from(grouped.values())
+    .sort((a, b) => b.titles.length - a.titles.length || a.label.localeCompare(b.label))
+    .slice(0, 5);
+};
+
+const buildPublicCta = ({ user } = {}) => {
+  if (!user) {
+    return {
+      kind: 'guest',
+      primaryLabel: 'Explore Catalog',
+      primaryHref: '/catalog',
+      secondaryLabel: 'Create Member Account',
+      secondaryHref: '/signup',
+      supportingText: 'Create a member account only when you want to save titles or activate simulated access.',
+    };
+  }
+  if (user.role === 'admin') {
+    return {
+      kind: 'admin',
+      primaryLabel: 'Open Admin Dashboard',
+      primaryHref: '/admin/dashboard',
+      secondaryLabel: 'View Public Catalog',
+      secondaryHref: '/catalog',
+      supportingText: 'Admin access stays separate from guest discovery.',
+    };
+  }
+  return {
+    kind: 'member',
+    primaryLabel: 'Continue to Member Catalog',
+    primaryHref: '/home',
+    secondaryLabel: 'View My Access',
+    secondaryHref: '/my-access',
+    supportingText: 'Member actions stay in the authenticated workspace.',
+  };
+};
+
+const buildAccessExplanation = () => ({
+  headline: 'How access works in this prototype',
+  summary: 'StreamNexus uses fictional titles, simulated licence capacity, and 45-day access windows for portfolio demonstration only.',
+  steps: [
+    {
+      title: 'Discover a screening',
+      body: 'Guests can inspect published fictional titles, programs, collections, and access availability without signing in.',
+    },
+    {
+      title: 'Create member access',
+      body: 'Members can save titles and create simulated rental records. No payment, playback, or commercial licence is processed.',
+    },
+    {
+      title: 'Track the window',
+      body: 'The member workspace shows the public reference, active status, expiry window, and return action for each simulated access pass.',
+    },
+  ],
+  limitations: [
+    'No real payment processing',
+    'No real media playback',
+    'No real commercial licensing claim',
+    'Fictional metadata and local demo assets only',
+  ],
+});
+
+const buildPublicDiscoveryPage = ({ titles = [], user = null } = {}) => {
+  const cards = titles.map(title => buildTitleCard(toPlain(title), { canAccessMemberActions: false }));
+  const ranked = [...cards].sort((a, b) => {
+    const aRank = Number(a.featuredRank || a.editorialRank || 999);
+    const bRank = Number(b.featuredRank || b.editorialRank || 999);
+    return aRank - bRank || asString(a.title).localeCompare(asString(b.title));
+  });
+
+  return {
+    page: {
+      kind: 'public-landing',
+      title: 'StreamNexus Screening Access',
+      description: 'Curated fictional screenings with transparent simulated access windows and licence availability.',
+      emptyState: ranked.length === 0
+        ? {
+            kind: 'empty-public-discovery',
+            message: 'No public screenings are available right now.',
+            actionHref: '/catalog',
+            actionLabel: 'Check Catalog',
+          }
+        : null,
+    },
+    heroItems: ranked.slice(0, 5),
+    featured: ranked.slice(0, 8),
+    programs: groupByProgram(ranked),
+    collections: groupByCollection(ranked),
+    accessExplanation: buildAccessExplanation(),
+    cta: buildPublicCta({ user }),
+  };
+};
+
+const buildPublicProgramPage = ({ slug, titles = [] }) => {
+  const page = buildCatalogPage({ titles, query: {}, basePath: `/programs/${encodeURIComponent(slug)}`, kind: 'program' });
+  const label = PROGRAM_LABELS[slug] || humanizeKey(slug) || slug;
+  return {
+    ...page,
+    page: {
+      ...page.page,
+      title: `${label} Screening Program`,
+      description: `Public fictional screening program for ${label} with simulated access availability.`,
+    },
+    slug,
+    label,
+    accessExplanation: buildAccessExplanation(),
+  };
+};
+
+const buildPublicCollectionPage = ({ slug, titles = [] }) => {
+  const page = buildCatalogPage({ titles, query: {}, basePath: `/collections/${encodeURIComponent(slug)}`, kind: 'collection' });
+  const label = COLLECTION_LABELS[slug] || humanizeKey(slug) || slug;
+  return {
+    ...page,
+    page: {
+      ...page.page,
+      title: `${label} Screening Collection`,
+      description: `Public fictional screening collection for ${label} with simulated access availability.`,
+    },
+    slug,
+    label,
+    accessExplanation: buildAccessExplanation(),
+  };
+};
+
 const buildShortlistPage = ({ titles = [] }) => ({
   page: {
     kind: 'my-list',
@@ -315,7 +500,10 @@ module.exports = {
   buildCatalogPage,
   buildPagination,
   buildPartnerDashboardPage,
+  buildPublicCollectionPage,
+  buildPublicDiscoveryPage,
   buildPublicErrorModel,
+  buildPublicProgramPage,
   buildRentalDetailPage,
   buildShortlistPage,
   buildTitleCard,

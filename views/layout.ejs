@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <% const pageTitle = typeof page !== 'undefined' && page && page.title ? `${page.title} - StreamNexus` : 'StreamNexus - Premium Streaming Rentals'; %>
+  <% const pageDescription = typeof page !== 'undefined' && page && page.description ? page.description : 'StreamNexus is a role-based digital entertainment rental prototype.'; %>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="csrf-token" content="<%= csrfToken || '' %>" />
-  <meta name="description" content="StreamNexus is a role-based digital entertainment rental prototype." />
+  <meta name="description" content="<%= pageDescription %>" />
   <meta name="theme-color" content="#0F172A" />
-  <meta property="og:title" content="StreamNexus" />
-  <meta property="og:description" content="Discover, connect, and access digital entertainment rentals." />
+  <meta property="og:title" content="<%= pageTitle %>" />
+  <meta property="og:description" content="<%= pageDescription %>" />
   <meta property="og:image" content="/brand/social-preview.png" />
-  <title>StreamNexus - Premium Streaming Rentals</title>
+  <title><%= pageTitle %></title>
   <link rel="icon" href="/brand/favicon.ico" sizes="any" />
   <link rel="icon" href="/brand/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />

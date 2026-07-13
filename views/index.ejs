@@ -1,67 +1,133 @@
-<% const heroItems = featured && featured.length ? featured.slice(0, 5) : []; %>
-<section class='landing-shell'>
-  <div class='landing-hero carousel' data-carousel>
-    <% if (heroItems.length > 0) { %>
+<section class='landing-shell public-discovery'>
+  <div class='landing-hero carousel public-hero' data-carousel data-carousel-auto data-carousel-interval='6500'>
+    <% if (heroItems && heroItems.length > 0) { %>
       <div class='carousel-track'>
         <% heroItems.forEach((item, index) => { %>
           <article class='carousel-slide <%= index === 0 ? "active" : "" %>' data-carousel-slide>
-            <img src='<%= item.image %>' alt='' data-fallback-src='/images/default.svg' />
+            <img src='<%= item.backdropReference || item.image || "/images/default.svg" %>' alt='' data-fallback-src='/images/default.svg' />
             <div class='hero-copy'>
-              <p class='eyebrow'>Portfolio streaming rental prototype</p>
+              <p class='eyebrow'>Curated screening access prototype</p>
               <h1>StreamNexus</h1>
-              <p>Browse a curated demo catalog, save titles to My List, and activate simulated rental access with visible licence availability.</p>
+              <p>Discover fictional programs, inspect licence availability, and understand simulated 45-day access windows before entering the member workspace.</p>
               <div class='hero-actions'>
-                <a href='/signup' class='btn btn-primary'>Create Member Account</a>
-                <a href='/login' class='btn btn-secondary'>Sign In</a>
+                <a href='<%= cta.primaryHref %>' class='btn btn-primary'><%= cta.primaryLabel %></a>
+                <a href='<%= cta.secondaryHref %>' class='btn btn-secondary'><%= cta.secondaryLabel %></a>
+                <% if (cta.kind === 'guest') { %>
+                  <a href='/login' class='btn btn-secondary'>Sign In</a>
+                <% } %>
+                <a href='/access' class='btn btn-secondary'>How Access Works</a>
               </div>
               <dl class='hero-metrics'>
                 <div>
                   <dt><%= item.title %></dt>
-                  <dd><%= item.genre || 'Featured' %> / $<%= Number(item.price || 0).toFixed(2) %></dd>
+                  <dd><%= item.genre || 'Featured' %> / <%= item.accessMode.replace('_', ' ') %></dd>
                 </div>
                 <div>
-                  <dt><%= item.capacity ? item.capacity.remaining : 20 %> licences open</dt>
-                  <dd>20 active access seats per demo title by default</dd>
+                  <dt><%= item.capacity.remaining %> licences open</dt>
+                  <dd>Simulated capacity only. No payment or playback is processed.</dd>
                 </div>
               </dl>
             </div>
           </article>
         <% }); %>
       </div>
-      <div class='carousel-controls' aria-label='Featured title controls'>
-        <button type='button' class='icon-btn' data-carousel-prev aria-label='Previous featured title'>Prev</button>
-        <button type='button' class='icon-btn' data-carousel-next aria-label='Next featured title'>Next</button>
+      <div class='carousel-controls' aria-label='Featured screening controls'>
+        <button type='button' class='icon-btn' data-carousel-prev aria-label='Previous featured screening'>Prev</button>
+        <button type='button' class='icon-btn' data-carousel-next aria-label='Next featured screening'>Next</button>
+        <button type='button' class='icon-btn' data-carousel-toggle aria-label='Pause featured rotation' aria-pressed='false'>Pause</button>
       </div>
     <% } else { %>
       <div class='hero-copy hero-copy-static'>
-        <p class='eyebrow'>Portfolio streaming rental prototype</p>
+        <p class='eyebrow'>Curated screening access prototype</p>
         <h1>StreamNexus</h1>
-        <p>Sign in or create a member account to test catalog browsing, licence availability, and rental confirmation flows.</p>
+        <p>No public screenings are available right now. The catalog remains the source of truth when fixtures are reseeded.</p>
         <div class='hero-actions'>
-          <a href='/signup' class='btn btn-primary'>Create Member Account</a>
-          <a href='/login' class='btn btn-secondary'>Sign In</a>
+          <a href='/catalog' class='btn btn-primary'>Check Catalog</a>
+          <a href='/access' class='btn btn-secondary'>How Access Works</a>
         </div>
       </div>
     <% } %>
   </div>
 
-  <% if (featured && featured.length > 0) { %>
-    <section class='content-rail' aria-labelledby='featured-heading'>
-      <div class='section-heading'>
-        <h2 id='featured-heading'>Featured Demo Titles</h2>
-        <p>Local poster assets, simulated rental pricing, and licence-aware catalog cards.</p>
+  <section class='discovery-modules' aria-labelledby='programs-heading'>
+    <div class='section-heading'>
+      <div>
+        <p class='eyebrow'>Programs</p>
+        <h2 id='programs-heading'>Screening Programs</h2>
       </div>
+      <a href='/catalog' class='btn btn-secondary btn-sm'>All Titles</a>
+    </div>
+    <% if (programs && programs.length > 0) { %>
       <div class='rail-grid'>
-        <% featured.slice(0, 6).forEach(item => { %>
-          <article class='mini-poster'>
-            <img src='<%= item.image %>' alt='<%= item.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
-            <div>
+        <% programs.forEach(program => { %>
+          <article class='component-card discovery-card'>
+            <p class='eyebrow'><%= program.titles.length %> title<%= program.titles.length === 1 ? '' : 's' %></p>
+            <h3><%= program.label %></h3>
+            <p>Fictional titles grouped for public screening discovery and access-window review.</p>
+            <a href='<%= program.href %>' class='btn btn-primary btn-sm'>Open Program</a>
+          </article>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class='empty-state' role='status'>
+        <p>No public programs are available right now.</p>
+        <a href='/catalog' class='btn btn-primary empty-action'>Browse Catalog</a>
+      </div>
+    <% } %>
+  </section>
+
+  <section aria-labelledby='featured-heading'>
+    <div class='section-heading'>
+      <div>
+        <p class='eyebrow'>Featured</p>
+        <h2 id='featured-heading'>Public Screening Picks</h2>
+      </div>
+      <p>Fictional titles with transparent simulated access limits.</p>
+    </div>
+    <% if (featured && featured.length > 0) { %>
+      <div class='grid poster-grid'>
+        <% featured.slice(0, 8).forEach(item => { %>
+          <article class='card poster-card title-card'>
+            <img class='content-poster' src='<%= item.image || "/images/default.svg" %>' alt='<%= item.posterAlt || item.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
+            <div class='poster-overlay'>
+              <span class='status <%= item.available ? "available" : "unavailable" %>'><%= item.available ? 'Published' : 'Unavailable' %></span>
+            </div>
+            <div class='card-content'>
+              <p class='meta-line'><%= item.type.toUpperCase() %> / <%= item.genre || 'General' %></p>
               <h3><%= item.title %></h3>
-              <p><%= item.type.toUpperCase() %> / <%= item.genre || 'General' %></p>
+              <p><%= item.shortDescription || item.description %></p>
+              <div class='card-meta-row'>
+                <span><%= item.capacity.remaining %>/<%= item.capacity.rentalLimit %> licences</span>
+                <span><%= item.accessMode.replace('_', ' ') %></span>
+              </div>
+            </div>
+            <div class='card-footer'>
+              <a href='<%= item.detailUrl %>' class='btn btn-primary btn-sm'>View Screening</a>
             </div>
           </article>
         <% }); %>
       </div>
-    </section>
-  <% } %>
+    <% } else { %>
+      <div class='empty-state' role='status'>
+        <p>No featured screenings are available right now.</p>
+      </div>
+    <% } %>
+  </section>
+
+  <section class='access-panel' aria-labelledby='access-heading'>
+    <div>
+      <p class='eyebrow'>Access model</p>
+      <h2 id='access-heading'><%= accessExplanation.headline %></h2>
+      <p><%= accessExplanation.summary %></p>
+    </div>
+    <ol class='access-steps'>
+      <% accessExplanation.steps.forEach(step => { %>
+        <li>
+          <strong><%= step.title %></strong>
+          <span><%= step.body %></span>
+        </li>
+      <% }); %>
+    </ol>
+    <a href='/access' class='btn btn-secondary'>Read Access Details</a>
+  </section>
 </section>
