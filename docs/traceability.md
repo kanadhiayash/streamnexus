@@ -34,14 +34,18 @@ Current implementation has routes, controllers, services, Mongoose models, views
 | Account status | Missing | User |
 | Saved title | User.shortlist | SavedTitle |
 | Catalog metadata | Content | Title |
+| Program | Missing | Program |
+| Partner | Missing | Partner |
+| Collection | Landing rails and filters | Collection |
 | Title lifecycle | Content.available | Title.lifecycle |
-| Licence limit | Content.rentalLimit | Title.licenceLimit |
-| Active licence count | Runtime count per title | Title.activeLicenceCount projection |
-| Active and historical rental | Rental plus User.rented | Rental |
+| Release window | Missing | ReleaseWindow |
+| Access policy | Content.rentalLimit | AccessPolicy |
+| Active seat count | Runtime count per title | AccessPolicy or entitlement projection |
+| Active and historical access | Rental plus User.rented | AccessEntitlement |
 | Administrative action | Missing | AuditEvent |
 | Session | Session store | Session store with sessionVersion checks |
 | Password reset | Missing | PasswordResetToken or equivalent |
-| Rental policy | Constants in rental service | Versioned config plus rental snapshot |
+| Compatibility rental policy | Constants in rental service | Versioned access policy plus entitlement snapshot |
 
 ## Guest And Member Target Matrix
 
@@ -54,11 +58,11 @@ Current implementation has routes, controllers, services, Mongoose models, views
 | Sign in | Login | `POST /login` | `authenticateMember` | Generic failure and session fixation tests |
 | Save title | Details/card | `POST /member/my-list/:titleId` | `saveTitle` | Duplicate save tests |
 | Remove saved title | My List | `POST /member/my-list/:titleId/remove` | `removeSavedTitle` | Repeated remove tests |
-| Review rental | Review | `GET /member/titles/:slug/rental-review` | `prepareRentalReview` | Review-state tests |
-| Confirm rental | Review | `POST /member/titles/:titleId/rent` | `confirmRental` | Race and retry tests |
-| See active rentals | Rentals | `GET /member/rentals?status=active` | `listMemberRentals` | Pagination and ownership tests |
-| See rental detail | Rental detail | `GET /member/rentals/:reference` | `getMemberRental` | Horizontal access tests |
-| Return access | Rental detail | `POST /member/rentals/:reference/return` | `returnRental` | Double return tests |
+| Review access | Access review | `GET /member/titles/:slug/access-review` | `prepareAccessReview` | Review-state tests |
+| Confirm access | Access review | `POST /member/titles/:titleId/access` | `confirmAccess` | Race and retry tests |
+| See active access | My Access | `GET /member/access?status=active` | `listMemberAccess` | Pagination and ownership tests |
+| See access detail | Access detail | `GET /member/access/:reference` | `getMemberAccess` | Horizontal access tests |
+| Return access | Access detail | `POST /member/access/:reference/return` | `returnAccess` | Double return tests |
 | Change password | Account | `POST /member/account/password` | `changePassword` | Session invalidation tests |
 | Revoke sessions | Account | `POST /member/account/sessions/revoke-others` | `revokeOtherSessions` | Revocation tests |
 | Delete account | Account | `POST /member/account/delete` | `deleteAccount` | Terminal auth tests |
@@ -76,8 +80,11 @@ Current implementation has routes, controllers, services, Mongoose models, views
 | Archive | Catalog | `POST /admin/catalog/:id/archive` | `archiveTitle` | History-preserved tests |
 | Restore | Catalog | `POST /admin/catalog/:id/restore` | `restoreTitle` | Restore-state tests |
 | Change licence limit | Editor | `PUT /admin/catalog/:id` | `changeLicenceLimit` | Active-overage tests |
-| List rentals | Rentals | `GET /admin/rentals` | `searchRentals` | Minimized joins tests |
-| Cancel rental | Rental detail | `POST /admin/rentals/:reference/cancel` | `cancelRental` | Exact-once release tests |
+| List programs | Programs | `GET /admin/programs` | `searchPrograms` | Ownership and lifecycle tests |
+| List partners | Partners | `GET /admin/partners` | `searchPartners` | Boundary and minimization tests |
+| List release windows | Release windows | `GET /admin/release-windows` | `searchReleaseWindows` | Window-state tests |
+| List access | Access | `GET /admin/access` | `searchAccessEntitlements` | Minimized joins tests |
+| Cancel access | Access detail | `POST /admin/access/:reference/cancel` | `cancelAccess` | Exact-once release tests |
 | List members | Members | `GET /admin/members` | `searchMembers` | Data minimization tests |
 | Suspend member | Member detail | `POST /admin/members/:id/suspend` | `suspendMember` | Login and rent denial tests |
 | Reactivate member | Member detail | `POST /admin/members/:id/reactivate` | `reactivateMember` | Restored access tests |
@@ -119,3 +126,13 @@ Each primary page must document and test applicable states:
 | S11 | Add security regression suite. |
 | S12 | Add release verification. |
 | S13 | Add deterministic capture readiness. |
+
+## SNX-102 Validation Mapping
+
+| Validation ID | Evidence surface | Contract check |
+| --- | --- | --- |
+| `SNX-DATA-001` | `docs/product-contract.md`, this document | Title, program, collection, partner, release-window, access-policy, and entitlement vocabulary is explicit. |
+| `SNX-IA-001` | `docs/product-contract.md`, `docs/user-flows.md`, `docs/current-state-inventory.md` | Public, member, partner, and administrator surfaces are distinct and mapped to compatibility routes. |
+| `SNX-ACCESS-001` | `docs/product-contract.md`, this document | Access entitlement states are defined and terminal states do not return to active. |
+| `SNX-PARTNER-001` | `docs/product-contract.md`, `docs/architecture.md` | Partner ownership is a target boundary, not a current runtime claim. |
+| `SNX-RELEASE-001` | `docs/product-contract.md`, ADR-0001 | Public claims remain evidence-bounded and exclude real users, playback, payments, partner participation, licensing, and compliance. |

@@ -130,6 +130,41 @@
       "title": "committed SVG assets contain no scripts or unsafe external references",
       "ownerIssue": 34,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-001",
+      "area": "DATA",
+      "title": "canonical domain vocabulary is complete",
+      "ownerIssue": 35,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-001",
+      "area": "IA",
+      "title": "public and authenticated surfaces are distinct",
+      "ownerIssue": 35,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-001",
+      "area": "ACCESS",
+      "title": "entitlement states are defined",
+      "ownerIssue": 35,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-PARTNER-001",
+      "area": "PARTNER",
+      "title": "partner ownership boundaries are defined",
+      "ownerIssue": 35,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-001",
+      "area": "RELEASE",
+      "title": "public claims remain evidence-bounded",
+      "ownerIssue": 35,
+      "status": "implemented"
     }
   ]
 }

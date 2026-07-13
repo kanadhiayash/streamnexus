@@ -5,12 +5,28 @@
 
 ## Repository State
 
-- Current S0 branch: `docs/streamnexus-product-contract`
+- Current product-contract branch: `docs/pivot-access-platform-contract`
 - Integration branch: `dev`
 - Final review branch: `main`
 - Current untracked input artifact: `streamnexus-codex-handoff-2026-07-10/`
 - Handoff package checksum verification passed when run from the package folder.
 - The current commit matches the package audit baseline.
+
+## SNX-102 Pivot Inventory
+
+The source-of-truth product contract now defines StreamNexus as a curated screening and access platform. Current runtime names remain compatibility surfaces:
+
+| Runtime term | Target term | Inventory note |
+| --- | --- | --- |
+| Streamer | Member | Existing `/streamer/*` routes remain member-compatible until route migration. |
+| Content | Title | Existing `Content` records back the fictional title catalog. |
+| Shortlist | My List | Existing user-owned shortlist remains the compatibility source. |
+| Rental | Access entitlement | Existing `Rental` records back limited member access. |
+| Rental limit | Access-policy seat limit | Existing `rentalLimit` approximates 20-seat demo capacity work. |
+| Available | Title lifecycle plus release-window availability | Existing boolean is too coarse for the target contract. |
+| Checkout or complete rental | Return access | Existing flow releases compatibility access. |
+
+Issue #31 is superseded by the SNX-102 route contract for future naming. Its authenticated-home behavior remains compatibility evidence only.
 
 ## Runtime Stack
 
@@ -55,9 +71,9 @@ All admin routes are guarded by authentication and `admin` role middleware.
 | PUT | `/admin/content/:id` | Update content. |
 | DELETE | `/admin/content/:id` | Hard-delete content. |
 
-### Streamer
+### Member-Compatible Streamer Routes
 
-All streamer routes are guarded by authentication and `streamer` role middleware.
+All current streamer routes are guarded by authentication and `streamer` role middleware. Target naming treats these as member-compatible routes until `/member/*` surfaces are implemented.
 
 | Method | Route | Current behavior |
 | --- | --- | --- |
@@ -72,6 +88,15 @@ All streamer routes are guarded by authentication and `streamer` role middleware
 | POST | `/streamer/rentals/:id/checkout` | Mark rental completed. |
 
 No state-changing GET route was found in route declarations.
+
+### Target Route Families
+
+| Surface | Target examples | Current implementation status |
+| --- | --- | --- |
+| Public | `/`, `/browse`, `/titles/:slug` | Partially implemented through home, streamer browse, and `/content/:id` compatibility. |
+| Member | `/member/home`, `/member/my-list`, `/member/access`, `/member/account` | Backed by `/streamer/*` compatibility routes. |
+| Partner | `/partner/programs`, `/partner/titles`, `/partner/release-windows` | Not implemented. |
+| Administrator | `/admin`, `/admin/catalog`, `/admin/programs`, `/admin/partners`, `/admin/access`, `/admin/audit` | Partially implemented through `/admin/dashboard` and `/admin/content`. |
 
 ## Model Inventory
 
