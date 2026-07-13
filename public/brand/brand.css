@@ -1,0 +1,40 @@
+:root {
+  --snx-violet: #7c3aed;
+  --snx-blue: #2563eb;
+  --snx-cyan: #06b6d4;
+  --snx-ink: #0f172a;
+  --snx-paper: #f8fafc;
+}
+
+.brand {
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand-logo-mark {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+}
+
+.brand-logo-lockup {
+  width: min(196px, 42vw);
+  height: auto;
+}
+
+.auth-brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.auth-brand img {
+  width: min(260px, 78vw);
+  height: auto;
+}
+
+@media (max-width: 520px) {
+  .brand-logo-lockup {
+    width: min(156px, 45vw);
+  }
+}

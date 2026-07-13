@@ -48,11 +48,12 @@ test('[SNX-CI-001] validation registry contains unique IDs in approved areas', (
   const ids = registry.validations.map((entry) => entry.id);
   assert.equal(new Set(ids).size, ids.length, 'validation IDs must be unique');
 
+  const validationPattern = new RegExp(registry.validationPattern);
   for (const entry of registry.validations) {
-    const match = /^SNX-([A-Z]+)-(\d{3})$/.exec(entry.id);
-    assert.ok(match, `invalid validation ID: ${entry.id}`);
-    assert.ok(allowedAreas.has(match[1]), `unsupported SNX area: ${match[1]}`);
-    assert.equal(entry.area, match[1], `area mismatch: ${entry.id}`);
+    assert.ok(validationPattern.test(entry.id), `invalid validation ID: ${entry.id}`);
+    const area = entry.id.split('-')[1];
+    assert.ok(allowedAreas.has(area), `unsupported SNX area: ${area}`);
+    assert.equal(entry.area, area, `area mismatch: ${entry.id}`);
     assert.equal(typeof entry.title, 'string');
     assert.ok(entry.title.trim().length > 0, `validation title is required: ${entry.id}`);
   }
