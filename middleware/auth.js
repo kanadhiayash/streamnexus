@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { getRoleDestination } = require('../src/modules/auth/roleDestinations');
 
 module.exports = {
   ensureAuthenticated: async (req, res, next) => {
@@ -20,7 +21,7 @@ module.exports = {
   },
   ensureGuest: (req, res, next) => {
     if (req.session && req.session.user) {
-      return res.redirect('/');
+      return res.redirect(getRoleDestination(req.session.user.role));
     }
     next();
   },

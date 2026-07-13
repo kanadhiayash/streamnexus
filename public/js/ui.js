@@ -105,7 +105,7 @@ function setLoadingState(button, isLoading) {
   if (isLoading) {
     button.disabled = true;
     button.dataset.originalText = button.textContent;
-    button.textContent = 'Loading...';
+    button.textContent = button.dataset.loadingLabel || 'Loading...';
     button.classList.add('loading');
   } else {
     button.disabled = false;
@@ -382,7 +382,44 @@ function setupForms() {
     form.addEventListener('submit', (event) => {
       if (!window.validateForm(form.id)) {
         event.preventDefault();
+        return;
       }
+      const submitButton = form.querySelector('button[type="submit"]');
+      if (submitButton) setLoadingState(submitButton, true);
+    });
+  });
+}
+
+function setupAuthForms() {
+  document.querySelectorAll('[data-demo-persona]').forEach(button => {
+    button.addEventListener('click', () => {
+      const form = button.closest('.auth-panel')?.querySelector('form[data-auth-form]');
+      if (!form) return;
+
+      const email = form.querySelector('input[name="email"]');
+      const password = form.querySelector('input[name="password"]');
+      if (email) {
+        email.value = button.dataset.demoEmail || '';
+        email.setAttribute('aria-invalid', 'false');
+      }
+      if (password) {
+        password.value = button.dataset.demoPassword || '';
+        password.setAttribute('aria-invalid', 'false');
+      }
+      email?.focus();
+      ToastNotification.info(`${button.querySelector('strong')?.textContent || 'Demo'} credentials filled. Review and sign in when ready.`);
+    });
+  });
+
+  document.querySelectorAll('[data-password-toggle]').forEach(button => {
+    const input = document.getElementById(button.getAttribute('aria-controls'));
+    if (!input) return;
+
+    button.addEventListener('click', () => {
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      button.textContent = showing ? 'Show' : 'Hide';
+      button.setAttribute('aria-pressed', showing ? 'false' : 'true');
     });
   });
 }
@@ -471,6 +508,7 @@ document.addEventListener('DOMContentLoaded', function () {
   setupCarousels();
   setupContentModal();
   setupForms();
+  setupAuthForms();
   setupImageFallbacks();
   setupActionButtons();
   setupToasts();

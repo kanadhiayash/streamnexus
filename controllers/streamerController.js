@@ -25,10 +25,14 @@ const redirectWithQuery = (res, path, query = {}) => {
 
 const browse = catchAsync(async (req, res) => {
   try {
-    res.render('streamer/browse', await pageUseCases.memberCatalog({
+    const model = await pageUseCases.memberCatalog({
       user: req.session.user,
       query: req.query,
-    }));
+    });
+    res.render('streamer/browse', {
+      ...model,
+      signedUp: req.query.signedup === 'true',
+    });
   } catch (error) {
     throw normalizePageError(error);
   }
