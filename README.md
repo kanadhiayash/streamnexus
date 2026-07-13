@@ -6,15 +6,11 @@ StreamNexus is a full-stack streaming rental prototype with role-based admin and
 
 ## Product Preview
 
-The final portfolio screenshots are not included yet. Yash should replace these placeholders only after capturing real screens from a verified local or demo runtime.
-
-![StreamNexus home desktop placeholder](docs/assets/screenshots/01-home-desktop.png)
+Final portfolio screenshots are not embedded yet. Add them only after capturing real screens from a verified local or demo runtime.
 
 ## Demo Walkthrough
 
-The final demo video is not included yet. The thumbnail and MP4 paths below are reserved for a real recording that Yash will add manually.
-
-[![StreamNexus demo video thumbnail placeholder](docs/assets/videos/streamnexus-demo-thumbnail.png)](docs/assets/videos/streamnexus-demo.mp4)
+The final demo video is not included yet. The MP4 and thumbnail paths are reserved for a real recording that Yash will add manually.
 
 Planned demo path: `docs/assets/videos/streamnexus-demo.mp4`
 
@@ -215,15 +211,7 @@ The README expects these future portfolio media files. Keep the filenames stable
 | Video thumbnail | `docs/assets/videos/streamnexus-demo-thumbnail.png` | Real thumbnail from the demo recording |
 | Demo video | `docs/assets/videos/streamnexus-demo.mp4` | Real walkthrough recording |
 
-Current placeholder references:
-
-![Home desktop placeholder](docs/assets/screenshots/01-home-desktop.png)
-![Library or dashboard desktop placeholder](docs/assets/screenshots/02-library-or-dashboard-desktop.png)
-![Search filter desktop placeholder](docs/assets/screenshots/03-search-filter-desktop.png)
-![Detail page desktop placeholder](docs/assets/screenshots/04-detail-page-desktop.png)
-![Empty state desktop placeholder](docs/assets/screenshots/05-empty-state-desktop.png)
-![Mobile home placeholder](docs/assets/screenshots/06-mobile-home.png)
-![Mobile core flow placeholder](docs/assets/screenshots/07-mobile-core-flow.png)
+Do not embed these media paths in public README sections until the matching files exist and have been captured from the verified app.
 
 ## Roadmap
 

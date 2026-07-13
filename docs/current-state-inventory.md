@@ -1,16 +1,16 @@
-# StreamNexus Current-State Inventory
+# StreamNexus S0 Intake Inventory
 
-**Stage:** S0 product contract and traceability
-**Verified against commit:** `c3e369460f23d397e84e358527ac576284bd82ba`
+**Stage:** Historical S0 product contract and traceability intake
+**Verified against initial intake commit:** `c3e369460f23d397e84e358527ac576284bd82ba`
 
-## Repository State
+## Repository State at S0 Intake
 
-- Current product-contract branch: `docs/pivot-access-platform-contract`
+- Product-contract branch at intake: `docs/pivot-access-platform-contract`
 - Integration branch: `dev`
 - Final review branch: `main`
-- Current untracked input artifact: `streamnexus-codex-handoff-2026-07-10/`
 - Handoff package checksum verification passed when run from the package folder.
-- The current commit matches the package audit baseline.
+- The intake commit matched the package audit baseline.
+- The handoff package was an input artifact for audit only and should remain untracked.
 
 ## SNX-102 Pivot Inventory
 
