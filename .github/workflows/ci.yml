@@ -2,7 +2,7 @@ name: SNX / CI
 
 on:
   push:
-    branches: [main, dev, "chore/**"]
+    branches: [main, dev]
   pull_request:
     branches: [main, dev]
   workflow_dispatch:
@@ -10,34 +10,46 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: snx-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
+    name: SNX / verify
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: SNX / Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: SNX / Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 20
           cache: npm
 
-      - name: SNX / Install
+      - name: SNX / Lockfile install
         run: npm ci
 
-      - name: SNX / Syntax and integration tests
-        run: npm test
+      - name: SNX / Syntax
+        run: npm run test:syntax
 
       - name: SNX / Validate identifiers
         run: npm run snx:validate
 
-      - name: SNX / Compile EJS templates
+      - name: SNX / Unit and integration
+        run: npm run snx:test
+
+      - name: SNX / EJS templates
         run: npm run test:ejs
 
-      - name: SNX / Bounded load test
-        run: npm run test:load
+      - name: SNX / Sandbox smoke
+        run: npm run sandbox:smoke
+
+      - name: SNX / Fixture integrity
+        run: APP_RUNTIME=sandbox npm run fixtures:demo
 
       - name: SNX / Dependency audit
         run: npm audit --audit-level=moderate
@@ -45,5 +57,33 @@ jobs:
       - name: SNX / Secret pattern scan
         run: npm run scan:secrets
 
-      - name: SNX / Full verification
-        run: npm run snx:verify
+      - name: SNX / Load check
+        run: npm run test:load
+
+      - name: SNX / Release verification
+        run: npm run release:verify
+
+      - name: SNX / Whitespace
+        run: git diff --check
+
+      - name: SNX / Write verification artifact
+        if: always()
+        run: |
+          mkdir -p tmp/snx-ci
+          {
+            echo "# SNX Verification Summary"
+            echo "- Workflow: SNX / CI"
+            echo "- Job: SNX / verify"
+            echo "- Ref: $GITHUB_REF"
+            echo "- Commit: $GITHUB_SHA"
+            echo "- Result: ${{ job.status }}"
+            echo "- Artifact policy: no environment values, secrets, tokens, cookies, or private payloads"
+          } > tmp/snx-ci/verification-summary.md
+
+      - name: SNX / Upload verification artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: snx-verification-summary
+          path: tmp/snx-ci/verification-summary.md
+          if-no-files-found: error

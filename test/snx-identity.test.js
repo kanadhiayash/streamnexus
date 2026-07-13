@@ -7,6 +7,8 @@ const ROOT = path.resolve(__dirname, '..');
 const REGISTRY_PATH = path.join(ROOT, 'docs', 'qa', 'snx-validation-registry.json');
 const PACKAGE_PATH = path.join(ROOT, 'package.json');
 const WORKFLOW_PATH = path.join(ROOT, '.github', 'workflows', 'ci.yml');
+const CODEQL_WORKFLOW_PATH = path.join(ROOT, '.github', 'workflows', 'codeql.yml');
+const RELEASE_WORKFLOW_PATH = path.join(ROOT, '.github', 'workflows', 'release-verify.yml');
 
 function readJson(filePath, label) {
   assert.equal(fs.existsSync(filePath), true, `${label} must exist`);
@@ -76,8 +78,99 @@ test('[SNX-CI-003] CI workflow uses SNX display identity and validates identifie
 
   assert.match(workflow, /^name: SNX \/ CI$/m);
   assert.match(workflow, /branches: \[main, dev\]/);
+  assert.match(workflow, /name: SNX \/ verify/);
   assert.match(workflow, /name: SNX \/ Validate identifiers/);
   assert.match(workflow, /run: npm run snx:validate/);
+});
+
+test('[SNX-CI-010] PR workflow runs all required gates', () => {
+  const workflow = fs.readFileSync(WORKFLOW_PATH, 'utf8');
+
+  for (const required of [
+    'npm ci',
+    'npm run test:syntax',
+    'npm run snx:validate',
+    'npm run snx:test',
+    'npm run test:ejs',
+    'npm run sandbox:smoke',
+    'npm run fixtures:demo',
+    'npm audit --audit-level=moderate',
+    'npm run scan:secrets',
+    'npm run test:load',
+    'npm run release:verify',
+    'git diff --check',
+  ]) {
+    assert.match(workflow, new RegExp(required.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+});
+
+test('[SNX-CI-011] workflow names use SNX prefix', () => {
+  for (const workflowPath of [WORKFLOW_PATH, CODEQL_WORKFLOW_PATH, RELEASE_WORKFLOW_PATH]) {
+    const workflow = fs.readFileSync(workflowPath, 'utf8');
+    const nameLines = workflow
+      .split('\n')
+      .filter(line => /^( {0}| {4}| {6})name: /.test(line));
+    assert.ok(nameLines.length > 0, `${workflowPath} must contain name lines`);
+    for (const line of nameLines) {
+      assert.match(line.trim(), /^name: SNX \//);
+    }
+  }
+});
+
+test('[SNX-CI-012] third-party actions are SHA-pinned', () => {
+  for (const workflowPath of [WORKFLOW_PATH, CODEQL_WORKFLOW_PATH, RELEASE_WORKFLOW_PATH]) {
+    const workflow = fs.readFileSync(workflowPath, 'utf8');
+    const usesLines = workflow.split('\n').filter(line => line.trim().startsWith('uses: '));
+    assert.ok(usesLines.length > 0, `${workflowPath} must use pinned actions`);
+    for (const line of usesLines) {
+      assert.match(line.trim(), /@[a-f0-9]{40}$/);
+      assert.doesNotMatch(line.trim(), /@(v\d+|main|master)$/);
+    }
+  }
+});
+
+test('[SNX-CI-013] workflow permissions are least-privilege', () => {
+  const ciWorkflow = fs.readFileSync(WORKFLOW_PATH, 'utf8');
+  const releaseWorkflow = fs.readFileSync(RELEASE_WORKFLOW_PATH, 'utf8');
+  const codeqlWorkflow = fs.readFileSync(CODEQL_WORKFLOW_PATH, 'utf8');
+
+  assert.match(ciWorkflow, /permissions:\n  contents: read/);
+  assert.match(releaseWorkflow, /permissions:\n  contents: read/);
+  assert.match(codeqlWorkflow, /permissions:\n  contents: read\n  security-events: write/);
+  assert.doesNotMatch(ciWorkflow, /contents: write|actions: write|id-token: write/);
+  assert.doesNotMatch(releaseWorkflow, /contents: write|actions: write|id-token: write/);
+});
+
+test('[SNX-CI-014] superseded runs are cancelled', () => {
+  for (const workflowPath of [WORKFLOW_PATH, CODEQL_WORKFLOW_PATH, RELEASE_WORKFLOW_PATH]) {
+    const workflow = fs.readFileSync(workflowPath, 'utf8');
+    assert.match(workflow, /concurrency:/);
+    assert.match(workflow, /cancel-in-progress: true/);
+  }
+});
+
+test('[SNX-CI-015] untrusted PR code cannot reach privileged context', () => {
+  for (const workflowPath of [WORKFLOW_PATH, CODEQL_WORKFLOW_PATH, RELEASE_WORKFLOW_PATH]) {
+    const workflow = fs.readFileSync(workflowPath, 'utf8');
+    assert.doesNotMatch(workflow, /pull_request_target/);
+  }
+});
+
+test('[SNX-CI-016] release workflow accepts dev as source and main as target', () => {
+  const workflow = fs.readFileSync(RELEASE_WORKFLOW_PATH, 'utf8');
+
+  assert.match(workflow, /pull_request:\n    branches: \[main\]/);
+  assert.match(workflow, /github\.event\.pull_request\.head\.ref == 'dev'/);
+  assert.match(workflow, /run: npm run release:verify/);
+});
+
+test('[SNX-SEC-120] workflow artifacts contain no secrets', () => {
+  const workflow = fs.readFileSync(WORKFLOW_PATH, 'utf8');
+  const artifactBlock = workflow.slice(workflow.indexOf('SNX / Write verification artifact'));
+
+  assert.match(artifactBlock, /verification-summary\.md/);
+  assert.doesNotMatch(artifactBlock, /\$env|printenv|process\.env|secrets\./i);
+  assert.match(artifactBlock, /no environment values, secrets, tokens, cookies, or private payloads/);
 });
 
 test('[SNX-FIXTURE-001] fixture range reserves exactly SNX-TITLE-001 through SNX-TITLE-050', () => {

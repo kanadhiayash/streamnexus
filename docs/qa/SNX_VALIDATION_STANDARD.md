@@ -115,9 +115,24 @@ Rules:
 
 ## CI identity
 
-CI workflow and step display text use the `SNX /` prefix. The existing job identifier remains stable during this workstream to avoid silently breaking required-check configuration.
+CI workflow, job, and step display text use the `SNX /` prefix. PRs targeting `dev` must run the `SNX / CI` workflow and its `SNX / verify` job. Release PRs from `dev` to `main` must run `SNX / Release Verification`.
 
-PRs targeting `dev` must run the SNX CI workflow. Later CI hardening is tracked separately by #44.
+Required-check migration note for #44:
+
+- Previous required check display: `verify`
+- New required check display: `SNX / verify`
+- Keep `verify` as the YAML job identifier while branch protection is updated to the new display name.
+- `main` remains review-gated; CI changes do not enable automatic merge to `main`.
+
+CI hardening rules:
+
+- Use `permissions: contents: read` by default.
+- Grant `security-events: write` only to CodeQL analysis.
+- Use `pull_request`, not `pull_request_target`, for untrusted PR verification.
+- Pin third-party actions to full commit SHAs.
+- Cancel superseded runs with workflow concurrency.
+- Publish only non-sensitive artifacts that exclude environment values, credentials, secrets, tokens, cookies, and private payloads.
+- Keep repository-setting-dependent checks, such as GitHub dependency review, outside the required gate until the matching repository feature is enabled. `npm audit --audit-level=moderate` remains the required dependency gate.
 
 ## Diagnostics and audit events
 
