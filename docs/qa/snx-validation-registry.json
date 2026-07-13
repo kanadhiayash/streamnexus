@@ -543,6 +543,55 @@
       "title": "unsafe compatibility redirect is rejected",
       "ownerIssue": 42,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-030",
+      "area": "DATA",
+      "title": "title view model is deterministic",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-030",
+      "area": "ACCESS",
+      "title": "access state maps to one primary action",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-020",
+      "area": "IA",
+      "title": "route use case returns the correct page model",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-010",
+      "area": "UI",
+      "title": "empty-state model is explicit",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-011",
+      "area": "UI",
+      "title": "pagination model preserves filters and sort",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-111",
+      "area": "SEC",
+      "title": "public error model exposes no internal stack data",
+      "ownerIssue": 43,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ADMIN-010",
+      "area": "ADMIN",
+      "title": "admin operations view model respects role scope",
+      "ownerIssue": 43,
+      "status": "implemented"
     }
   ]
 }

@@ -1,60 +1,46 @@
-const contentService = require('../services/contentService');
-const rentalService = require('../services/rentalService');
-const userService = require('../services/userService');
 const { catchAsync, AppError } = require('../middleware/errorHandler');
-const { MEMBER_COMPATIBLE_ROLES } = require('../src/modules/auth/roleDestinations');
+const { createPageUseCases } = require('../src/modules/pages/page.useCases');
 
-const normalizeSlug = value => String(value || '').trim().toLowerCase();
+const pageUseCases = createPageUseCases();
 
-const matchesSlugOrId = (content, slugOrId) => (
-  normalizeSlug(content.slug) === normalizeSlug(slugOrId) ||
-  content._id.toString() === String(slugOrId)
+const normalizePageError = (error) => new AppError(
+  error.publicMessage || error.message || 'Failed to load page',
+  error.statusCode || 500
 );
 
-const loadAvailableContent = async (filters = {}) => {
-  const result = await contentService.getAvailableContent(filters);
-  if (!result.success) {
-    throw new AppError(result.error || 'Failed to load catalog', result.statusCode || 500);
-  }
-  return result.data || [];
-};
-
 const renderCatalog = catchAsync(async (req, res) => {
-  const contents = await loadAvailableContent();
-  res.render('public/catalog', { contents });
+  try {
+    res.render('public/catalog', await pageUseCases.publicCatalog({ query: req.query }));
+  } catch (error) {
+    throw normalizePageError(error);
+  }
 });
 
 const renderTitle = catchAsync(async (req, res) => {
-  const contents = await loadAvailableContent();
-  const content = contents.find(item => matchesSlugOrId(item, req.params.slugOrId));
-  if (!content) {
-    throw new AppError('Title not found', 404);
+  try {
+    res.render('streamer/details', await pageUseCases.publicTitle({
+      slugOrId: req.params.slugOrId,
+      user: req.session?.user,
+    }));
+  } catch (error) {
+    throw normalizePageError(error);
   }
-
-  const capacityResult = await rentalService.attachCapacityToContent(content);
-  const similarResult = await contentService.getSimilarContent(content._id);
-  const similarCapacityResult = await rentalService.attachCapacityToContents(similarResult.data || []);
-  const activeMember = req.session?.user && MEMBER_COMPATIBLE_ROLES.has(req.session.user.role);
-  const isShortlisted = activeMember
-    ? await userService.isShortlisted(req.session.user.id, content._id)
-    : false;
-
-  res.render('streamer/details', {
-    content: capacityResult.success ? capacityResult.data : content,
-    isShortlisted,
-    similar: similarCapacityResult.success ? similarCapacityResult.data : similarResult.data || [],
-    canAccessMemberActions: Boolean(activeMember),
-  });
 });
 
 const renderProgram = catchAsync(async (req, res) => {
-  const contents = await loadAvailableContent({ programKey: req.params.slug });
-  res.render('public/program', { slug: req.params.slug, contents });
+  try {
+    res.render('public/program', await pageUseCases.publicProgram({ slug: req.params.slug }));
+  } catch (error) {
+    throw normalizePageError(error);
+  }
 });
 
 const renderCollection = catchAsync(async (req, res) => {
-  const contents = await loadAvailableContent({ collectionKeys: req.params.slug });
-  res.render('public/collection', { slug: req.params.slug, contents });
+  try {
+    res.render('public/collection', await pageUseCases.publicCollection({ slug: req.params.slug }));
+  } catch (error) {
+    throw normalizePageError(error);
+  }
 });
 
 module.exports = {
