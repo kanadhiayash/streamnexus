@@ -618,6 +618,56 @@ input[type="checkbox"] {
   flex-wrap: wrap;
 }
 
+.member-home {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.member-home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.member-module {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.mini-list,
+.member-rail-section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.member-link-card {
+  color: inherit;
+  text-decoration: none;
+}
+
+.member-link-card:hover,
+.member-link-card:focus-visible {
+  border-color: var(--primary);
+  background: var(--surface-2);
+}
+
+.member-link-card small {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--ink-subdued);
+  font-size: 0.84rem;
+}
+
+.member-spotlight {
+  grid-template-columns: minmax(280px, 1fr) minmax(180px, 0.4fr) auto;
+}
+
+.empty-state.compact {
+  padding: var(--space-4);
+  text-align: left;
+}
+
 .landing-shell,
 .browse-shell {
   display: grid;
@@ -1482,6 +1532,8 @@ button[aria-busy="true"] {
 
   .filter-bar,
   .access-panel,
+  .member-home-grid,
+  .member-spotlight,
   .details-card,
   .demo-persona-grid,
   .content-modal-panel {

@@ -482,7 +482,8 @@ test('member catalog supports URL-backed sort and pagination state', async () =>
 
   assert.match(response.text, /Browse Titles/);
   assert.match(response.text, /Price: high to low/);
-  assert.ok(response.text.indexOf('Bravo') < response.text.indexOf('Alpha'));
+  const browseSection = response.text.slice(response.text.indexOf("id='browse-titles'"));
+  assert.ok(browseSection.indexOf('Bravo') < browseSection.indexOf('Alpha'));
 });
 
 test('login regenerates the session id after authentication', async () => {

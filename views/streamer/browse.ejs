@@ -36,6 +36,187 @@
     </section>
   <% } %>
 
+  <% const home = typeof memberHome !== 'undefined' ? memberHome : null; %>
+  <% if (home) { %>
+    <section class='member-home' aria-labelledby='member-home-heading'>
+      <div class='page-toolbar'>
+        <div>
+          <p class='eyebrow'>Member workspace</p>
+          <h1 id='member-home-heading'>Member Home</h1>
+          <p class='muted-copy'>
+            <% if (home.state === 'fresh') { %>
+              Start by saving a title or activating a simulated access pass. Discovery below is ordered by editorial fixture data.
+            <% } else { %>
+              Your saved titles, active access, and curated discovery are gathered here from current account state.
+            <% } %>
+          </p>
+        </div>
+        <div class='actions'>
+          <a href='/my-access' class='btn btn-primary'>My Access</a>
+          <a href='/my-list' class='btn btn-secondary'>My List</a>
+        </div>
+      </div>
+
+      <div class='member-home-grid'>
+        <section class='component-card member-module' aria-labelledby='active-access-heading'>
+          <div class='section-heading'>
+            <div>
+              <p class='eyebrow'>Access</p>
+              <h2 id='active-access-heading'>Active Access</h2>
+            </div>
+            <a href='/my-access' class='btn btn-secondary btn-sm'>View All</a>
+          </div>
+          <% if (home.activeAccess.length > 0) { %>
+            <div class='mini-list'>
+              <% home.activeAccess.forEach(rental => { %>
+                <a href='<%= rental.confirmationHref || "/my-access" %>' class='mini-poster member-link-card' aria-label='Open access details for <%= rental.title %>'>
+                  <img src='<%= rental.image %>' alt='' data-fallback-src='/images/default.svg' />
+                  <span>
+                    <strong><%= rental.title %></strong>
+                    <small><%= rental.daysRemaining !== null ? `${rental.daysRemaining} days remaining` : 'Access window active' %></small>
+                  </span>
+                </a>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class='empty-state compact' role='status'>
+              <p>No active access yet.</p>
+              <a href='/home#browse-titles' class='btn btn-primary btn-sm'>Browse Titles</a>
+            </div>
+          <% } %>
+        </section>
+
+        <section class='component-card member-module' aria-labelledby='expiring-heading'>
+          <div class='section-heading'>
+            <div>
+              <p class='eyebrow'>Priority</p>
+              <h2 id='expiring-heading'>Expiring Soon</h2>
+            </div>
+          </div>
+          <% if (home.expiringSoon.length > 0) { %>
+            <div class='mini-list'>
+              <% home.expiringSoon.forEach(rental => { %>
+                <a href='<%= rental.confirmationHref || "/my-access" %>' class='mini-poster member-link-card' aria-label='Review expiring access for <%= rental.title %>'>
+                  <img src='<%= rental.image %>' alt='' data-fallback-src='/images/default.svg' />
+                  <span>
+                    <strong><%= rental.title %></strong>
+                    <small><%= rental.daysRemaining %> days remaining</small>
+                  </span>
+                </a>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class='empty-state compact' role='status'>
+              <p>No access windows are inside the seven-day priority range.</p>
+              <a href='/my-access' class='btn btn-secondary btn-sm'>Open My Access</a>
+            </div>
+          <% } %>
+        </section>
+
+        <section class='component-card member-module' aria-labelledby='my-list-preview-heading'>
+          <div class='section-heading'>
+            <div>
+              <p class='eyebrow'>Saved</p>
+              <h2 id='my-list-preview-heading'>My List Preview</h2>
+            </div>
+            <a href='/my-list' class='btn btn-secondary btn-sm'>Open List</a>
+          </div>
+          <% if (home.myListPreview.length > 0) { %>
+            <div class='mini-list'>
+              <% home.myListPreview.forEach(item => { %>
+                <a href='<%= item.detailUrl %>' class='mini-poster member-link-card' aria-label='Open saved title <%= item.title %>'>
+                  <img src='<%= item.image || "/images/default.svg" %>' alt='' data-fallback-src='/images/default.svg' />
+                  <span>
+                    <strong><%= item.title %></strong>
+                    <small><%= item.genre || 'General' %> / <%= item.capacity.remaining %> licences open</small>
+                  </span>
+                </a>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class='empty-state compact' role='status'>
+              <p>Saved titles will appear here.</p>
+              <a href='/home#browse-titles' class='btn btn-primary btn-sm'>Find Titles</a>
+            </div>
+          <% } %>
+        </section>
+      </div>
+
+      <% if (home.sponsoredScreening) { %>
+        <section class='access-panel member-spotlight' aria-labelledby='sponsored-screening-heading'>
+          <div>
+            <p class='eyebrow'><%= home.sponsoredScreening.eyebrow %></p>
+            <h2 id='sponsored-screening-heading'><%= home.sponsoredScreening.title %></h2>
+            <p><%= home.sponsoredScreening.body %></p>
+          </div>
+          <p><%= home.sponsoredScreening.meta %></p>
+          <a href='<%= home.sponsoredScreening.href %>' class='btn btn-primary'>Open Screening</a>
+        </section>
+      <% } %>
+
+      <section class='member-rail-section' aria-labelledby='program-rail-heading'>
+        <div class='section-heading'>
+          <div>
+            <p class='eyebrow'>Programs</p>
+            <h2 id='program-rail-heading'>Featured Programs</h2>
+          </div>
+        </div>
+        <div class='rail-grid member-rail'>
+          <% home.programs.forEach(program => { %>
+            <a href='<%= program.href %>' class='component-card discovery-card member-link-card' aria-label='Open <%= program.label %>'>
+              <p class='eyebrow'><%= program.titles.length %> title<%= program.titles.length === 1 ? '' : 's' %></p>
+              <h3><%= program.label %></h3>
+              <p>Deterministic grouping from fixture program metadata.</p>
+            </a>
+          <% }); %>
+        </div>
+      </section>
+
+      <section class='member-rail-section' aria-labelledby='new-title-heading'>
+        <div class='section-heading'>
+          <div>
+            <p class='eyebrow'>New to catalog</p>
+            <h2 id='new-title-heading'>New Titles</h2>
+          </div>
+        </div>
+        <div class='rail-grid member-rail'>
+          <% home.newTitles.forEach(item => { %>
+            <a href='<%= item.detailUrl %>' class='mini-poster member-link-card' aria-label='Open new title <%= item.title %>'>
+              <img src='<%= item.image || "/images/default.svg" %>' alt='' data-fallback-src='/images/default.svg' />
+              <span>
+                <strong><%= item.title %></strong>
+                <small><%= item.genre || 'General' %> / <%= item.accessMode.replace('_', ' ') %></small>
+              </span>
+            </a>
+          <% }); %>
+        </div>
+      </section>
+
+      <% home.genreRails.forEach(rail => { %>
+        <section class='member-rail-section' aria-labelledby='genre-<%= rail.key %>-heading'>
+          <div class='section-heading'>
+            <div>
+              <p class='eyebrow'>Genre rail</p>
+              <h2 id='genre-<%= rail.key %>-heading'><%= rail.label %></h2>
+            </div>
+            <a href='<%= rail.href %>' class='btn btn-secondary btn-sm'>Filter</a>
+          </div>
+          <div class='rail-grid member-rail'>
+            <% rail.titles.forEach(item => { %>
+              <a href='<%= item.detailUrl %>' class='mini-poster member-link-card' aria-label='Open <%= item.title %> from <%= rail.label %>'>
+                <img src='<%= item.image || "/images/default.svg" %>' alt='' data-fallback-src='/images/default.svg' />
+                <span>
+                  <strong><%= item.title %></strong>
+                  <small><%= item.capacity.remaining %> licences open</small>
+                </span>
+              </a>
+            <% }); %>
+          </div>
+        </section>
+      <% }); %>
+    </section>
+  <% } %>
+
   <div class='browse-hero carousel' data-carousel>
     <% if (heroItems && heroItems.length > 0) { %>
       <div class='carousel-track'>
@@ -68,7 +249,7 @@
     <% } %>
   </div>
 
-  <div class='page-toolbar browse-toolbar'>
+  <div class='page-toolbar browse-toolbar' id='browse-titles'>
     <div>
       <p class='eyebrow'>Member catalog</p>
       <h1>Browse Titles</h1>

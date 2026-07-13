@@ -830,6 +830,62 @@
       "title": "authentication response does not enumerate accounts",
       "ownerIssue": 47,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-300",
+      "area": "UI",
+      "title": "member home renders populated state",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-301",
+      "area": "UI",
+      "title": "member home renders fresh-member state",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-110",
+      "area": "ACCESS",
+      "title": "active access appears on member home",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-111",
+      "area": "ACCESS",
+      "title": "expiring access is prioritized correctly",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-302",
+      "area": "UI",
+      "title": "My List preview reflects saved state",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-303",
+      "area": "UI",
+      "title": "discovery card has a valid destination",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-220",
+      "area": "A11Y",
+      "title": "member rails are keyboard operable",
+      "ownerIssue": 48,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-020",
+      "area": "RELEASE",
+      "title": "member copy does not imply playback or AI recommendations",
+      "ownerIssue": 48,
+      "status": "implemented"
     }
   ]
 }
