@@ -8,6 +8,9 @@ const {
   buildAccountPage,
   buildCatalogPage,
   buildPartnerDashboardPage,
+  buildPublicCollectionPage,
+  buildPublicDiscoveryPage,
+  buildPublicProgramPage,
   buildRentalDetailPage,
   buildShortlistPage,
   buildTitleDetailPage,
@@ -70,19 +73,33 @@ const createPageUseCases = ({
     return buildCatalogPage({ titles: titlesWithCapacity, query, basePath: '/catalog', kind: 'public-catalog' });
   },
 
+  async publicLanding({ user } = {}) {
+    const titles = await loadAvailableContent({ services });
+    const titlesWithCapacity = await attachCapacity({ titles, services });
+    return buildPublicDiscoveryPage({ titles: titlesWithCapacity, user });
+  },
+
   async publicProgram({ slug }) {
     const titles = await loadAvailableContent({ filters: { programKey: slug }, services });
-    return {
-      ...buildCatalogPage({ titles, query: {}, basePath: `/programs/${encodeURIComponent(slug)}`, kind: 'program' }),
-      slug,
-    };
+    const titlesWithCapacity = await attachCapacity({ titles, services });
+    return buildPublicProgramPage({ slug, titles: titlesWithCapacity });
   },
 
   async publicCollection({ slug }) {
     const titles = await loadAvailableContent({ filters: { collectionKeys: slug }, services });
+    const titlesWithCapacity = await attachCapacity({ titles, services });
+    return buildPublicCollectionPage({ slug, titles: titlesWithCapacity });
+  },
+
+  publicAccessExplanation() {
+    const model = buildPublicDiscoveryPage({ titles: [] });
     return {
-      ...buildCatalogPage({ titles, query: {}, basePath: `/collections/${encodeURIComponent(slug)}`, kind: 'collection' }),
-      slug,
+      ...model,
+      page: {
+        ...model.page,
+        title: 'How StreamNexus Access Works',
+        description: 'Transparent public explanation of StreamNexus fictional access windows, simulated capacity, and prototype limits.',
+      },
     };
   },
 

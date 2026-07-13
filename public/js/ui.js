@@ -158,14 +158,22 @@ function setupCarousels() {
     const slides = Array.from(carousel.querySelectorAll('[data-carousel-slide]'));
     const prev = carousel.querySelector('[data-carousel-prev]');
     const next = carousel.querySelector('[data-carousel-next]');
+    const toggle = carousel.querySelector('[data-carousel-toggle]');
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const shouldAutoRotate = carousel.hasAttribute('data-carousel-auto') && !reduceMotion;
+    const intervalMs = Number.parseInt(carousel.dataset.carouselInterval, 10) || 6500;
     if (slides.length <= 1) {
       prev?.setAttribute('disabled', 'true');
       next?.setAttribute('disabled', 'true');
+      toggle?.setAttribute('disabled', 'true');
       return;
     }
 
     let activeIndex = slides.findIndex(slide => slide.classList.contains('active'));
     if (activeIndex < 0) activeIndex = 0;
+    let rotationTimer = null;
+    let userPaused = false;
+    let pointerStartX = null;
 
     const showSlide = (index) => {
       activeIndex = (index + slides.length) % slides.length;
@@ -174,8 +182,78 @@ function setupCarousels() {
       });
     };
 
-    prev?.addEventListener('click', () => showSlide(activeIndex - 1));
-    next?.addEventListener('click', () => showSlide(activeIndex + 1));
+    const stopRotation = () => {
+      if (rotationTimer) {
+        clearInterval(rotationTimer);
+        rotationTimer = null;
+      }
+      carousel.classList.add('is-paused');
+    };
+
+    const startRotation = () => {
+      if (!shouldAutoRotate || userPaused || rotationTimer || document.hidden) return;
+      carousel.classList.remove('is-paused');
+      rotationTimer = setInterval(() => showSlide(activeIndex + 1), intervalMs);
+    };
+
+    const updateToggle = () => {
+      if (!toggle) return;
+      toggle.setAttribute('aria-pressed', userPaused ? 'true' : 'false');
+      toggle.setAttribute('aria-label', userPaused ? 'Resume featured rotation' : 'Pause featured rotation');
+      toggle.textContent = userPaused ? 'Resume' : 'Pause';
+    };
+
+    const showManually = (index) => {
+      showSlide(index);
+      if (shouldAutoRotate && !userPaused) {
+        stopRotation();
+        startRotation();
+      }
+    };
+
+    prev?.addEventListener('click', () => showManually(activeIndex - 1));
+    next?.addEventListener('click', () => showManually(activeIndex + 1));
+    toggle?.addEventListener('click', () => {
+      userPaused = !userPaused;
+      if (userPaused) {
+        stopRotation();
+      } else {
+        startRotation();
+      }
+      updateToggle();
+    });
+
+    carousel.addEventListener('mouseenter', stopRotation);
+    carousel.addEventListener('mouseleave', startRotation);
+    carousel.addEventListener('focusin', stopRotation);
+    carousel.addEventListener('focusout', (event) => {
+      if (!carousel.contains(event.relatedTarget)) startRotation();
+    });
+    carousel.addEventListener('pointerdown', (event) => {
+      pointerStartX = event.clientX;
+    });
+    carousel.addEventListener('pointerup', (event) => {
+      if (pointerStartX === null) return;
+      const delta = event.clientX - pointerStartX;
+      pointerStartX = null;
+      if (Math.abs(delta) < 40) return;
+      showManually(delta > 0 ? activeIndex - 1 : activeIndex + 1);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        stopRotation();
+      } else {
+        startRotation();
+      }
+    });
+
+    if (reduceMotion) {
+      carousel.classList.add('is-reduced-motion');
+      toggle?.setAttribute('disabled', 'true');
+    } else {
+      updateToggle();
+      startRotation();
+    }
   });
 }
 

@@ -718,6 +718,62 @@
       "title": "registry owns the pivot design system validation identifiers",
       "ownerIssue": 45,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-200",
+      "area": "UI",
+      "title": "public landing renders curated discovery modules",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-201",
+      "area": "UI",
+      "title": "public title card opens a valid destination",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-202",
+      "area": "UI",
+      "title": "featured rotation advances and pauses correctly",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-030",
+      "area": "IA",
+      "title": "public program and collection routes resolve",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-ACCESS-100",
+      "area": "ACCESS",
+      "title": "public access explanation is accurate",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-200",
+      "area": "A11Y",
+      "title": "featured controls are keyboard operable",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-201",
+      "area": "A11Y",
+      "title": "reduced-motion mode disables automatic movement",
+      "ownerIssue": 46,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-RELEASE-010",
+      "area": "RELEASE",
+      "title": "public copy remains evidence-bounded",
+      "ownerIssue": 46,
+      "status": "implemented"
     }
   ]
 }

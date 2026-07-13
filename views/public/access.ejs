@@ -1,0 +1,31 @@
+<section class='public-page'>
+  <div class='page-toolbar'>
+    <div>
+      <p class='eyebrow'>Access model</p>
+      <h1>How StreamNexus Access Works</h1>
+      <p class='muted-copy'><%= accessExplanation.summary %></p>
+    </div>
+    <a href='/catalog' class='btn btn-primary'>Browse Catalog</a>
+  </div>
+
+  <section class='access-panel' aria-labelledby='access-steps-heading'>
+    <h2 id='access-steps-heading'><%= accessExplanation.headline %></h2>
+    <ol class='access-steps'>
+      <% accessExplanation.steps.forEach(step => { %>
+        <li>
+          <strong><%= step.title %></strong>
+          <span><%= step.body %></span>
+        </li>
+      <% }); %>
+    </ol>
+  </section>
+
+  <section class='component-card limitations-card section-spacer' aria-labelledby='limitations-heading'>
+    <h2 id='limitations-heading'>Prototype Limits</h2>
+    <ul class='limitation-list'>
+      <% accessExplanation.limitations.forEach(limit => { %>
+        <li><%= limit %></li>
+      <% }); %>
+    </ul>
+  </section>
+</section>

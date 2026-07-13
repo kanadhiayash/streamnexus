@@ -1,26 +1,30 @@
-<section>
+<section class='public-page'>
   <div class='page-toolbar'>
     <div>
       <p class='eyebrow'>Collection</p>
-      <h1><%= slug %></h1>
+      <h1><%= label %></h1>
+      <p class='muted-copy'>A curated fictional collection for browsing public StreamNexus screening metadata.</p>
     </div>
     <a href='/catalog' class='btn btn-secondary'>Catalog</a>
   </div>
   <% if (!contents || contents.length === 0) { %>
     <div class='empty-state' role='status'>
       <p>No published titles are attached to this collection yet.</p>
+      <a href='/catalog' class='btn btn-primary empty-action'>Browse Catalog</a>
     </div>
   <% } else { %>
-    <div class='grid'>
+    <div class='grid poster-grid'>
       <% contents.forEach(content => { %>
-        <article class='card'>
-          <img class='content-poster' src='<%= content.image || "/images/default.svg" %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
+        <article class='card title-card'>
+          <img class='content-poster' src='<%= content.image || "/images/default.svg" %>' alt='<%= content.posterAlt || content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
           <div class='card-content'>
+            <p class='meta-line'><%= content.type.toUpperCase() %> / <%= content.genre || 'General' %></p>
             <h2><%= content.title %></h2>
-            <p><%= content.description || content.shortDescription || '' %></p>
+            <p><%= content.shortDescription || content.description || '' %></p>
+            <p class='capacity-copy'><%= content.capacity.remaining %> of <%= content.capacity.rentalLimit %> simulated licences open.</p>
           </div>
           <div class='card-footer'>
-            <a href='/titles/<%= encodeURIComponent(content.slug || content._id) %>' class='btn btn-primary'>View Title</a>
+            <a href='<%= content.detailUrl %>' class='btn btn-primary'>View Screening</a>
           </div>
         </article>
       <% }); %>
