@@ -83,7 +83,10 @@ src/
     auth/
     catalog/
     saved-titles/
-    rentals/
+    access/
+    programs/
+    partners/
+    release-windows/
     members/
     admin/
     audit/
@@ -102,6 +105,22 @@ The exact layout may be adjusted during S2 and S3, but the boundaries are fixed:
 - repositories own Mongoose queries, selected projections, persistence mapping, transaction session support, and cursor pagination
 - views own semantic HTML, role-specific actions, form values, errors, and state rendering
 - browser scripts own only progressive enhancement
+
+## Target Product Domains
+
+The SNX-102 contract defines StreamNexus as a curated screening and access platform. Target modules must use these product boundaries:
+
+| Module | Boundary |
+| --- | --- |
+| `catalog` | Title metadata, lifecycle, public visibility, and compatibility mapping from `Content`. |
+| `programs` | Curated initiatives that group titles under a partner, theme, or screening purpose. |
+| `partners` | Partner identity, ownership boundaries, and future partner-facing read models. |
+| `release-windows` | Scheduled, active, ended, cancelled, and archived availability windows. |
+| `access` | Access policies, seat limits, entitlement confirmation, active access, expiry, cancellation, and return access. |
+| `saved-titles` | Member-owned My List state. |
+| `admin` | Operational dashboards and workflows across catalog, partners, programs, access, members, and audit. |
+
+Legacy `rentals` naming is compatibility only. New implementation work should introduce access-domain names unless a file is intentionally bridging old routes or persisted models.
 
 ## Configuration Rules
 
