@@ -3,6 +3,16 @@ const mongoose = require('mongoose');
 const contentSchema = new mongoose.Schema(
   {
     schemaVersion: { type: Number, default: 1, index: true },
+    fixtureId: { type: String, default: null },
+    fixtureOwner: { type: String, default: null, index: true },
+    programKey: { type: String, default: null, index: true },
+    collectionKeys: [{ type: String }],
+    accessMode: { type: String, enum: ['screening', 'festival', 'partner_preview'], default: 'screening' },
+    featuredRank: { type: Number, default: null },
+    releaseWindow: {
+      opensAt: { type: Date, default: null },
+      closesAt: { type: Date, default: null },
+    },
     slug: { type: String },
     title: { type: String, required: true, index: true },
     type: { type: String, required: true, enum: ['movie', 'tv', 'series'], index: true },
@@ -43,6 +53,10 @@ const contentSchema = new mongoose.Schema(
 
 contentSchema.index({ title: 'text', description: 'text', shortDescription: 'text', synopsis: 'text', genres: 'text' });
 contentSchema.index({ slug: 1 }, { unique: true, sparse: true });
+contentSchema.index(
+  { fixtureId: 1 },
+  { unique: true, partialFilterExpression: { fixtureId: { $type: 'string' } } }
+);
 contentSchema.index({ lifecycle: 1, editorialRank: 1, _id: 1 });
 contentSchema.index({ lifecycle: 1, type: 1, _id: 1 });
 contentSchema.index({ lifecycle: 1, genres: 1, _id: 1 });
