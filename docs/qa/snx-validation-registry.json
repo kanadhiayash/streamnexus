@@ -312,6 +312,62 @@
       "title": "legacy demo default migrates from 5 to 20",
       "ownerIssue": 38,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-011",
+      "area": "FIXTURE",
+      "title": "exactly 50 title fixtures exist",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-012",
+      "area": "FIXTURE",
+      "title": "fixture IDs are complete and unique",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-013",
+      "area": "FIXTURE",
+      "title": "repeated seed is idempotent",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-014",
+      "area": "FIXTURE",
+      "title": "reset touches demo-owned records only",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-015",
+      "area": "FIXTURE",
+      "title": "every title has valid access and artwork metadata",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-FIXTURE-016",
+      "area": "FIXTURE",
+      "title": "demo personas are deterministic",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-DATA-012",
+      "area": "DATA",
+      "title": "fixture slugs are stable and unique",
+      "ownerIssue": 39,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-021",
+      "area": "SEC",
+      "title": "fixture output contains no credentials or proprietary data",
+      "ownerIssue": 39,
+      "status": "implemented"
     }
   ]
 }

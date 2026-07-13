@@ -4,26 +4,21 @@ const Content = require('../../models/Content');
 const User = require('../../models/User');
 const logger = require('../../utils/logger');
 const { RENTAL_POLICY } = require('../config/rentalPolicy');
+const { TITLE_FIXTURES, seedDemoFixtures } = require('./fixtureCatalog');
 
 const LEGACY_DEMO_LICENCE_LIMIT = 5;
-
-const demoTitle = (title) => ({
-  ...title,
-  rentalLimit: RENTAL_POLICY.defaultTitleLicenceLimit,
-  licenceLimit: RENTAL_POLICY.defaultTitleLicenceLimit,
-});
-
-const DEMO_CONTENT_FIXTURES = [
-  demoTitle({ title: 'Neon Chase', type: 'movie', description: 'Fast-paced thriller with neon cityscapes and high-stakes action', price: 4.99, image: '/images/neon-chase.jpg', available: true, rating: 8.2, genre: 'Thriller', duration: '2h 15m', cast: 'Keanu Reeves, Zoe Kravitz' }),
-  demoTitle({ title: 'Space Odyssey', type: 'movie', description: 'Deep space drama and survival in the vastness of the universe', price: 5.99, image: '/images/space-odyssey.jpg', available: true, rating: 8.8, genre: 'Sci-Fi', duration: '2h 45m', cast: 'Matthew McConaughey, Anne Hathaway' }),
-  demoTitle({ title: 'Cyber City', type: 'tv', description: 'Futuristic crime anthology set in neon-lit metropolis', price: 2.99, image: '/images/cyber-city.jpg', available: true, rating: 8.0, genre: 'Crime', duration: '45m per episode', cast: 'Oscar Isaac, Tatiana Maslany' }),
-  demoTitle({ title: 'Wild Frontier', type: 'tv', description: 'Adventure series across untamed lands and undiscovered territories', price: 3.99, image: '/images/wild-frontier.jpg', available: true, rating: 7.9, genre: 'Adventure', duration: '50m per episode', cast: 'Pedro Pascal, Bella Ramsey' }),
-  demoTitle({ title: 'Mystic Falls', type: 'movie', description: 'Supernatural romantic mystery in a small mountain town', price: 4.49, image: '/images/mystic-falls.jpg', available: true, rating: 7.5, genre: 'Romance', duration: '2h', cast: 'Timothee Chalamet, Florence Pugh' }),
-  demoTitle({ title: 'Heist Masters', type: 'movie', description: 'Heist in a high-tech vault with a crew of specialized thieves', price: 6.49, image: '/images/heist-masters.jpg', available: true, rating: 8.4, genre: 'Crime', duration: '2h 30m', cast: 'Ryan Gosling, Margot Robbie', trending: true }),
-  demoTitle({ title: 'Quantum Dawn', type: 'tv', description: 'Sci-fi thriller with parallel timelines and quantum mechanics', price: 3.49, image: '/images/quantum-dawn.jpg', available: true, rating: 8.7, genre: 'Sci-Fi', duration: '55m per episode', cast: 'Olivia Wilde, Rami Malek', trending: true }),
-  demoTitle({ title: 'Forgotten Legends', type: 'movie', description: 'Epic historical drama spanning continents and centuries', price: 5.49, image: '/images/forgotten-legends.jpg', available: true, rating: 8.1, genre: 'Drama', duration: '3h', cast: 'Cillian Murphy, Emily Blunt' }),
-  demoTitle({ title: 'Aqua Squad', type: 'tv', description: 'Underwater action and family adventure with cutting-edge visuals', price: 2.49, image: '/images/aqua-squad.jpg', available: true, rating: 7.6, genre: 'Adventure', duration: '40m per episode', cast: 'Jason Momoa, Amber Heard' }),
-  demoTitle({ title: 'Midnight Code', type: 'movie', description: 'Hackers vs corporates in a battle for digital supremacy', price: 4.79, image: '/images/midnight-code.jpg', available: true, rating: 8.3, genre: 'Thriller', duration: '2h 10m', cast: 'Saoirse Ronan, Daniel Kaluuya', trending: true }),
+const DEMO_CONTENT_FIXTURES = TITLE_FIXTURES;
+const LEGACY_DEMO_CONTENT_FIXTURES = [
+  { title: 'Neon Chase', image: '/images/neon-chase.jpg' },
+  { title: 'Space Odyssey', image: '/images/space-odyssey.jpg' },
+  { title: 'Cyber City', image: '/images/cyber-city.jpg' },
+  { title: 'Wild Frontier', image: '/images/wild-frontier.jpg' },
+  { title: 'Mystic Falls', image: '/images/mystic-falls.jpg' },
+  { title: 'Heist Masters', image: '/images/heist-masters.jpg' },
+  { title: 'Quantum Dawn', image: '/images/quantum-dawn.jpg' },
+  { title: 'Forgotten Legends', image: '/images/forgotten-legends.jpg' },
+  { title: 'Aqua Squad', image: '/images/aqua-squad.jpg' },
+  { title: 'Midnight Code', image: '/images/midnight-code.jpg' },
 ];
 
 const getDemoUsers = (isProduction = false) => {
@@ -81,7 +76,7 @@ const repairDemoUser = async ({ email, expectedRole }) => {
 const repairLegacyDemoCapacity = async ({ ContentModel = Content } = {}) => {
   let updated = 0;
 
-  for (const fixture of DEMO_CONTENT_FIXTURES) {
+  for (const fixture of [...LEGACY_DEMO_CONTENT_FIXTURES, ...DEMO_CONTENT_FIXTURES]) {
     const result = await ContentModel.updateOne(
       {
         title: fixture.title,
@@ -129,11 +124,8 @@ const seedDatabase = async ({ isProduction = process.env.NODE_ENV === 'productio
       await repairDemoUser({ email: streamerEmail, expectedRole: 'streamer' });
     }
 
-    const count = await Content.countDocuments();
-    if (count < 10) {
-      await Content.insertMany(DEMO_CONTENT_FIXTURES);
-      logger.info('Sample content seeded');
-    }
+    const fixtureResult = await seedDemoFixtures();
+    logger.info(`Sample content fixtures ensured: ${fixtureResult.titles.expected}`);
     await repairLegacyDemoCapacity();
     logger.info('Seed data ensured');
   } catch (error) {

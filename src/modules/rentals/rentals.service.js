@@ -80,7 +80,6 @@ const createRentalsService = ({
         throw new ConflictError('Content is not available for rental');
       }
 
-      await repository.reconcileActiveLicenceCount(contentId);
       const reservedContent = await repository.reserveLicence(contentId);
       if (!reservedContent) {
         const activeCount = await repository.countActiveByContent(contentId);
