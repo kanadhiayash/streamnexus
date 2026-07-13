@@ -545,6 +545,48 @@ input[type="checkbox"] {
   margin-bottom: 24px;
 }
 
+.auth-panel {
+  width: min(560px, 100%);
+}
+
+.auth-panel .auth-brand {
+  display: inline-flex;
+  margin-bottom: var(--space-4);
+}
+
+.demo-persona-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.demo-persona-button {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 132px;
+  padding: var(--space-4);
+  text-align: left;
+}
+
+.demo-persona-button span {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.password-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+}
+
+.password-field input {
+  min-width: 0;
+}
+
 .auth-switch {
   margin-top: 18px;
   font-size: 0.93rem;
@@ -561,6 +603,19 @@ input[type="checkbox"] {
   border-top: 1px solid var(--border);
   font-size: 0.9rem;
   color: var(--ink-subdued);
+}
+
+.onboarding-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.onboarding-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
 .landing-shell,
@@ -1428,8 +1483,14 @@ button[aria-busy="true"] {
   .filter-bar,
   .access-panel,
   .details-card,
+  .demo-persona-grid,
   .content-modal-panel {
     grid-template-columns: 1fr;
+  }
+
+  .onboarding-panel {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .landing-hero,

@@ -22,6 +22,20 @@
 %>
 
 <section class='browse-shell'>
+  <% if (typeof signedUp !== 'undefined' && signedUp) { %>
+    <section class='component-card onboarding-panel' aria-labelledby='onboarding-heading'>
+      <div>
+        <p class='eyebrow'>Welcome orientation</p>
+        <h2 id='onboarding-heading'>Your member workspace is ready</h2>
+        <p>Start with discovery, save titles to My List, then activate simulated access when a title has licence capacity.</p>
+      </div>
+      <div class='onboarding-actions'>
+        <a href='/my-list' class='btn btn-secondary'>Open My List</a>
+        <a href='/access' class='btn btn-secondary'>Review Access Model</a>
+      </div>
+    </section>
+  <% } %>
+
   <div class='browse-hero carousel' data-carousel>
     <% if (heroItems && heroItems.length > 0) { %>
       <div class='carousel-track'>

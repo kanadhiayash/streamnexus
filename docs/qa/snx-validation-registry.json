@@ -774,6 +774,62 @@
       "title": "public copy remains evidence-bounded",
       "ownerIssue": 46,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-100",
+      "area": "AUTH",
+      "title": "member demo selector fills expected fields",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-101",
+      "area": "AUTH",
+      "title": "admin demo selector fills expected fields",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-102",
+      "area": "AUTH",
+      "title": "successful member login reaches member home",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-103",
+      "area": "AUTH",
+      "title": "successful admin login reaches admin dashboard",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-104",
+      "area": "AUTH",
+      "title": "signup creates member role only",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-105",
+      "area": "AUTH",
+      "title": "authenticated user cannot remain on guest auth page",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-210",
+      "area": "A11Y",
+      "title": "auth errors are announced and field-associated",
+      "ownerIssue": 47,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-130",
+      "area": "SEC",
+      "title": "authentication response does not enumerate accounts",
+      "ownerIssue": 47,
+      "status": "implemented"
     }
   ]
 }

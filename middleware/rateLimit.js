@@ -43,6 +43,13 @@ const signupRateLimiter = createLimiter({
   message: 'Too many signup attempts. Please try again later.',
 });
 
+const authPageRateLimiter = createLimiter({
+  envPrefix: 'AUTH_PAGE_RATE_LIMIT',
+  fallbackLimit: 300,
+  fallbackWindowMs: 5 * 60 * 1000,
+  message: 'Too many authentication page requests. Please slow down and try again.',
+});
+
 const searchRateLimiter = createLimiter({
   envPrefix: 'SEARCH_RATE_LIMIT',
   fallbackLimit: 120,
@@ -77,6 +84,7 @@ const adminMutationRateLimiter = createLimiter({
 module.exports = {
   accessMutationRateLimiter,
   adminMutationRateLimiter,
+  authPageRateLimiter,
   loginRateLimiter,
   myListMutationRateLimiter,
   searchRateLimiter,
