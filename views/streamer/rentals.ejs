@@ -18,7 +18,7 @@
   <% if (rentals.length === 0) { %>
     <div class='empty-state' role='status'>
       <p>No rentals yet. Browse and activate rental access for your first title.</p>
-      <a href='/home' class='btn btn-primary' style='margin-top:1rem;'>Browse Titles</a>
+      <a href='/home' class='btn btn-primary empty-action'>Browse Titles</a>
     </div>
   <% } else { %>
     <section aria-labelledby='active-rentals-heading'>
@@ -37,14 +37,14 @@
               <img class='content-poster' src='<%= r.contentId && r.contentId.image ? r.contentId.image : "/images/default.svg" %>' alt='<%= r.contentId ? r.contentId.title : "Content" %>' loading='lazy' data-fallback-src='/images/default.svg' />
               <div class='card-content'>
                 <h3><%= r.contentId ? r.contentId.title : 'Content Deleted' %></h3>
-                <p style='font-size:0.9rem;'>
+                <p class='rental-status-line'>
                   <strong>Status:</strong>
                   <span class='status available'>Active rental</span>
                 </p>
-                <p style='color:var(--text-tertiary);font-size:0.85rem;'>
+                <p class='supporting-copy'>
                   Reference: <%= r.publicReference || 'Pending' %>
                 </p>
-                <p style='color:var(--text-tertiary);font-size:0.85rem;'>
+                <p class='supporting-copy'>
                   Started: <%= new Date(r.rentedAt || r.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
                 </p>
                 <p class='rental-window'>
@@ -66,7 +66,7 @@
       <% } %>
     </section>
 
-    <section aria-labelledby='rental-history-heading' style='margin-top:2rem;'>
+    <section class='section-spacer' aria-labelledby='rental-history-heading'>
       <div class='section-heading'>
         <h2 id='rental-history-heading'>History</h2>
         <p><%= completed.length %> title<%= completed.length === 1 ? '' : 's' %></p>
@@ -82,11 +82,11 @@
               <img class='content-poster' src='<%= r.contentId && r.contentId.image ? r.contentId.image : "/images/default.svg" %>' alt='<%= r.contentId ? r.contentId.title : "Content" %>' loading='lazy' data-fallback-src='/images/default.svg' />
               <div class='card-content'>
                 <h3><%= r.contentId ? r.contentId.title : 'Content Deleted' %></h3>
-                <p style='font-size:0.9rem;'>
+                <p class='rental-status-line'>
                   <strong>Status:</strong>
                   <span class='status unavailable'><%= r.status === 'returned' ? 'Access returned' : r.status %></span>
                 </p>
-                <p style='color:var(--text-tertiary);font-size:0.85rem;'>
+                <p class='supporting-copy'>
                   Reference: <%= r.publicReference || 'Legacy rental' %>
                 </p>
                 <p class='rental-window'>

@@ -648,6 +648,76 @@
       "title": "workflow artifacts contain no secrets",
       "ownerIssue": 44,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-BRAND-010",
+      "area": "BRAND",
+      "title": "approved palette maps to semantic tokens",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-100",
+      "area": "UI",
+      "title": "shared buttons render all states",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-101",
+      "area": "UI",
+      "title": "shared form controls render validation states",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-102",
+      "area": "UI",
+      "title": "title card variants remain consistent",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-103",
+      "area": "UI",
+      "title": "modal and toast states are reusable",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-100",
+      "area": "A11Y",
+      "title": "keyboard focus remains visible",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-101",
+      "area": "A11Y",
+      "title": "status does not rely on colour alone",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-A11Y-102",
+      "area": "A11Y",
+      "title": "reduced-motion preference is respected",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-104",
+      "area": "UI",
+      "title": "component documentation defines approved and prohibited usage",
+      "ownerIssue": 45,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-UI-105",
+      "area": "UI",
+      "title": "registry owns the pivot design system validation identifiers",
+      "ownerIssue": 45,
+      "status": "implemented"
     }
   ]
 }

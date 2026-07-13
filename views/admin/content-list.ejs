@@ -11,10 +11,10 @@
   <% if (contents.length === 0) { %>
     <div class='empty-state' role='status'>
       <p>No content yet. Add your first title to get started!</p>
-      <a href='/admin/content/new' class='btn btn-primary' style='margin-top:1rem;'>+ Add Content</a>
+      <a href='/admin/content/new' class='btn btn-primary empty-action'>+ Add Content</a>
     </div>
   <% } else { %>
-    <div style='overflow-x:auto;'>
+    <div class='table-wrap'>
       <table>
         <thead>
           <tr>
@@ -38,7 +38,7 @@
                 </span>
               </td>
               <td>
-                <div class='actions' style='gap:0.25rem;'>
+                <div class='actions actions-compact'>
                   <a href='/admin/content/<%= content._id %>/edit' class='btn btn-primary btn-sm' aria-label='Edit <%= content.title %>'>Edit</a>
                   <% if (lifecycle === 'published') { %>
                     <form method='post' action='/admin/content/<%= content._id %>/lifecycle/unpublish' class='inline-form'>
