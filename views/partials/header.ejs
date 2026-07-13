@@ -9,9 +9,9 @@
         <a href="/admin/dashboard" aria-label="Admin Dashboard">Admin Dashboard</a>
         <a href="/admin/content" aria-label="Manage Content">Content</a>
       <% } else { %>
-        <a href="/streamer/browse" aria-label="Browse available titles">Catalog</a>
-        <a href="/streamer/shortlist" aria-label="Your list">My List</a>
-        <a href="/streamer/rentals" aria-label="Your active rentals">Rentals</a>
+        <a href="/home" aria-label="Browse available titles">Catalog</a>
+        <a href="/my-list" aria-label="Your list">My List</a>
+        <a href="/my-access" aria-label="Your active rentals">Rentals</a>
       <% } %>
       <form class="logout-form" method="post" action="/logout" role="form">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />

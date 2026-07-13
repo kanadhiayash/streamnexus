@@ -10,6 +10,7 @@ process.env.DEMO_STREAMER_PASSWORD = 'streamer';
 
 const assert = require('node:assert/strict');
 const test = require('node:test');
+const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
@@ -98,7 +99,7 @@ test('renders a CSRF token on login and rejects unsafe requests without it', asy
     .expect(403);
 });
 
-test('guest landing page renders sign in and signup entry points', async () => {
+test('[SNX-IA-010] public landing remains accessible to guests', async () => {
   const agent = request.agent(createApp());
   const response = await agent.get('/').expect(200);
 
@@ -107,6 +108,36 @@ test('guest landing page renders sign in and signup entry points', async () => {
   assert.match(response.text, /<main id="main-content" class="container" tabindex="-1">/);
   assert.match(response.text, /Create Member Account/);
   assert.match(response.text, /Sign In/);
+});
+
+test('[SNX-AUTH-021] guest is rejected from protected route', async () => {
+  await request(createApp())
+    .get('/home')
+    .expect(302)
+    .expect('Location', '/login');
+});
+
+test('[SNX-IA-011] member home is separate from public landing', async () => {
+  const publicLanding = await request(createApp()).get('/').expect(200);
+  const memberAgent = await loginAs('streamer');
+  const memberHome = await memberAgent.get('/home').expect(200);
+
+  assert.match(publicLanding.text, /Create Member Account/);
+  assert.match(memberHome.text, /Browse Titles/);
+  assert.doesNotMatch(memberHome.text, /Create Member Account/);
+});
+
+test('[SNX-IA-010] public title details hide member-only actions from guests', async () => {
+  const content = await Content.findOne({ available: true }).lean();
+  const response = await request(createApp())
+    .get(`/titles/${encodeURIComponent(content.slug || content._id)}`)
+    .expect(200);
+
+  assert.match(response.text, /Sign In/);
+  assert.match(response.text, /Create Account/);
+  assert.match(response.text, /Back to Catalog/);
+  assert.doesNotMatch(response.text, /Add to My List/);
+  assert.doesNotMatch(response.text, /Activate Rental/);
 });
 
 test('public pages send defensive browser security headers', async () => {
@@ -134,7 +165,7 @@ test('signup creates a member account and cannot create admin role', async () =>
       _csrf: csrfToken,
     })
     .expect(302)
-    .expect('Location', '/streamer/browse?signedup=true');
+    .expect('Location', '/home?signedup=true');
 
   const user = await User.findOne({ email: 'new-streamer@example.com' }).lean();
   assert.ok(user);
@@ -203,7 +234,7 @@ test('admin archives, restores, and publishes content without hard deleting it',
   assert.ok(updated.archivedAt);
 
   const memberAgent = await loginAs('streamer');
-  const archivedBrowse = await memberAgent.get('/streamer/browse?search=Admin%20Lifecycle%20Probe').expect(200);
+  const archivedBrowse = await memberAgent.get('/home?search=Admin%20Lifecycle%20Probe').expect(200);
   assert.match(archivedBrowse.text, /No matching titles found/);
   assert.doesNotMatch(archivedBrowse.text, /Lifecycle operations test title/);
 
@@ -227,7 +258,7 @@ test('admin archives, restores, and publishes content without hard deleting it',
   assert.equal(updated.lifecycle, 'published');
   assert.equal(updated.available, true);
 
-  const publishedBrowse = await memberAgent.get('/streamer/browse?search=Admin%20Lifecycle%20Probe').expect(200);
+  const publishedBrowse = await memberAgent.get('/home?search=Admin%20Lifecycle%20Probe').expect(200);
   assert.match(publishedBrowse.text, /Lifecycle operations test title/);
 });
 
@@ -268,11 +299,11 @@ test('streamer can shortlist and rent available content', async () => {
   const content = await Content.findOne({ available: true }).lean();
   assert.ok(content);
 
-  const detailsPage = await streamerAgent.get(`/streamer/content/${content._id}`).expect(200);
+  const detailsPage = await streamerAgent.get(`/titles/${content._id}`).expect(200);
   const csrfToken = extractCsrfToken(detailsPage.text);
 
   await streamerAgent
-    .post(`/streamer/content/${content._id}/shortlist`)
+    .post(`/titles/${content._id}/shortlist`)
     .type('form')
     .send({ _csrf: csrfToken })
     .expect(302);
@@ -281,7 +312,7 @@ test('streamer can shortlist and rent available content', async () => {
   assert.equal(user.shortlist.length, 1);
 
   await streamerAgent
-    .post(`/streamer/content/${content._id}/rent`)
+    .post(`/titles/${content._id}/rent`)
     .type('form')
     .send({ _csrf: csrfToken })
     .expect(302);
@@ -300,19 +331,19 @@ test('member reviews, confirms, opens, and returns a rental by public reference'
   const content = await Content.findOne({ available: true }).lean();
   assert.ok(content);
 
-  const reviewPage = await streamerAgent.get(`/streamer/content/${content._id}/review`).expect(200);
+  const reviewPage = await streamerAgent.get(`/titles/${content._id}/review`).expect(200);
   assert.match(reviewPage.text, /Confirm Rental/);
   assert.match(reviewPage.text, /Simulated payment for demo review only/);
   assert.match(reviewPage.text, /does not process payments or enable playback/);
   const csrfToken = extractCsrfToken(reviewPage.text);
 
   const firstConfirm = await streamerAgent
-    .post(`/streamer/content/${content._id}/rent`)
+    .post(`/titles/${content._id}/rent`)
     .type('form')
     .send({ _csrf: csrfToken })
     .expect(302);
 
-  assert.match(firstConfirm.headers.location, /^\/streamer\/rentals\?rented=true&ref=SNX-/);
+  assert.match(firstConfirm.headers.location, /^\/my-access\?rented=true&ref=SNX-/);
 
   const user = await User.findOne({ email: 'streamer@gmail.com' }).lean();
   const rental = await Rental.findOne({ userId: user._id, contentId: content._id }).lean();
@@ -320,7 +351,7 @@ test('member reviews, confirms, opens, and returns a rental by public reference'
   assert.ok(rental.publicReference);
 
   await streamerAgent
-    .post(`/streamer/content/${content._id}/rent`)
+    .post(`/titles/${content._id}/rent`)
     .type('form')
     .send({ _csrf: csrfToken })
     .expect(302);
@@ -328,7 +359,7 @@ test('member reviews, confirms, opens, and returns a rental by public reference'
   const activeCount = await Rental.countDocuments({ userId: user._id, contentId: content._id, status: 'active' });
   assert.equal(activeCount, 1);
 
-  const detailPage = await streamerAgent.get(`/streamer/rentals/ref/${rental.publicReference}`).expect(200);
+  const detailPage = await streamerAgent.get(`/my-access/ref/${rental.publicReference}`).expect(200);
   assert.match(detailPage.text, /Rental confirmation/);
   assert.match(detailPage.text, new RegExp(rental.publicReference));
   assert.match(detailPage.text, /Return Access/);
@@ -348,16 +379,16 @@ test('member reviews, confirms, opens, and returns a rental by public reference'
     .expect(302);
 
   await secondStreamer
-    .get(`/streamer/rentals/ref/${rental.publicReference}`)
+    .get(`/my-access/ref/${rental.publicReference}`)
     .expect(403);
 
   const returnCsrf = extractCsrfToken(detailPage.text);
   await streamerAgent
-    .post(`/streamer/rentals/${rental._id}/checkout`)
+    .post(`/my-access/${rental._id}/checkout`)
     .type('form')
     .send({ _csrf: returnCsrf })
     .expect(302)
-    .expect('Location', '/streamer/rentals?checkout=success');
+    .expect('Location', '/my-access?checkout=success');
 
   const returned = await Rental.findById(rental._id).lean();
   assert.equal(returned.status, 'returned');
@@ -370,11 +401,11 @@ test('rental capacity blocks the sixth style over-limit rental and admin sees sl
   await Content.updateOne({ _id: content._id }, { $set: { rentalLimit: 1 } });
 
   const firstStreamer = await loginAs('streamer');
-  const firstDetails = await firstStreamer.get(`/streamer/content/${content._id}`).expect(200);
+  const firstDetails = await firstStreamer.get(`/titles/${content._id}`).expect(200);
   const firstCsrf = extractCsrfToken(firstDetails.text);
 
   await firstStreamer
-    .post(`/streamer/content/${content._id}/rent`)
+    .post(`/titles/${content._id}/rent`)
     .type('form')
     .send({ _csrf: firstCsrf })
     .expect(302);
@@ -393,10 +424,10 @@ test('rental capacity blocks the sixth style over-limit rental and admin sees sl
     })
     .expect(302);
 
-  const secondDetails = await secondStreamer.get(`/streamer/content/${content._id}`).expect(200);
+  const secondDetails = await secondStreamer.get(`/titles/${content._id}`).expect(200);
   const secondCsrf = extractCsrfToken(secondDetails.text);
   await secondStreamer
-    .post(`/streamer/content/${content._id}/rent`)
+    .post(`/titles/${content._id}/rent`)
     .type('form')
     .send({ _csrf: secondCsrf })
     .expect(400);
@@ -446,7 +477,7 @@ test('member catalog supports URL-backed sort and pagination state', async () =>
 
   const streamerAgent = await loginAs('streamer');
   const response = await streamerAgent
-    .get('/streamer/browse?sort=price_desc&page=1')
+    .get('/home?sort=price_desc&page=1')
     .expect(200);
 
   assert.match(response.text, /Browse Titles/);
@@ -477,12 +508,20 @@ test('[SNX-AUTH-001] member login persists after redirect', async () => {
   const response = await submitLogin(agent, { email: 'streamer@gmail.com', password: 'streamer' });
 
   assert.equal(response.status, 302);
-  assert.equal(response.headers.location, '/streamer/browse');
+  assert.equal(response.headers.location, '/home');
   assert.ok(response.headers['set-cookie']?.some(cookie => cookie.startsWith('streamnexus.sid=')));
 
-  const destination = await agent.get('/streamer/browse').expect(200);
+  const destination = await agent.get('/home').expect(200);
   assert.match(destination.text, /Browse Titles/);
   assert.doesNotMatch(destination.text, /Sign In/);
+});
+
+test('[SNX-IA-012] member login routes to member home', async () => {
+  const agent = request.agent(createApp());
+  const response = await submitLogin(agent, { email: 'streamer@gmail.com', password: 'streamer' });
+
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.location, '/home');
 });
 
 test('[SNX-AUTH-002] admin login persists after redirect', async () => {
@@ -497,15 +536,42 @@ test('[SNX-AUTH-002] admin login persists after redirect', async () => {
   assert.doesNotMatch(dashboard.text, /Sign In/);
 });
 
+test('[SNX-IA-013] admin login routes to admin dashboard', async () => {
+  const agent = request.agent(createApp());
+  const response = await submitLogin(agent, { email: 'admin@gmail.com', password: 'admin' });
+
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.location, '/admin/dashboard');
+});
+
+test('[SNX-IA-014] partner login routes to scoped partner home', async () => {
+  const passwordHash = await bcrypt.hash('partnerpass', 10);
+  await User.create({
+    email: 'partner@example.com',
+    password: passwordHash,
+    role: 'partner',
+    status: 'active',
+    sessionVersion: 1,
+  });
+
+  const agent = request.agent(createApp());
+  const response = await submitLogin(agent, { email: 'partner@example.com', password: 'partnerpass' });
+
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.location, '/partner/dashboard');
+  const dashboard = await agent.get('/partner/dashboard').expect(200);
+  assert.match(dashboard.text, /Partner Dashboard/);
+});
+
 test('[SNX-AUTH-003] valid session persists after reload', async () => {
   const agent = request.agent(createApp());
   const response = await submitLogin(agent, { email: 'streamer@gmail.com', password: 'streamer' });
 
   assert.equal(response.status, 302);
-  assert.equal(response.headers.location, '/streamer/browse');
+  assert.equal(response.headers.location, '/home');
 
-  await agent.get('/streamer/browse').expect(200);
-  const reloaded = await agent.get('/streamer/browse').expect(200);
+  await agent.get('/home').expect(200);
+  const reloaded = await agent.get('/home').expect(200);
   assert.match(reloaded.text, /Browse Titles/);
 });
 
@@ -527,8 +593,8 @@ test('[SNX-AUTH-004] legacy demo account is repaired', async () => {
   const agent = request.agent(createApp());
   const response = await submitLogin(agent, { email: 'streamer@gmail.com', password: 'streamer' });
   assert.equal(response.status, 302);
-  assert.equal(response.headers.location, '/streamer/browse');
-  await agent.get('/streamer/browse').expect(200);
+  assert.equal(response.headers.location, '/home');
+  await agent.get('/home').expect(200);
 });
 
 test('stale sessionVersion forces reauthentication', async () => {
@@ -537,7 +603,7 @@ test('stale sessionVersion forces reauthentication', async () => {
   await User.updateOne({ _id: user._id }, { $inc: { sessionVersion: 1 } });
 
   await streamerAgent
-    .get('/streamer/browse')
+    .get('/home')
     .expect(302)
     .expect('Location', '/login');
 });
@@ -622,17 +688,17 @@ test('[SNX-SEC-101] signup throttle blocks automated abuse', async () => {
 test('[SNX-SEC-102] unsafe return destination is rejected', async () => {
   const streamerAgent = await loginAs('streamer');
   const content = await Content.findOne({ available: true }).lean();
-  const detailsPage = await streamerAgent.get(`/streamer/content/${content._id}`).expect(200);
+  const detailsPage = await streamerAgent.get(`/titles/${content._id}`).expect(200);
   const csrfToken = extractCsrfToken(detailsPage.text);
 
   await streamerAgent
-    .post(`/streamer/content/${content._id}/shortlist`)
+    .post(`/titles/${content._id}/shortlist`)
     .type('form')
     .send({ _csrf: csrfToken })
     .expect(302);
 
   await streamerAgent
-    .post(`/streamer/content/${content._id}/shortlist/remove`)
+    .post(`/titles/${content._id}/shortlist/remove`)
     .type('form')
     .send({ _csrf: csrfToken, returnTo: 'https://evil.example/steal' })
     .expect(400);
@@ -641,11 +707,49 @@ test('[SNX-SEC-102] unsafe return destination is rejected', async () => {
   assert.equal(user.shortlist.length, 1);
 
   await streamerAgent
+    .post(`/titles/${content._id}/shortlist/remove`)
+    .type('form')
+    .send({ _csrf: csrfToken, returnTo: '/my-list' })
+    .expect(302)
+    .expect('Location', '/my-list');
+});
+
+test('[SNX-IA-015] legacy route redirects preserve safe intent', async () => {
+  const streamerAgent = await loginAs('streamer');
+  const content = await Content.findOne({ available: true }).lean();
+
+  await streamerAgent
+    .get('/streamer/browse?sort=price_desc&page=1')
+    .expect(302)
+    .expect('Location', '/home?sort=price_desc&page=1');
+
+  await streamerAgent
+    .get('/streamer/shortlist')
+    .expect(302)
+    .expect('Location', '/my-list');
+
+  await streamerAgent
+    .get('/streamer/rentals')
+    .expect(302)
+    .expect('Location', '/my-access');
+
+  await streamerAgent
+    .get(`/streamer/content/${content._id}`)
+    .expect(302)
+    .expect('Location', `/titles/${encodeURIComponent(content.slug || content._id)}`);
+});
+
+test('[SNX-SEC-110] unsafe compatibility redirect is rejected', async () => {
+  const streamerAgent = await loginAs('streamer');
+  const content = await Content.findOne({ available: true }).lean();
+  const detailsPage = await streamerAgent.get(`/titles/${content._id}`).expect(200);
+  const csrfToken = extractCsrfToken(detailsPage.text);
+
+  await streamerAgent
     .post(`/streamer/content/${content._id}/shortlist/remove`)
     .type('form')
-    .send({ _csrf: csrfToken, returnTo: '/streamer/shortlist' })
-    .expect(302)
-    .expect('Location', '/streamer/shortlist');
+    .send({ _csrf: csrfToken, returnTo: '//evil.example/steal' })
+    .expect(400);
 });
 
 test('[SNX-SEC-103] oversized request body is rejected', async () => {
@@ -679,11 +783,11 @@ test('[SNX-SEC-103] oversized request body is rejected', async () => {
 test('[SNX-SEC-104] object ownership is enforced server-side', async () => {
   const ownerAgent = await loginAs('streamer');
   const content = await Content.findOne({ available: true }).lean();
-  const reviewPage = await ownerAgent.get(`/streamer/content/${content._id}/review`).expect(200);
+  const reviewPage = await ownerAgent.get(`/titles/${content._id}/review`).expect(200);
   const csrfToken = extractCsrfToken(reviewPage.text);
 
   await ownerAgent
-    .post(`/streamer/content/${content._id}/rent`)
+    .post(`/titles/${content._id}/rent`)
     .type('form')
     .send({ _csrf: csrfToken })
     .expect(302);
@@ -706,26 +810,26 @@ test('[SNX-SEC-104] object ownership is enforced server-side', async () => {
     .expect(302);
 
   await otherAgent
-    .get(`/streamer/rentals/ref/${rental.publicReference}`)
+    .get(`/my-access/ref/${rental.publicReference}`)
     .expect(403);
 });
 
 test('[SNX-SEC-106] idempotent access confirmation prevents duplicate writes', async () => {
   const streamerAgent = await loginAs('streamer');
   const content = await Content.findOne({ available: true }).lean();
-  const reviewPage = await streamerAgent.get(`/streamer/content/${content._id}/review`).expect(200);
+  const reviewPage = await streamerAgent.get(`/titles/${content._id}/review`).expect(200);
   const csrfToken = extractCsrfToken(reviewPage.text);
   const idempotencyKey = 'snx-confirmation-test-key';
 
   await streamerAgent
-    .post(`/streamer/content/${content._id}/rent`)
+    .post(`/titles/${content._id}/rent`)
     .set('Idempotency-Key', idempotencyKey)
     .type('form')
     .send({ _csrf: csrfToken })
     .expect(302);
 
   await streamerAgent
-    .post(`/streamer/content/${content._id}/rent`)
+    .post(`/titles/${content._id}/rent`)
     .set('Idempotency-Key', idempotencyKey)
     .type('form')
     .send({ _csrf: csrfToken })
@@ -750,7 +854,7 @@ test('[SNX-AUTH-020] suspended account cannot use protected routes', async () =>
   await User.updateOne({ _id: user._id }, { $set: { status: 'suspended' } });
 
   await streamerAgent
-    .get('/streamer/browse')
+    .get('/home')
     .expect(302)
     .expect('Location', '/login');
 });

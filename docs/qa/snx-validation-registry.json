@@ -487,6 +487,62 @@
       "title": "suspended account cannot use protected routes",
       "ownerIssue": 41,
       "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-010",
+      "area": "IA",
+      "title": "public landing remains accessible to guests",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-011",
+      "area": "IA",
+      "title": "member home is separate from public landing",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-012",
+      "area": "IA",
+      "title": "member login routes to member home",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-013",
+      "area": "IA",
+      "title": "admin login routes to admin dashboard",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-014",
+      "area": "IA",
+      "title": "partner login routes to scoped partner home",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-IA-015",
+      "area": "IA",
+      "title": "legacy route redirects preserve safe intent",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-AUTH-021",
+      "area": "AUTH",
+      "title": "guest is rejected from protected route",
+      "ownerIssue": 42,
+      "status": "implemented"
+    },
+    {
+      "id": "SNX-SEC-110",
+      "area": "SEC",
+      "title": "unsafe compatibility redirect is rejected",
+      "ownerIssue": 42,
+      "status": "implemented"
     }
   ]
 }

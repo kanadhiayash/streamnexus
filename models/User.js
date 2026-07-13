@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     passwordHash: { type: String, default: null, select: false },
     displayName: { type: String, default: '' },
-    role: { type: String, required: true, enum: ['admin', 'streamer', 'member'] },
+    role: { type: String, required: true, enum: ['admin', 'streamer', 'member', 'partner'] },
     status: { type: String, enum: ['active', 'suspended', 'deleted'], default: 'active', index: true },
     emailVerifiedAt: { type: Date, default: null },
     passwordChangedAt: { type: Date, default: null },

@@ -5,8 +5,12 @@ const getRoleDestination = (role, options = {}) => {
     return '/admin/dashboard';
   }
 
+  if (role === 'partner') {
+    return '/partner/dashboard';
+  }
+
   if (MEMBER_COMPATIBLE_ROLES.has(role)) {
-    return options.signedUp ? '/streamer/browse?signedup=true' : '/streamer/browse';
+    return options.signedUp ? '/home?signedup=true' : '/home';
   }
 
   return '/';

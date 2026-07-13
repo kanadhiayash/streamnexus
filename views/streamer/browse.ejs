@@ -14,9 +14,9 @@
     available: !!content.available,
     isShortlisted: !!content.isShortlisted,
     capacity: content.capacity || { rentalLimit: content.rentalLimit || 20, activeRentals: 0, remaining: content.rentalLimit || 20, isFull: false },
-    detailUrl: `/streamer/content/${content._id}`,
-    rentUrl: `/streamer/content/${content._id}/review`,
-    shortlistUrl: `/streamer/content/${content._id}/${content.isShortlisted ? 'shortlist/remove' : 'shortlist'}`,
+    detailUrl: `/titles/${content._id}`,
+    rentUrl: `/titles/${content._id}/review`,
+    shortlistUrl: `/titles/${content._id}/${content.isShortlisted ? 'shortlist/remove' : 'shortlist'}`,
   }));
   const modalJson = JSON.stringify(modalPayload).replace(/</g, '\\u003c');
 %>
@@ -34,7 +34,7 @@
               <p><%= item.description %></p>
               <div class='hero-actions'>
                 <button type='button' class='btn btn-primary' data-modal-content-id='<%= item._id %>'>View Details</button>
-                <form method='get' action='/streamer/content/<%= item._id %>/review' class='inline-form'>
+                <form method='get' action='/titles/<%= item._id %>/review' class='inline-form'>
                   <button type='submit' class='btn btn-success' <%= !item.available || (item.capacity && item.capacity.isFull) ? 'disabled' : '' %>>Activate Rental</button>
                 </form>
               </div>
@@ -69,7 +69,7 @@
     <div class='alert alert-error' role='alert'><%= error %></div>
   <% } %>
 
-  <form class='filter-bar' method='get' action='/streamer/browse' aria-label='Search, sort, and filter titles'>
+  <form class='filter-bar' method='get' action='/home' aria-label='Search, sort, and filter titles'>
     <div class='form-group'>
       <label for='search'>Search</label>
       <input type='text' id='search' name='search' value='<%= search || "" %>' placeholder='Search title, genre, or description' />
@@ -93,7 +93,7 @@
     </div>
     <div class='filter-actions'>
       <button type='submit' class='btn btn-primary'>Apply</button>
-      <a href='/streamer/browse' class='btn btn-secondary'>Reset</a>
+      <a href='/home' class='btn btn-secondary'>Reset</a>
     </div>
   </form>
 
@@ -130,9 +130,9 @@
     </div>
     <% if (pagination && pagination.totalPages > 1) { %>
       <nav class='pagination' aria-label='Catalog pagination'>
-        <a class='btn btn-secondary <%= pagination.hasPrevious ? "" : "disabled" %>' href='/streamer/browse?search=<%= encodeURIComponent(search || "") %>&type=<%= encodeURIComponent(type || "") %>&sort=<%= encodeURIComponent(sort || "title") %>&page=<%= pagination.previousPage %>'>Previous</a>
+        <a class='btn btn-secondary <%= pagination.hasPrevious ? "" : "disabled" %>' href='/home?search=<%= encodeURIComponent(search || "") %>&type=<%= encodeURIComponent(type || "") %>&sort=<%= encodeURIComponent(sort || "title") %>&page=<%= pagination.previousPage %>'>Previous</a>
         <span>Page <%= pagination.currentPage %> of <%= pagination.totalPages %> / <%= pagination.totalItems %> titles</span>
-        <a class='btn btn-secondary <%= pagination.hasNext ? "" : "disabled" %>' href='/streamer/browse?search=<%= encodeURIComponent(search || "") %>&type=<%= encodeURIComponent(type || "") %>&sort=<%= encodeURIComponent(sort || "title") %>&page=<%= pagination.nextPage %>'>Next</a>
+        <a class='btn btn-secondary <%= pagination.hasNext ? "" : "disabled" %>' href='/home?search=<%= encodeURIComponent(search || "") %>&type=<%= encodeURIComponent(type || "") %>&sort=<%= encodeURIComponent(sort || "title") %>&page=<%= pagination.nextPage %>'>Next</a>
       </nav>
     <% } %>
   <% } %>
@@ -156,7 +156,7 @@
         <div class='modal-actions'>
           <form method='post' data-modal-shortlist-form>
             <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
-            <input type='hidden' name='returnTo' value='/streamer/browse' data-modal-return-to />
+            <input type='hidden' name='returnTo' value='/home' data-modal-return-to />
             <button type='submit' class='btn btn-secondary' data-modal-shortlist-button>My List</button>
           </form>
           <form method='get' data-modal-rent-form>

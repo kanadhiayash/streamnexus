@@ -10,6 +10,9 @@ const authRoutes = require('../../routes/auth');
 const adminRoutes = require('../../routes/admin');
 const streamerRoutes = require('../../routes/streamer');
 const contentRoutes = require('../../routes/content');
+const memberRoutes = require('../../routes/member');
+const partnerRoutes = require('../../routes/partner');
+const publicRoutes = require('../../routes/public');
 const contentService = require('../../services/contentService');
 const rentalService = require('../../services/rentalService');
 const { errorHandler, AppError } = require('../../middleware/errorHandler');
@@ -87,6 +90,9 @@ const registerMiddleware = (app, config) => {
 
 const registerRoutes = (app) => {
   app.use('/', authRoutes);
+  app.use('/', memberRoutes);
+  app.use('/partner', partnerRoutes);
+  app.use('/', publicRoutes);
   app.use('/admin', adminRoutes);
   app.use('/streamer', streamerRoutes);
   app.use('/content', contentRoutes);

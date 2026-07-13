@@ -4,7 +4,7 @@
       <p class='eyebrow'>Rental review</p>
       <h1>Confirm Rental</h1>
     </div>
-    <a href='/streamer/content/<%= content._id %>' class='btn btn-secondary'>Back to Details</a>
+    <a href='/titles/<%= content._id %>' class='btn btn-secondary'>Back to Details</a>
   </div>
 
   <div class='details-card'>
@@ -22,10 +22,10 @@
       <div class='alert alert-warning' role='note'>
         This demo does not process payments or enable playback. Confirming creates a rental record, starts the 45-day access window, and reserves one title licence.
       </div>
-      <form method='post' action='/streamer/content/<%= content._id %>/rent' class='details-actions'>
+      <form method='post' action='/titles/<%= content._id %>/rent' class='details-actions'>
         <input type='hidden' name='_csrf' value='<%= csrfToken %>' />
         <button type='submit' class='btn btn-success' <%= !content.available || capacity.isFull ? 'disabled' : '' %>>Confirm Rental</button>
-        <a href='/streamer/browse' class='btn btn-secondary'>Cancel</a>
+        <a href='/home' class='btn btn-secondary'>Cancel</a>
       </form>
     </div>
   </div>
