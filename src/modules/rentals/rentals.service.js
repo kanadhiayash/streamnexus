@@ -277,7 +277,7 @@ const createRentalsService = ({
         return repository.findRentalById(rentalId);
       }
       await repository.releaseLicence(cancelledRental.contentId);
-      await auditService.record({ action: 'rentals.completed', actorId, targetType: 'rental', targetId: rentalId });
+      await auditService.record({ action: 'SNX.access.cancelled', actorId, actorRole: 'admin', targetType: 'rental', targetId: rentalId });
       return cancelledRental;
     });
   },

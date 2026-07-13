@@ -123,6 +123,12 @@ test('admin module composes dashboard state without controller calculations', as
         data: contents.map(content => ({ ...content, capacity: { rentalLimit: 5, activeRentals: 2, remaining: 3 } })),
       }),
     },
+    repository: {
+      findMembers: async () => [],
+      findPartners: async () => [],
+      findPrograms: async () => [],
+      findAuditEvents: async () => [],
+    },
   });
 
   const result = await useCases.loadDashboard();
