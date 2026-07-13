@@ -73,12 +73,12 @@
             min='1'
             max='50'
             step='1'
-            value="<%= content ? (content.rentalLimit || 5) : 5 %>"
+            value="<%= content ? (content.rentalLimit || 20) : 20 %>"
             required
             aria-required='true'
             aria-describedby='rental-limit-desc'
           />
-          <small id='rental-limit-desc' style='color:var(--text-tertiary);'>Default is 5 active streamers per title.</small>
+          <small id='rental-limit-desc' style='color:var(--text-tertiary);'>Default is 20 active access seats per title.</small>
         </div>
       </fieldset>
 

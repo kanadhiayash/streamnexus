@@ -13,7 +13,7 @@
     rating: Number(content.rating || 0).toFixed(1),
     available: !!content.available,
     isShortlisted: !!content.isShortlisted,
-    capacity: content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false },
+    capacity: content.capacity || { rentalLimit: content.rentalLimit || 20, activeRentals: 0, remaining: content.rentalLimit || 20, isFull: false },
     detailUrl: `/streamer/content/${content._id}`,
     rentUrl: `/streamer/content/${content._id}/review`,
     shortlistUrl: `/streamer/content/${content._id}/${content.isShortlisted ? 'shortlist/remove' : 'shortlist'}`,
@@ -41,7 +41,7 @@
               <div class='capacity-strip'>
                 <span><%= item.type.toUpperCase() %></span>
                 <span><%= item.genre || 'General' %></span>
-                <span><%= item.capacity ? item.capacity.remaining : 5 %>/<%= item.capacity ? item.capacity.rentalLimit : 5 %> licences open</span>
+                <span><%= item.capacity ? item.capacity.remaining : 20 %>/<%= item.capacity ? item.capacity.rentalLimit : 20 %> licences open</span>
               </div>
             </div>
           </article>
@@ -108,7 +108,7 @@
   <% } else { %>
     <div class='grid poster-grid'>
       <% safeContents.forEach(content => { %>
-        <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false }; %>
+        <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 20, activeRentals: 0, remaining: content.rentalLimit || 20, isFull: false }; %>
         <article class='card poster-card' tabindex='0' role='button' data-content-card data-modal-content-id='<%= content._id %>' aria-label='Open details for <%= content.title %>'>
           <img class='content-poster' src='<%= content.image %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
           <div class='poster-overlay'>

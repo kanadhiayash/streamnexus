@@ -10,6 +10,7 @@
     "sandbox:smoke": "node scripts/sandbox-smoke.js",
     "migrate:data:dry-run": "node scripts/migrate-data-contracts.js --dry-run",
     "migrate:data:fixture": "node scripts/migrate-data-contracts-fixture.js",
+    "reconcile:capacity": "node scripts/reconcile-licence-capacity.js",
     "test": "npm run test:syntax && npm run test:integration",
     "test:syntax": "node scripts/check-syntax.js",
     "test:integration": "node --test --test-concurrency=1 test/*.test.js",

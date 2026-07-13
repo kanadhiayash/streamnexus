@@ -47,7 +47,7 @@
     <div class='grid'>
       <% contents.forEach(content => { %>
         <div class='card'>
-          <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 5, activeRentals: 0, remaining: content.rentalLimit || 5, isFull: false }; %>
+          <% const capacity = content.capacity || { rentalLimit: content.rentalLimit || 20, activeRentals: 0, remaining: content.rentalLimit || 20, isFull: false }; %>
           <% const lifecycle = content.lifecycle || (content.available ? 'published' : 'unpublished'); %>
           <img class='content-poster' src='<%= content.image %>' alt='<%= content.title %>' loading='lazy' data-fallback-src='/images/default.svg' />
           <div class='card-content'>

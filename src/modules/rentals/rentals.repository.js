@@ -58,6 +58,12 @@ const createRentalsRepository = ({ ContentModel = Content, RentalModel = Rental,
     );
   },
 
+  async reconcileActiveLicenceCount(contentId) {
+    const activeCount = await RentalModel.countDocuments({ contentId, status: 'active' });
+    await ContentModel.updateOne({ _id: contentId }, { $set: { activeLicenceCount: activeCount } });
+    return activeCount;
+  },
+
   createRental(rentalData) {
     return RentalModel.create(rentalData);
   },
@@ -92,6 +98,49 @@ const createRentalsRepository = ({ ContentModel = Content, RentalModel = Rental,
 
   findExpiredActive(now) {
     return RentalModel.find({ status: 'active', expiresAt: { $lte: now } });
+  },
+
+  markRentalReturned({ rentalId, userId, endedAt }) {
+    return RentalModel.findOneAndUpdate(
+      { _id: rentalId, userId, status: 'active' },
+      {
+        $set: {
+          status: 'returned',
+          completedAt: endedAt,
+          endedAt,
+          endReason: 'member_returned',
+        },
+      },
+      { returnDocument: 'after' }
+    );
+  },
+
+  markRentalExpired({ rentalId, endedAt }) {
+    return RentalModel.findOneAndUpdate(
+      { _id: rentalId, status: 'active' },
+      {
+        $set: {
+          status: 'expired',
+          endedAt,
+          endReason: 'expired',
+        },
+      },
+      { returnDocument: 'after' }
+    );
+  },
+
+  markRentalCancelled({ rentalId, endedAt }) {
+    return RentalModel.findOneAndUpdate(
+      { _id: rentalId, status: 'active' },
+      {
+        $set: {
+          status: 'cancelled',
+          endedAt,
+          endReason: 'admin_cancelled',
+        },
+      },
+      { returnDocument: 'after' }
+    );
   },
 
   async reconcileActiveLicenceCounts() {
